@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/modules/system_diagram_view_module/widgets/component_control_dialog.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1726318117097,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1726318117097,
+            "name": "Commit-0",
+            "content": "// component_control_dialog.dart\r\n\r\nimport 'package:flutter/material.dart';\r\nimport 'package:provider/provider.dart';\r\nimport '../providers/diagram_ald_system_provider.dart';\r\n\r\nclass ComponentControlDialog extends StatefulWidget {\r\n  final SystemComponent component;\r\n\r\n  ComponentControlDialog({required this.component});\r\n\r\n  @override\r\n  _ComponentControlDialogState createState() => _ComponentControlDialogState();\r\n}\r\n\r\nclass _ComponentControlDialogState extends State<ComponentControlDialog> {\r\n  late Map<String, TextEditingController> _controllers;\r\n  bool _isActivated = false;\r\n\r\n  @override\r\n  void initState() {\r\n    super.initState();\r\n    _isActivated = widget.component.isActivated;\r\n    _controllers = {\r\n      for (var key in widget.component.setValues.keys)\r\n        key: TextEditingController(text: widget.component.setValues[key]?.toString() ?? ''),\r\n    };\r\n  }\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    final systemStateProvider = Provider.of<SystemStateProvider>(context, listen: false);\r\n\r\n    return AlertDialog(\r\n      title: Text('Configure ${widget.component.name}'),\r\n      content: SingleChildScrollView(\r\n        child: Column(\r\n          children: [\r\n            SwitchListTile(\r\n              title: Text('Activate Component'),\r\n              value: _isActivated,\r\n              onChanged: (value) {\r\n                setState(() {\r\n                  _isActivated = value;\r\n                });\r\n              },\r\n            ),\r\n            ...widget.component.setValues.keys.map((parameter) {\r\n              return TextField(\r\n                controller: _controllers[parameter],\r\n                decoration: InputDecoration(labelText: 'Set ${parameter}'),\r\n                keyboardType: TextInputType.number,\r\n              );\r\n            }).toList(),\r\n          ],\r\n        ),\r\n      ),\r\n      actions: [\r\n        TextButton(\r\n          onPressed: () {\r\n            // Update component activation\r\n            if (_isActivated) {\r\n              systemStateProvider.activateComponent(widget.component.name);\r\n            } else {\r\n              systemStateProvider.deactivateComponent(widget.component.name);\r\n            }\r\n\r\n            // Update set values\r\n            widget.component.setValues.keys.forEach((parameter) {\r\n              final value = double.tryParse(_controllers[parameter]!.text);\r\n              if (value != null) {\r\n                systemStateProvider.setComponentSetValue(widget.component.name, parameter, value);\r\n              }\r\n            });\r\n\r\n            Navigator.of(context).pop();\r\n          },\r\n          child: Text('Save'),\r\n        ),\r\n      ],\r\n    );\r\n  }\r\n}\r\n"
+        }
+    ]
+}

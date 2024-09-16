@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/modules/system_diagram_view_module/screens/system_overview_screen.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1726318117099,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1726318284968,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,9 +3,9 @@\n import 'package:flutter/material.dart';\r\n import 'package:flutter/services.dart';\r\n import 'package:provider/provider.dart';\r\n import '../../../core/providers/ald_system_provider.dart';\r\n-import '../providers/diagram_ald_system_provider.dart';\r\n+import '../../../core/providers/ald_system_provider.dart';\r\n import '../widgets/system_diagram_view.dart';\r\n import '../widgets/component_control_overlay.dart';\r\n import '../widgets/graph_overlay.dart';\r\n import '../widgets/troubleshooting_overlay.dart';\r\n"
+                }
+            ],
+            "date": 1726318117099,
+            "name": "Commit-0",
+            "content": "// system_overview_screen.dart\r\n\r\nimport 'package:flutter/material.dart';\r\nimport 'package:flutter/services.dart';\r\nimport 'package:provider/provider.dart';\r\nimport '../providers/diagram_ald_system_provider.dart';\r\nimport '../widgets/system_diagram_view.dart';\r\nimport '../widgets/component_control_overlay.dart';\r\nimport '../widgets/graph_overlay.dart';\r\nimport '../widgets/troubleshooting_overlay.dart';\r\n\r\nclass SystemOverviewScreen extends StatefulWidget {\r\n  const SystemOverviewScreen({Key? key}) : super(key: key);\r\n\r\n  @override\r\n  _SystemOverviewScreenState createState() => _SystemOverviewScreenState();\r\n}\r\n\r\nclass _SystemOverviewScreenState extends State<SystemOverviewScreen> {\r\n  final PageController _pageController = PageController();\r\n\r\n  @override\r\n  void initState() {\r\n    super.initState();\r\n    // Lock orientation to landscape for the entire screen\r\n    SystemChrome.setPreferredOrientations([\r\n      DeviceOrientation.landscapeLeft,\r\n      DeviceOrientation.landscapeRight,\r\n    ]);\r\n  }\r\n\r\n  @override\r\n  void dispose() {\r\n    // Reset orientation when disposing\r\n    SystemChrome.setPreferredOrientations(DeviceOrientation.values);\r\n    super.dispose();\r\n  }\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return Scaffold(\r\n      appBar: AppBar(\r\n        title: const Text('ALD System Overview'),\r\n        actions: [\r\n          Consumer<SystemStateProvider>(\r\n            builder: (context, provider, child) {\r\n              return Row(\r\n                children: [\r\n                  Text(\r\n                    provider.isSystemRunning ? 'Running' : 'Stopped',\r\n                    style: TextStyle(\r\n                      color: provider.isSystemRunning ? Colors.green : Colors.red,\r\n                      fontWeight: FontWeight.bold,\r\n                    ),\r\n                  ),\r\n                  Switch(\r\n                    value: provider.isSystemRunning,\r\n                    onChanged: (value) {\r\n                      if (value) {\r\n                        provider.startSystem();\r\n                      } else {\r\n                        provider.pauseSystem();\r\n                      }\r\n                    },\r\n                    activeColor: Colors.green,\r\n                    inactiveThumbColor: Colors.red,\r\n                  ),\r\n                ],\r\n              );\r\n            },\r\n          ),\r\n        ],\r\n      ),\r\n      body: PageView(\r\n        controller: _pageController,\r\n        scrollDirection: Axis.vertical,\r\n        children: [\r\n          SystemDiagramView(\r\n            overlay: ComponentControlOverlay(),\r\n          ),\r\n          SystemDiagramView(\r\n            overlay: GraphOverlay(),\r\n          ),\r\n          SystemDiagramView(\r\n            overlay: TroubleshootingOverlay(),\r\n          ),\r\n        ],\r\n      ),\r\n    );\r\n  }\r\n}\r\n"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/modules/system_operation_also_main_module/widgets/component_details_dialog.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1726318174997,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1726318174997,
+            "name": "Commit-0",
+            "content": "import 'package:experiment_planner/modules/system_diagram_view_module/providers/diagram_ald_system_provider.dart';\r\nimport 'package:flutter/material.dart';\r\nimport 'package:provider/provider.dart';\r\nimport '../providers/operation_ald_system_provider.dart';\r\n\r\nclass ComponentDetailsDialog extends StatelessWidget {\r\n  final String componentId;\r\n\r\n  const ComponentDetailsDialog({Key? key, required this.componentId}) : super(key: key);\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return Consumer<SystemStateProvider>(\r\n      builder: (context, aldSystem, child) {\r\n        return AlertDialog(\r\n          title: Text(_getComponentName(componentId)),\r\n          content: SingleChildScrollView(\r\n            child: _buildComponentDetails(componentId, aldSystem, context),\r\n          ),\r\n          actions: [\r\n            TextButton(\r\n              onPressed: () => Navigator.of(context).pop(),\r\n              child: Text('Close'),\r\n            ),\r\n          ],\r\n        );\r\n      },\r\n    );\r\n  }\r\n\r\n  String _getComponentName(String componentId) {\r\n    switch (componentId) {\r\n      case 'n2gen': return 'N2 Generator';\r\n      case 'mfc': return 'Mass Flow Controller';\r\n      case 'frontline_heater': return 'Frontline Heater';\r\n      case 'chamber': return 'Chamber';\r\n      case 'backline_heater': return 'Backline Heater';\r\n      case 'pc': return 'Pressure Controller';\r\n      case 'pump': return 'Pump';\r\n      case 'v1': return 'Valve 1';\r\n      case 'v2': return 'Valve 2';\r\n      case 'h1': return 'Heater 1';\r\n      case 'h2': return 'Heater 2';\r\n      default: return 'Unknown Component';\r\n    }\r\n  }\r\n\r\n  Widget _buildComponentDetails(String componentId, SystemStateProvider aldSystem, BuildContext context) {\r\n    switch (componentId) {\r\n      case 'n2gen':\r\n        return Column(\r\n          crossAxisAlignment: CrossAxisAlignment.start,\r\n          mainAxisSize: MainAxisSize.min,\r\n          children: [\r\n            Text('Status: ${aldSystem.n2GenActive ? \"Active\" : \"Inactive\"}'),\r\n            Text('Flow Rate: ${aldSystem.n2Flow.toStringAsFixed(2)} sccm'),\r\n            ElevatedButton(\r\n              onPressed: () => aldSystem.toggleN2Gen(),\r\n              child: Text(aldSystem.n2GenActive ? 'Turn Off' : 'Turn On'),\r\n            ),\r\n          ],\r\n        );\r\n      case 'mfc':\r\n        return Column(\r\n          crossAxisAlignment: CrossAxisAlignment.start,\r\n          mainAxisSize: MainAxisSize.min,\r\n          children: [\r\n            Text('Setpoint: ${aldSystem.mfcSetpoint.toStringAsFixed(2)} sccm'),\r\n            Text('Actual Flow: ${aldSystem.mfcActualFlow.toStringAsFixed(2)} sccm'),\r\n            TextField(\r\n              decoration: InputDecoration(labelText: 'Set Flow Rate (sccm)'),\r\n              keyboardType: TextInputType.number,\r\n              onSubmitted: (value) => aldSystem.setMFCSetpoint(double.parse(value)),\r\n            ),\r\n          ],\r\n        );\r\n    // Add cases for other components here...\r\n      default:\r\n        return Text('No details available for this component.');\r\n    }\r\n  }\r\n}"
+        }
+    ]
+}

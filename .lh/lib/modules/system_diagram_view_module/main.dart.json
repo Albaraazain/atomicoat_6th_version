@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/modules/system_diagram_view_module/main.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1726318117096,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1726318117096,
+            "name": "Commit-0",
+            "content": "import 'package:flutter/material.dart';\r\nimport 'package:provider/provider.dart';\r\nimport 'screens/system_overview_screen.dart';\r\nimport 'providers/diagram_ald_system_provider.dart';\r\nimport 'services/navigation_service.dart'; // Import the navigation service\r\n\r\nvoid main() {\r\n  runApp(\r\n    MultiProvider(\r\n      providers: [\r\n        ChangeNotifierProvider(create: (_) => SystemStateProvider()),\r\n        Provider(create: (context) => NavigationService()), // Provide NavigationService\r\n      ],\r\n      child: const ALDMachineApp(),\r\n    ),\r\n  );\r\n}\r\n\r\nclass ALDMachineApp extends StatelessWidget {\r\n  const ALDMachineApp({Key? key}) : super(key: key);\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    final navigationService = Provider.of<NavigationService>(context, listen: false);\r\n\r\n    return MaterialApp(\r\n      title: 'ALD Machine Control',\r\n      navigatorKey: navigationService.navigatorKey, // Set navigator key\r\n      theme: ThemeData.dark().copyWith(\r\n        primaryColor: Colors.blue,\r\n        scaffoldBackgroundColor: Colors.grey[900],\r\n        appBarTheme: AppBarTheme(\r\n          backgroundColor: Colors.grey[850],\r\n          elevation: 0,\r\n        ),\r\n        cardTheme: CardTheme(\r\n          color: Colors.grey[800],\r\n          elevation: 4,\r\n        ),\r\n        textTheme: const TextTheme(\r\n          bodyLarge: TextStyle(color: Colors.white),\r\n          bodyMedium: TextStyle(color: Colors.white70),\r\n        ),\r\n      ),\r\n      home: const SystemOverviewScreen(),\r\n    );\r\n  }\r\n}"
+        }
+    ]
+}

@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/modules/system_operation_also_main_module/main.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1726318174998,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1726411660088,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,4 +1,5 @@\n+/*\r\n import 'package:flutter/material.dart';\r\n import 'package:flutter/services.dart';\r\n import 'package:provider/provider.dart';\r\n import './providers/operation_ald_system_provider.dart';\r\n@@ -53,5 +54,5 @@\n       ),\r\n       home: MainDashboard(),\r\n     );\r\n   }\r\n-}\n\\ No newline at end of file\n+}*/\r\n"
+                }
+            ],
+            "date": 1726318174998,
+            "name": "Commit-0",
+            "content": "import 'package:flutter/material.dart';\r\nimport 'package:flutter/services.dart';\r\nimport 'package:provider/provider.dart';\r\nimport './providers/operation_ald_system_provider.dart';\r\nimport './providers/recipe_provider.dart';\r\nimport './providers/alarm_provider.dart';\r\nimport './models/recipe_state.dart';\r\nimport './screens/main_dashboard.dart';\r\n\r\nvoid main() {\r\n  runApp(\r\n    MultiProvider(\r\n      providers: [\r\n        ChangeNotifierProvider(create: (_) => SystemStateProvider()),\r\n        ChangeNotifierProvider(create: (_) => RecipeProvider()),\r\n        ChangeNotifierProvider(create: (_) => AlarmProvider()),\r\n        ChangeNotifierProvider(create: (_) => RecipeState()),\r\n      ],\r\n      child: MyApp(),\r\n    ),\r\n  );\r\n}\r\n\r\nclass MyApp extends StatelessWidget {\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return MaterialApp(\r\n      title: 'ALD Process Monitor',\r\n      theme: ThemeData(\r\n        brightness: Brightness.dark,\r\n        primarySwatch: Colors.blue,\r\n        hintColor: Colors.blueAccent,\r\n        scaffoldBackgroundColor: Color(0xFF121212),\r\n        cardColor: Color(0xFF1E1E1E),\r\n        textTheme: TextTheme(\r\n          titleLarge: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),\r\n          bodyLarge: TextStyle(fontSize: 16.0, color: Colors.white),\r\n          bodyMedium: TextStyle(fontSize: 14.0, color: Colors.white70),\r\n        ),\r\n        appBarTheme: AppBarTheme(\r\n          color: Color(0xFF1E1E1E), systemOverlayStyle: SystemUiOverlayStyle.light, toolbarTextStyle: TextTheme(\r\n            titleLarge: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),\r\n          ).bodyMedium, titleTextStyle: TextTheme(\r\n            titleLarge: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),\r\n          ).titleLarge,\r\n        ),\r\n        tabBarTheme: TabBarTheme(\r\n          labelColor: Colors.white,\r\n          unselectedLabelColor: Colors.white60,\r\n          labelStyle: TextStyle(fontSize: 16.0),\r\n          unselectedLabelStyle: TextStyle(fontSize: 16.0),\r\n        ),\r\n      ),\r\n      home: MainDashboard(),\r\n    );\r\n  }\r\n}"
+        }
+    ]
+}

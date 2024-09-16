@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/modules/maintenance_module/providers/maintenance_ald_system_provider.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1726411660069,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1726411660069,
+            "name": "Commit-0",
+            "content": "// lib/providers/diagram_ald_system_provider.dart\r\nimport 'package:flutter/foundation.dart';\r\n\r\nclass MaintenanceSystemStateProvider with ChangeNotifier {\r\n  bool _n2GenActive = false;\r\n  bool _frontlineHeaterActive = false;\r\n  bool _backlineHeaterActive = false;\r\n  bool _pumpActive = false;\r\n  bool _v1Open = false;\r\n  bool _v2Open = false;\r\n  bool _h1Active = false;\r\n  bool _h2Active = false;\r\n  double _mfcActualFlow = 0.0;\r\n\r\n  bool get n2GenActive => _n2GenActive;\r\n  bool get frontlineHeaterActive => _frontlineHeaterActive;\r\n  bool get backlineHeaterActive => _backlineHeaterActive;\r\n  bool get pumpActive => _pumpActive;\r\n  bool get v1Open => _v1Open;\r\n  bool get v2Open => _v2Open;\r\n  bool get h1Active => _h1Active;\r\n  bool get h2Active => _h2Active;\r\n  double get mfcActualFlow => _mfcActualFlow;\r\n\r\n  void toggleN2Gen() {\r\n    _n2GenActive = !_n2GenActive;\r\n    notifyListeners();\r\n  }\r\n\r\n  void toggleFrontlineHeater() {\r\n    _frontlineHeaterActive = !_frontlineHeaterActive;\r\n    notifyListeners();\r\n  }\r\n\r\n  void toggleBacklineHeater() {\r\n    _backlineHeaterActive = !_backlineHeaterActive;\r\n    notifyListeners();\r\n  }\r\n\r\n  void togglePump() {\r\n    _pumpActive = !_pumpActive;\r\n    notifyListeners();\r\n  }\r\n\r\n  void toggleValve(String valve) {\r\n    if (valve == 'v1') {\r\n      _v1Open = !_v1Open;\r\n    } else if (valve == 'v2') {\r\n      _v2Open = !_v2Open;\r\n    }\r\n    notifyListeners();\r\n  }\r\n\r\n  void toggleHeater(String heater) {\r\n    if (heater == 'h1') {\r\n      _h1Active = !_h1Active;\r\n    } else if (heater == 'h2') {\r\n      _h2Active = !_h2Active;\r\n    }\r\n    notifyListeners();\r\n  }\r\n\r\n  void setMFCFlow(double flow) {\r\n    _mfcActualFlow = flow;\r\n    notifyListeners();\r\n  }\r\n\r\n  void toggleMFC() {\r\n    if (_mfcActualFlow > 0) {\r\n      _mfcActualFlow = 0;\r\n    } else {\r\n      _mfcActualFlow = 10; // Arbitrary non-zero value\r\n    }\r\n    notifyListeners();\r\n  }\r\n}"
+        }
+    ]
+}

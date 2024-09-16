@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/modules/system_diagram_view_module/services/data_simulation_service.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1726318117097,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1726318117097,
+            "name": "Commit-0",
+            "content": "// data_simulation_service.dart\r\n\r\nimport 'dart:async';\r\nimport 'dart:math';\r\nimport 'package:flutter/foundation.dart';\r\nimport '../providers/diagram_ald_system_provider.dart';\r\nimport '../models/data_point.dart';\r\n\r\nclass DataSimulationService {\r\n  final SystemStateProvider diagramSystemStateProvider;\r\n  Timer? _timer;\r\n  final Random _random = Random();\r\n\r\n  DataSimulationService({required this.diagramSystemStateProvider});\r\n\r\n  // Start the data simulation\r\n  void startSimulation() {\r\n    _timer = Timer.periodic(Duration(seconds: 1), (_) => _simulateData());\r\n  }\r\n\r\n  // Stop the data simulation\r\n  void stopSimulation() {\r\n    _timer?.cancel();\r\n  }\r\n\r\n  // Simulate data for each activated component\r\n  void _simulateData() {\r\n    for (var component in diagramSystemStateProvider.components.values) {\r\n      if (component.isActivated) {\r\n        component.currentValues.forEach((parameter, value) {\r\n          double newValue = _generateNewValue(parameter, value);\r\n          component.currentValues[parameter] = newValue;\r\n          component.parameterHistory[parameter]?.add(\r\n            DataPoint(timestamp: DateTime.now(), value: newValue),\r\n          );\r\n\r\n          // Keep only the last 100 data points\r\n          if (component.parameterHistory[parameter]!.length > 100) {\r\n            component.parameterHistory[parameter]!.removeAt(0);\r\n          }\r\n\r\n          // Debug print\r\n          if (kDebugMode) {\r\n            print('Data Point Added - Component: ${component.name}, Parameter: $parameter, Value: $newValue');\r\n          }\r\n        });\r\n      }\r\n    }\r\n\r\n    diagramSystemStateProvider.notifyListeners();\r\n  }\r\n\r\n  // Generate a new value based on the parameter type\r\n  double _generateNewValue(String parameter, double currentValue) {\r\n    // Define realistic simulation logic based on parameter\r\n    // For simplicity, we'll use a random walk approach\r\n\r\n    double delta = (_random.nextDouble() - 0.5) * 0.5; // Random change between -0.25 and +0.25\r\n\r\n    switch (parameter) {\r\n      case 'flow_rate':\r\n        return (currentValue + delta).clamp(0.0, 10.0); // Example: 0 to 10 SLPM\r\n      case 'purity':\r\n        return (currentValue + delta).clamp(95.0, 100.0); // Example: 95% to 100%\r\n      case 'pressure':\r\n        return (currentValue + delta).clamp(0.8, 1.2); // Example: 0.8 atm to 1.2 atm\r\n      case 'percent_correction':\r\n        return (currentValue + delta).clamp(-5.0, 5.0); // Example: -5% to +5%\r\n      case 'temperature':\r\n        return (currentValue + delta).clamp(20.0, 300.0); // Example: 20°C to 300°C\r\n      case 'fill_level':\r\n        return (currentValue + delta).clamp(0.0, 100.0); // Example: 0% to 100%\r\n      case 'status':\r\n      // For status, randomly turn on or off\r\n        return _random.nextBool() ? 1.0 : 0.0;\r\n      case 'power':\r\n        return (currentValue + delta).clamp(50.0, 150.0); // Example: 50W to 150W\r\n      default:\r\n        return currentValue;\r\n    }\r\n  }\r\n}\r\n"
+        }
+    ]
+}

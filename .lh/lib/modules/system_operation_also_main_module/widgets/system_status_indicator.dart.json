@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/modules/system_operation_also_main_module/widgets/system_status_indicator.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1726411660067,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1726411660067,
+            "name": "Commit-0",
+            "content": "// widgets/system_status_indicator.dart\r\n\r\nimport 'package:flutter/material.dart';\r\nimport 'package:provider/provider.dart';\r\nimport '../providers/ald_system_provider.dart';\r\n\r\nclass SystemStatusIndicator extends StatelessWidget {\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return Consumer<SystemStateProvider>(\r\n      builder: (context, provider, child) {\r\n        String statusText = provider.isSystemRunning ? 'Running' : 'Stopped';\r\n        Color statusColor = provider.isSystemRunning ? Colors.green : Colors.red;\r\n\r\n        return Row(\r\n          children: [\r\n            Icon(Icons.circle, color: statusColor, size: 12),\r\n            SizedBox(width: 4),\r\n            Text(\r\n              statusText,\r\n              style: TextStyle(\r\n                color: statusColor,\r\n                fontWeight: FontWeight.bold,\r\n              ),\r\n            ),\r\n          ],\r\n        );\r\n      },\r\n    );\r\n  }\r\n}\r\n"
+        }
+    ]
+}
