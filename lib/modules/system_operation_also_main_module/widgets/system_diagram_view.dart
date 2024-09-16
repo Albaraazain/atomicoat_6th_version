@@ -50,12 +50,7 @@ class SystemDiagramView extends StatelessWidget {
               child: overlayWidget,
             ),
             // You can add additional widgets here that react to system state changes
-            if (systemProvider.activeRecipe != null)
-              Positioned(
-                top: 10,
-                left: 10,
-                child: Text('Active Recipe: ${systemProvider.activeRecipe!.name}'),
-              ),
+
           ],
         );
       },

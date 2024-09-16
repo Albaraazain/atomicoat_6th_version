@@ -1,25 +1,34 @@
-import 'package:flutter/foundation.dart';
+// lib/modules/system_operation_also_main_module/models/recipe.dart
 
-enum StepType {
-  loop,
-  valve,
-  purge,
-  setParameter,
-}
+import 'package:hive/hive.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum ValveType {
-  valveA,
-  valveB,
-}
+part 'recipe.g.dart';
 
+@HiveType(typeId: 2)
 class Recipe {
+  @HiveField(0)
   String id;
+
+  @HiveField(1)
   String name;
+
+  @HiveField(2)
   List<RecipeStep> steps;
+
+  @HiveField(3)
   String substrate;
+
+  @HiveField(4)
   double chamberTemperatureSetPoint;
+
+  @HiveField(5)
   double pressureSetPoint;
+
+  @HiveField(6)
   int version;
+
+  @HiveField(7)
   DateTime lastModified;
 
   Recipe({
@@ -44,7 +53,7 @@ class Recipe {
       chamberTemperatureSetPoint: json['chamberTemperatureSetPoint'] as double? ?? 150.0,
       pressureSetPoint: json['pressureSetPoint'] as double? ?? 1.0,
       version: json['version'] as int? ?? 1,
-      lastModified: DateTime.parse(json['lastModified'] as String),
+      lastModified: (json['lastModified'] as Timestamp).toDate(),
     );
   }
 
@@ -56,35 +65,19 @@ class Recipe {
     'chamberTemperatureSetPoint': chamberTemperatureSetPoint,
     'pressureSetPoint': pressureSetPoint,
     'version': version,
-    'lastModified': lastModified.toIso8601String(),
+    'lastModified': Timestamp.fromDate(lastModified),
   };
-
-  Recipe copyWith({
-    String? id,
-    String? name,
-    List<RecipeStep>? steps,
-    String? substrate,
-    double? chamberTemperatureSetPoint,
-    double? pressureSetPoint,
-    int? version,
-    DateTime? lastModified,
-  }) {
-    return Recipe(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      steps: steps ?? List.from(this.steps),
-      substrate: substrate ?? this.substrate,
-      chamberTemperatureSetPoint: chamberTemperatureSetPoint ?? this.chamberTemperatureSetPoint,
-      pressureSetPoint: pressureSetPoint ?? this.pressureSetPoint,
-      version: version ?? this.version,
-      lastModified: lastModified ?? DateTime.now(),
-    );
-  }
 }
 
+@HiveType(typeId: 3)
 class RecipeStep {
+  @HiveField(0)
   StepType type;
+
+  @HiveField(1)
   Map<String, dynamic> parameters;
+
+  @HiveField(2)
   List<RecipeStep>? subSteps;
 
   RecipeStep({
@@ -95,9 +88,8 @@ class RecipeStep {
 
   factory RecipeStep.fromJson(Map<String, dynamic> json) {
     return RecipeStep(
-      type: StepType.values.firstWhere(
-              (e) => e.toString() == 'StepType.${json['type']}'),
-      parameters: _parseParameters(json['parameters'] as Map<String, dynamic>, json['type'] as String),
+      type: StepType.values.firstWhere((e) => e.toString() == 'StepType.${json['type']}'),
+      parameters: Map<String, dynamic>.from(json['parameters']),
       subSteps: json['subSteps'] != null
           ? (json['subSteps'] as List<dynamic>)
           .map((e) => RecipeStep.fromJson(e as Map<String, dynamic>))
@@ -108,79 +100,27 @@ class RecipeStep {
 
   Map<String, dynamic> toJson() => {
     'type': type.toString().split('.').last,
-    'parameters': _serializeParameters(parameters, type),
+    'parameters': parameters,
     'subSteps': subSteps?.map((e) => e.toJson()).toList(),
   };
+}
 
-  static Map<String, dynamic> _parseParameters(Map<String, dynamic> params, String stepType) {
-    switch (stepType) {
-      case 'valve':
-        return {
-          'valveType': ValveType.values.firstWhere((e) => e.toString() == 'ValveType.${params['valveType']}'),
-          'duration': params['duration'] as int,
-          'gasFlow': params['gasFlow'] as double?,
-        };
-      case 'loop':
-        return {
-          'iterations': params['iterations'] as int,
-          'temperature': params['temperature'] as double?,
-          'pressure': params['pressure'] as double?,
-        };
-      case 'purge':
-        return {
-          'duration': params['duration'] as int,
-          'gasFlow': params['gasFlow'] as double?,
-        };
-      case 'setParameter':
-        return {
-          'component': params['component'] as String,
-          'parameter': params['parameter'] as String,
-          'value': params['value'] as double,
-        };
-      default:
-        return params;
-    }
-  }
+@HiveType(typeId: 4)
+enum StepType {
+  @HiveField(0)
+  loop,
+  @HiveField(1)
+  valve,
+  @HiveField(2)
+  purge,
+  @HiveField(3)
+  setParameter,
+}
 
-  static Map<String, dynamic> _serializeParameters(Map<String, dynamic> params, StepType stepType) {
-    switch (stepType) {
-      case StepType.valve:
-        return {
-          'valveType': (params['valveType'] as ValveType).toString().split('.').last,
-          'duration': params['duration'],
-          'gasFlow': params['gasFlow'],
-        };
-      case StepType.loop:
-        return {
-          'iterations': params['iterations'],
-          'temperature': params['temperature'],
-          'pressure': params['pressure'],
-        };
-      case StepType.purge:
-        return {
-          'duration': params['duration'],
-          'gasFlow': params['gasFlow'],
-        };
-      case StepType.setParameter:
-        return {
-          'component': params['component'],
-          'parameter': params['parameter'],
-          'value': params['value'],
-        };
-      default:
-        return params;
-    }
-  }
-
-  RecipeStep copyWith({
-    StepType? type,
-    Map<String, dynamic>? parameters,
-    List<RecipeStep>? subSteps,
-  }) {
-    return RecipeStep(
-      type: type ?? this.type,
-      parameters: parameters ?? Map.from(this.parameters),
-      subSteps: subSteps ?? (this.subSteps != null ? List.from(this.subSteps!) : null),
-    );
-  }
+@HiveType(typeId: 5)
+enum ValveType {
+  @HiveField(0)
+  valveA,
+  @HiveField(1)
+  valveB,
 }

@@ -89,8 +89,11 @@ class _ComponentControlOverlayState extends State<ComponentControlOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    print("Building [component_control_overlay]");
     return Consumer<SystemStateProvider>(
       builder: (context, systemProvider, child) {
+        print("Number of components in [component_control_overlay]: ${systemProvider.components.length}");
+
         return Container(
           key: _overlayKey,
           child: Stack(

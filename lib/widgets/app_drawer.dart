@@ -1,4 +1,8 @@
+// lib/widgets/app_drawer.dart
+
 import 'package:flutter/material.dart';
+
+// Import Enums
 import '../enums/navigation_item.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -12,98 +16,218 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Drawer(
-      child: Container(
-        color: theme.colorScheme.background,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.electric_car,
-                    color: theme.colorScheme.primary,
-                    size: 48,
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          // Drawer Header
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.blueGrey[800],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.build,
+                  color: Colors.white,
+                  size: 48,
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'ALD Machine Maintenance',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Tesla ALD Maintenance',
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      color: theme.colorScheme.onSurface,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+                ),
+              ],
+            ),
+          ),
+
+          // **Maintenance Module Section**
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text(
+              'Maintenance',
+              style: TextStyle(
+                color: Colors.blueGrey[600],
+                fontWeight: FontWeight.bold,
               ),
             ),
+          ),
+          _buildDrawerItem(
+            icon: Icons.home_repair_service,
+            text: 'Home',
+            isSelected: selectedItem == NavigationItem.mainDashboard,
+            onTap: () {
+              onSelectItem(NavigationItem.mainDashboard);
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.calendar_today,
+            text: 'Schedule',
+            isSelected: selectedItem == NavigationItem.schedule,
+            onTap: () {
+              onSelectItem(NavigationItem.schedule);
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.science,
+            text: 'Calibration',
+            isSelected: selectedItem == NavigationItem.calibration,
+            onTap: () {
+              onSelectItem(NavigationItem.calibration);
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.assessment,
+            text: 'Reports',
+            isSelected: selectedItem == NavigationItem.reports,
+            onTap: () {
+              onSelectItem(NavigationItem.reports);
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.report,
+            text: 'Reporting',
+            isSelected: selectedItem == NavigationItem.reporting,
+            onTap: () {
+              onSelectItem(NavigationItem.reporting);
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.help,
+            text: 'Troubleshooting',
+            isSelected: selectedItem == NavigationItem.troubleshooting,
+            onTap: () {
+              onSelectItem(NavigationItem.troubleshooting);
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.inventory,
+            text: 'Spare Parts',
+            isSelected: selectedItem == NavigationItem.spareParts,
+            onTap: () {
+              onSelectItem(NavigationItem.spareParts);
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.library_books,
+            text: 'Documentation',
+            isSelected: selectedItem == NavigationItem.documentation,
+            onTap: () {
+              onSelectItem(NavigationItem.documentation);
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.video_call,
+            text: 'Remote Assistance',
+            isSelected: selectedItem == NavigationItem.remoteAssistance,
+            onTap: () {
+              onSelectItem(NavigationItem.remoteAssistance);
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.health_and_safety,
+            text: 'Safety Procedures',
+            isSelected: selectedItem == NavigationItem.safetyProcedures,
+            onTap: () {
+              onSelectItem(NavigationItem.safetyProcedures);
+            },
+          ),
 
-            _buildSectionHeader(theme, 'Maintenance'),
-            _buildDrawerItem(theme, Icons.home_repair_service, 'Home', NavigationItem.mainDashboard),
-            _buildDrawerItem(theme, Icons.calendar_today, 'Schedule', NavigationItem.schedule),
-            _buildDrawerItem(theme, Icons.science, 'Calibration', NavigationItem.calibration),
-            _buildDrawerItem(theme, Icons.assessment, 'Reports', NavigationItem.reports),
-            _buildDrawerItem(theme, Icons.report, 'Reporting', NavigationItem.reporting),
-            _buildDrawerItem(theme, Icons.help, 'Troubleshooting', NavigationItem.troubleshooting),
-            _buildDrawerItem(theme, Icons.inventory, 'Spare Parts', NavigationItem.spareParts),
-            _buildDrawerItem(theme, Icons.library_books, 'Documentation', NavigationItem.documentation),
-            _buildDrawerItem(theme, Icons.video_call, 'Remote Assistance', NavigationItem.remoteAssistance),
-            _buildDrawerItem(theme, Icons.health_and_safety, 'Safety Procedures', NavigationItem.safetyProcedures),
+          Divider(), // Separator between sections
 
-            Divider(color: theme.colorScheme.onBackground.withOpacity(0.1)),
+          // **System Operation Module Section**
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text(
+              'System Operation',
+              style: TextStyle(
+                color: Colors.blueGrey[600],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          _buildDrawerItem(
+            icon: Icons.dashboard_customize,
+            text: 'Main Dashboard',
+            isSelected: selectedItem == NavigationItem.mainDashboard,
+            onTap: () {
+              onSelectItem(NavigationItem.mainDashboard);
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.book, // Icon for Recipe Management
+            text: 'Recipe Management',
+            isSelected: selectedItem == NavigationItem.recipeManagement,
+            onTap: () {
+              onSelectItem(NavigationItem.recipeManagement);
+            },
+          ),
 
-            _buildSectionHeader(theme, 'System Operation'),
-            _buildDrawerItem(theme, Icons.dashboard_customize, 'Main Dashboard', NavigationItem.mainDashboard),
-            _buildDrawerItem(theme, Icons.book, 'Recipe Management', NavigationItem.recipeManagement),
+          Divider(), // Separator between sections
 
-            Divider(color: theme.colorScheme.onBackground.withOpacity(0.1)),
-
-            _buildSectionHeader(theme, 'Others'),
-            _buildDrawerItem(theme, Icons.person, 'Profile', NavigationItem.profile),
-            _buildDrawerItem(theme, Icons.settings_applications, 'Settings', NavigationItem.settings),
-            _buildDrawerItem(theme, Icons.help_outline, 'Help & Support', NavigationItem.helpSupport),
-          ],
-        ),
+          // **Others Section (Optional)**
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text(
+              'Others',
+              style: TextStyle(
+                color: Colors.blueGrey[600],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          _buildDrawerItem(
+            icon: Icons.person,
+            text: 'Profile',
+            isSelected: selectedItem == NavigationItem.profile,
+            onTap: () {
+              onSelectItem(NavigationItem.profile);
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.settings_applications,
+            text: 'Settings',
+            isSelected: selectedItem == NavigationItem.settings,
+            onTap: () {
+              onSelectItem(NavigationItem.settings);
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.help_outline,
+            text: 'Help & Support',
+            isSelected: selectedItem == NavigationItem.helpSupport,
+            onTap: () {
+              onSelectItem(NavigationItem.helpSupport);
+            },
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildSectionHeader(ThemeData theme, String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Text(
-        title,
-        style: theme.textTheme.titleSmall?.copyWith(
-          color: theme.colorScheme.primary,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem(ThemeData theme, IconData icon, String text, NavigationItem item) {
-    final isSelected = selectedItem == item;
+  // Helper method to build a drawer item with selection highlighting
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String text,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: isSelected ? theme.colorScheme.secondary : theme.colorScheme.onBackground.withOpacity(0.7),
-      ),
+      leading: Icon(icon, color: isSelected ? Colors.blueAccent : null),
       title: Text(
         text,
-        style: theme.textTheme.bodyLarge?.copyWith(
-          color: isSelected ? theme.colorScheme.secondary : theme.colorScheme.onBackground,
+        style: TextStyle(
+          color: isSelected ? Colors.blueAccent : null,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
       ),
       selected: isSelected,
-      selectedTileColor: theme.colorScheme.secondary.withOpacity(0.1),
-      onTap: () => onSelectItem(item),
+      onTap: onTap,
     );
   }
 }

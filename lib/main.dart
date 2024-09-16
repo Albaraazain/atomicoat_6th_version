@@ -1,6 +1,9 @@
-// lib/main.dart
-
+import 'package:experiment_planner/providers/auth_provider.dart';
+import 'package:experiment_planner/repositories/system_state_repository.dart';
+import 'package:experiment_planner/screens/login_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animations/animations.dart';
@@ -10,6 +13,12 @@ import 'modules/maintenance_module/providers/maintenance_provider.dart';
 import 'modules/maintenance_module/providers/calibration_provider.dart';
 import 'modules/maintenance_module/providers/spare_parts_provider.dart';
 import 'modules/maintenance_module/providers/report_provider.dart';
+import 'modules/system_operation_also_main_module/models/alarm.dart';
+import 'modules/system_operation_also_main_module/models/data_point.dart';
+import 'modules/system_operation_also_main_module/models/recipe.dart';
+import 'modules/system_operation_also_main_module/models/safety_error.dart';
+import 'modules/system_operation_also_main_module/models/system_component.dart';
+import 'modules/system_operation_also_main_module/models/system_log_entry.dart';
 import 'modules/system_operation_also_main_module/providers/alarm_provider.dart';
 import 'modules/system_operation_also_main_module/providers/recipe_provider.dart';
 import 'modules/system_operation_also_main_module/providers/system_state_provider.dart';
@@ -32,7 +41,36 @@ import 'modules/system_operation_also_main_module/screens/recipe_management_scre
 import 'enums/navigation_item.dart';
 import 'widgets/app_drawer.dart';
 
-void main() {
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await Hive.initFlutter();
+
+  Hive.registerAdapter(AlarmAdapter());
+  Hive.registerAdapter(AlarmSeverityAdapter());
+  Hive.registerAdapter(RecipeAdapter());
+  Hive.registerAdapter(RecipeStepAdapter());
+  Hive.registerAdapter(StepTypeAdapter());
+  Hive.registerAdapter(ValveTypeAdapter());
+  Hive.registerAdapter(SystemComponentAdapter());
+  Hive.registerAdapter(ComponentStatusAdapter());
+  Hive.registerAdapter(SafetyErrorAdapter());
+  Hive.registerAdapter(SafetyErrorSeverityAdapter());
+  Hive.registerAdapter(SystemLogEntryAdapter());
+
+
+
+  await Hive.openBox<Alarm>('alarms');
+  await Hive.openBox<Recipe>('recipes');
+  await Hive.openBox<SystemComponent>('system_components');
+  await Hive.openBox<SafetyError>('safety_errors');
+  await Hive.openBox<SystemLogEntry>('system_logs');
+  await Hive.openBox('systemState');
+
   runApp(
     Provider<NavigationService>(
       create: (_) => NavigationService(),
@@ -61,22 +99,20 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SparePartsProvider()),
         ChangeNotifierProvider(create: (_) => RecipeProvider()),
         ChangeNotifierProvider(create: (_) => AlarmProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
 
-        // this basically says that SystemStateProvider depends on RecipeProvider and AlarmProvider
-        // this is important because SystemStateProvider needs to know the active recipe and alarm status to function properly
-        // without this dependency, SystemStateProvider would not be able to access RecipeProvider and AlarmProvider
-        // it has to be here because SystemStateProvider is not a direct child of the main widget
-        // what changenotifierproxyprovider does is that it provides the value of RecipeProvider and AlarmProvider to SystemStateProvider
-        ChangeNotifierProxyProvider2<RecipeProvider, AlarmProvider, SystemStateProvider>(
+        Provider<SystemStateRepository>(
+          create: (_) => SystemStateRepository(),
+        ),
+        ChangeNotifierProxyProvider3<RecipeProvider, AlarmProvider, SystemStateRepository, SystemStateProvider>(
           create: (context) => SystemStateProvider(
             context.read<RecipeProvider>(),
             context.read<AlarmProvider>(),
+            context.read<SystemStateRepository>(),
           ),
-          update: (context, recipeProvider, alarmProvider, previous) =>
-          previous ?? SystemStateProvider(recipeProvider, alarmProvider),
+          update: (context, recipeProvider, alarmProvider, systemStateRepository, previous) =>
+          previous!..updateProviders(recipeProvider, alarmProvider),
         ),
-
-
 
         // ReportProvider depends on MaintenanceProvider and CalibrationProvider
         ChangeNotifierProxyProvider2<MaintenanceProvider, CalibrationProvider, ReportProvider>(
@@ -90,7 +126,15 @@ class MyApp extends StatelessWidget {
         navigatorKey: Provider.of<NavigationService>(context, listen: false).navigatorKey,
         debugShowCheckedModeBanner: false,
         theme: _getTeslaTheme(),
-        home: MainScreen(),
+        home: Consumer<AuthProvider>(
+          builder: (context, authProvider, _) {
+            if (authProvider.isAuthenticated) {
+              return MainScreen();
+            } else {
+              return LoginScreen();
+            }
+          },
+        ),
         routes: {
           '/maintenance': (ctx) => MaintenanceHomeScreen(),
           '/calibration': (ctx) => CalibrationScreen(),
@@ -234,6 +278,8 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final isLargeScreen = MediaQuery.of(context).size.width > 800;
+    final authProvider = Provider.of<AuthProvider>(context);
+
     return LayoutBuilder(builder: (context, constraints) {
       if (isLargeScreen) {
         return Row(
@@ -241,9 +287,24 @@ class _MainScreenState extends State<MainScreen> {
             Container(
               width: 240,
               color: Theme.of(context).drawerTheme.backgroundColor,
-              child: AppDrawer(
-                onSelectItem: _selectNavigationItem,
-                selectedItem: _selectedItem,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: AppDrawer(
+                      onSelectItem: _selectNavigationItem,
+                      selectedItem: _selectedItem,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        await authProvider.signOut();
+                      },
+                      child: Text('Logout'),
+                    ),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -276,6 +337,12 @@ class _MainScreenState extends State<MainScreen> {
                 icon: Icon(Icons.notifications),
                 onPressed: () {
                   // Implement notifications functionality
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.logout),
+                onPressed: () async {
+                  await authProvider.signOut();
                 },
               ),
             ],

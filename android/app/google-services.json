@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "453571415915",
+    "project_id": "atomicoat-a6241",
+    "storage_bucket": "atomicoat-a6241.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:453571415915:android:ac719308a7529f8f27462e",
+        "android_client_info": {
+          "package_name": "com.example.atomicoat_5th_version"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyByMYvcYFc_IJxYwYWRRrjvZ8yJBkvWf_Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

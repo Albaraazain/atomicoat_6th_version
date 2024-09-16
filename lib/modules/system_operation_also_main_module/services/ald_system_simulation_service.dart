@@ -1,5 +1,3 @@
-// lib/core/services/ald_system_simulation_service.dart
-
 import 'dart:async';
 import 'dart:math';
 import '../models/system_component.dart';
@@ -58,7 +56,6 @@ class AldSystemSimulationService {
         if (component.isActivated) {
           newValue = _generateNewValue(component.name, parameter, value);
         } else {
-          // If component is not activated, simulate a slow drift towards its set value or a default value
           double targetValue = component.setValues[parameter] ?? value;
           newValue = value + (targetValue - value) * 0.01;
         }
@@ -75,7 +72,7 @@ class AldSystemSimulationService {
   }
 
   double _generateNewValue(String componentName, String parameter, double currentValue) {
-    double delta = (_random.nextDouble() - 0.5) * 0.2; // Increased fluctuation
+    double delta = (_random.nextDouble() - 0.5) * 0.2;
 
     switch (componentName) {
       case 'Reaction Chamber':
@@ -115,9 +112,8 @@ class AldSystemSimulationService {
     return (currentValue + delta).clamp(0, 100);
   }
 
-
   void startSimulation() {
-    _simulationTimer = Timer.periodic(Duration(seconds: 1), (_) => _simulateTick());
+    _simulationTimer = Timer.periodic(const Duration(seconds: 1), (_) => _simulateTick());
   }
 
   void stopSimulation() {
@@ -126,7 +122,6 @@ class AldSystemSimulationService {
 
   void _simulateTick() {
     _updateComponentStates();
-    _executeRecipeStep();
     _generateRandomErrors();
     systemStateProvider.notifyListeners();
   }
@@ -154,79 +149,6 @@ class AldSystemSimulationService {
     }
   }
 
-  void _executeRecipeStep() {
-    if (systemStateProvider.activeRecipe != null && systemStateProvider.isSystemRunning) {
-      Recipe activeRecipe = systemStateProvider.activeRecipe!;
-      int currentStepIndex = systemStateProvider.currentRecipeStepIndex;
-
-      if (currentStepIndex < activeRecipe.steps.length) {
-        RecipeStep currentStep = activeRecipe.steps[currentStepIndex];
-        _executeStep(currentStep);
-
-        systemStateProvider.incrementRecipeStepIndex();
-      } else {
-        systemStateProvider.completeRecipe();
-      }
-    }
-  }
-
-  void _executeStep(RecipeStep step) {
-    switch (step.type) {
-      case StepType.valve:
-        _simulateValveStep(step);
-        break;
-      case StepType.purge:
-        _simulatePurgeStep(step);
-        break;
-      case StepType.loop:
-        _simulateLoopStep(step);
-        break;
-    }
-  }
-
-
-
-  void _simulateValveStep(RecipeStep step) {
-    ValveType valveType = step.parameters['valveType'] as ValveType;
-    int duration = step.parameters['duration'] as int;
-    String valveName = valveType == ValveType.valveA ? 'Valve 1' : 'Valve 2';
-
-    systemStateProvider.updateComponentState(valveName, {'status': 1.0});
-    systemStateProvider.addLogEntry('$valveName opened for $duration seconds', ComponentStatus.normal);
-
-    Future.delayed(Duration(seconds: duration), () {
-      systemStateProvider.updateComponentState(valveName, {'status': 0.0});
-      systemStateProvider.addLogEntry('$valveName closed after $duration seconds', ComponentStatus.normal);
-    });
-  }
-
-  void _simulatePurgeStep(RecipeStep step) {
-    int duration = step.parameters['duration'] as int;
-
-    systemStateProvider.updateComponentState('Valve 1', {'status': 0.0});
-    systemStateProvider.updateComponentState('Valve 2', {'status': 0.0});
-    systemStateProvider.addLogEntry('Purge started for $duration seconds', ComponentStatus.normal);
-
-    Future.delayed(Duration(seconds: duration), () {
-      systemStateProvider.addLogEntry('Purge completed after $duration seconds', ComponentStatus.normal);
-    });
-  }
-
-  void _simulateLoopStep(RecipeStep step) {
-    int iterations = step.parameters['iterations'] as int;
-    List<RecipeStep> subSteps = step.subSteps ?? [];
-
-    for (int i = 0; i < iterations; i++) {
-      systemStateProvider.addLogEntry('Starting loop iteration ${i + 1} of $iterations', ComponentStatus.normal);
-      for (var subStep in subSteps) {
-        _executeStep(subStep);
-      }
-    }
-
-    systemStateProvider.addLogEntry('Loop completed after $iterations iterations', ComponentStatus.normal);
-  }
-
-
   double _simulatePurity(double currentValue, double delta) {
     return (currentValue + delta * 0.1).clamp(95, 100);
   }
@@ -238,5 +160,4 @@ class AldSystemSimulationService {
   double _simulatePower(double currentValue, double delta) {
     return (currentValue + delta * 2).clamp(0, 100);
   }
-
 }

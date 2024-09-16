@@ -95,6 +95,7 @@ class _GraphOverlayState extends State<GraphOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    print("building graph overlay");
     // Define graph sizes based on overlayId
     double graphWidth;
     double graphHeight;
@@ -122,6 +123,7 @@ class _GraphOverlayState extends State<GraphOverlay> {
       children: [
         Consumer<SystemStateProvider>(
           builder: (context, systemStateProvider, child) {
+            print("Number of components: ${systemStateProvider.components.length}");
             return LayoutBuilder(
               builder: (context, constraints) {
                 return Stack(

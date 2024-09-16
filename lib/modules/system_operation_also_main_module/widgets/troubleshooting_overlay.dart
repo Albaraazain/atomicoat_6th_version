@@ -95,8 +95,10 @@ class _TroubleshootingOverlayState extends State<TroubleshootingOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    print("creating troubleshooting overlay");
     return Consumer<SystemStateProvider>(
       builder: (context, systemStateProvider, child) {
+        print("Number of components: ${systemStateProvider.components.length}");
         return Stack(
           children: _componentPositions.entries.map((entry) {
             final componentName = entry.key;

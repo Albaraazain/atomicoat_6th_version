@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+import '../../../repositories/recipe_reposiory.dart';
 import '../models/recipe.dart';
 
 class RecipeProvider with ChangeNotifier {
+  final RecipeRepository _recipeRepository = RecipeRepository();
+
   List<Recipe> _recipes = [];
-  static const String _recipesKey = 'recipes';
 
   List<Recipe> get recipes => _recipes;
 
@@ -13,53 +13,49 @@ class RecipeProvider with ChangeNotifier {
     loadRecipes();
   }
 
+  // Load recipes from the repository
   Future<void> loadRecipes() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? recipesJson = prefs.getString(_recipesKey);
-    if (recipesJson != null) {
-      final List<dynamic> decodedRecipes = json.decode(recipesJson);
-      _recipes = decodedRecipes.map((recipeJson) => Recipe.fromJson(recipeJson)).toList();
-      notifyListeners();
-    }
-  }
-
-  Future<void> _saveRecipes() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String encodedRecipes = json.encode(_recipes.map((recipe) => recipe.toJson()).toList());
-    await prefs.setString(_recipesKey, encodedRecipes);
-  }
-
-  Recipe getRecipeById(String id) {
-    return _recipes.firstWhere((recipe) => recipe.id == id, orElse: () => throw Exception('Recipe not found'));
-  }
-
-  Future<void> addRecipe(Recipe recipe) async {
-    _recipes.add(recipe);
-    await _saveRecipes();
+    _recipes = await _recipeRepository.getAll();
     notifyListeners();
   }
 
+  // Add a new recipe
+  Future<void> addRecipe(Recipe recipe) async {
+    await _recipeRepository.add(recipe.id, recipe);
+    _recipes.add(recipe);
+    notifyListeners();
+  }
+
+  // Update an existing recipe
   Future<void> updateRecipe(Recipe updatedRecipe) async {
     int index = _recipes.indexWhere((recipe) => recipe.id == updatedRecipe.id);
     if (index != -1) {
       _recipes[index] = updatedRecipe;
-      await _saveRecipes();
+      await _recipeRepository.update(updatedRecipe.id, updatedRecipe);
       notifyListeners();
     } else {
       throw Exception('Recipe not found for update');
     }
   }
 
+  // Delete a recipe
   Future<void> deleteRecipe(String id) async {
     _recipes.removeWhere((recipe) => recipe.id == id);
-    await _saveRecipes();
+    await _recipeRepository.remove(id);
     notifyListeners();
   }
 
+  // Get a specific recipe by ID
+  Recipe getRecipeById(String id) {
+    return _recipes.firstWhere((recipe) => recipe.id == id, orElse: () => throw Exception('Recipe not found'));
+  }
+
+  // Get all versions of a recipe by ID
   List<Recipe> getRecipeVersions(String id) {
     return _recipes.where((recipe) => recipe.id == id).toList();
   }
 
+  // Get the previous version of a recipe
   Recipe? getPreviousVersion(String id, int currentVersion) {
     List<Recipe> versions = getRecipeVersions(id);
     versions.sort((a, b) => b.version.compareTo(a.version));
@@ -70,6 +66,7 @@ class RecipeProvider with ChangeNotifier {
     return null;
   }
 
+  // Compare two versions of a recipe
   Map<String, dynamic> compareRecipeVersions(Recipe oldVersion, Recipe newVersion) {
     Map<String, dynamic> differences = {};
 
