@@ -1,30 +1,33 @@
 // lib/repositories/recipe_repository.dart
 
-import 'package:hive/hive.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../modules/system_operation_also_main_module/models/recipe.dart';
-import 'base_repository.dart';
 
-class RecipeRepository extends BaseRepository<Recipe> {
-  RecipeRepository() : super('recipes', 'recipes');
-  final Box<Recipe> _recipeBox = Hive.box<Recipe>('recipes');
+class RecipeRepository {
+  final CollectionReference _recipesCollection = FirebaseFirestore.instance.collection('recipes');
 
   Future<List<Recipe>> getAll() async {
-    return _recipeBox.values.toList();
+    QuerySnapshot snapshot = await _recipesCollection.get();
+    return snapshot.docs.map((doc) => Recipe.fromJson(doc.data() as Map<String, dynamic>)).toList();
   }
 
   Future<void> add(String id, Recipe recipe) async {
-    await _recipeBox.put(id, recipe);
+    await _recipesCollection.doc(id).set(recipe.toJson());
   }
 
   Future<void> update(String id, Recipe recipe) async {
-    await _recipeBox.put(id, recipe);
+    await _recipesCollection.doc(id).update(recipe.toJson());
   }
 
-  Future<void> remove(String id) async {
-    await _recipeBox.delete(id);
+  Future<void> delete(String id) async {
+    await _recipesCollection.doc(id).delete();
   }
 
-  @override
-  Recipe fromJson(Map<String, dynamic> json) => Recipe.fromJson(json);
+  Future<Recipe?> getById(String id) async {
+    DocumentSnapshot doc = await _recipesCollection.doc(id).get();
+    if (doc.exists) {
+      return Recipe.fromJson(doc.data() as Map<String, dynamic>);
+    }
+    return null;
+  }
 }

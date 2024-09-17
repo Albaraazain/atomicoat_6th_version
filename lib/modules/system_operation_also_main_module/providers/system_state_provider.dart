@@ -1,163 +1,388 @@
+// lib/providers/system_state_provider.dart
+
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:hive/hive.dart';
 import '../../../repositories/system_state_repository.dart';
+import '../models/data_point.dart';
+import '../models/safety_error.dart';
 import '../models/system_component.dart';
 import '../models/recipe.dart';
 import '../models/alarm.dart';
 import '../models/system_log_entry.dart';
-import '../models/safety_error.dart';
 import '../services/ald_system_simulation_service.dart';
-import '../providers/recipe_provider.dart';
+import 'recipe_provider.dart';
 import 'alarm_provider.dart';
 
 class SystemStateProvider with ChangeNotifier {
   final SystemStateRepository _systemStateRepository;
-  late final Box _box;
   final Map<String, SystemComponent> _components = {};
-  late Box<SystemComponent> _componentsBox;
   Recipe? _activeRecipe;
   int _currentRecipeStepIndex = 0;
   Recipe? _selectedRecipe;
   bool _isSystemRunning = false;
   final List<SystemLogEntry> _systemLog = [];
-  final List<Alarm> _activeAlarms = [];
   late AldSystemSimulationService _simulationService;
-  late final RecipeProvider _recipeProvider;
-  late final AlarmProvider _alarmProvider;
+  late RecipeProvider _recipeProvider;
+  late AlarmProvider _alarmProvider;
+  Timer? _stateUpdateTimer;
 
   SystemStateProvider(
-    this._recipeProvider,
-    this._alarmProvider,
-    this._systemStateRepository,
-  ) {
-    _box = Hive.box('systemState');
+      this._recipeProvider,
+      this._alarmProvider,
+      this._systemStateRepository,
+      ) {
     _initializeComponents();
+    _loadSystemLog();
     _simulationService = AldSystemSimulationService(systemStateProvider: this);
   }
 
-  Recipe? get activeRecipe => _activeRecipe;
-
-  int get currentRecipeStepIndex => _currentRecipeStepIndex;
-
+  // Getters
   Map<String, SystemComponent> get components => _components;
-
+  Recipe? get activeRecipe => _activeRecipe;
+  int get currentRecipeStepIndex => _currentRecipeStepIndex;
   Recipe? get selectedRecipe => _selectedRecipe;
-
   bool get isSystemRunning => _isSystemRunning;
-
   List<SystemLogEntry> get systemLog => _systemLog;
+  List<Alarm> get activeAlarms => _alarmProvider.activeAlarms;
 
-  List<Alarm> get activeAlarms => _activeAlarms;
+  // Initialize all system components with their parameters
+  void _initializeComponents() {
+    _components['Nitrogen Generator'] = SystemComponent(
+      name: 'Nitrogen Generator',
+      isActivated: true,
+      currentValues: {
+        'flow_rate': 0.0,
+        'purity': 99.9,
+      },
+      setValues: {
+        'flow_rate': 50.0, // Default setpoint
+        'purity': 99.9,
+      }, description: 'Generates nitrogen gas for the system',
+    );
+    _components['MFC'] = SystemComponent(
+      name: 'MFC',
+      isActivated: true,
+      currentValues: {
+        'flow_rate': 50.0,
+        'pressure': 1.0,
+        'percent_correction': 0.0,
+      },
+      setValues: {
+        'flow_rate': 50.0,
+        'pressure': 1.0,
+        'percent_correction': 0.0,
+      }, description: 'Mass Flow Controller for precursor gas',
+    );
+    _components['Reaction Chamber'] = SystemComponent(
+      name: 'Reaction Chamber',
+      isActivated: true,
+      currentValues: {
+        'temperature': 150.0,
+        'pressure': 1.0,
+      },
+      setValues: {
+        'temperature': 150.0,
+        'pressure': 1.0,
+      }, description: 'Main chamber for chemical reactions',
+    );
+    _components['Valve 1'] = SystemComponent(
+      name: 'Valve 1',
+      isActivated: false,
+      currentValues: {
+        'status': 0.0, // 0: Closed, 1: Open
+      },
+      setValues: {
+        'status': 1.0,
+      }, description: 'Valve for precursor gas',
+    );
+    _components['Valve 2'] = SystemComponent(
+      name: 'Valve 2',
+      isActivated: false,
+      currentValues: {
+        'status': 0.0,
+      },
+      setValues: {
+        'status': 1.0,
+      }, description: 'Valve for nitrogen gas',
+    );
+    _components['Pressure Control System'] = SystemComponent(
+      name: 'Pressure Control System',
+      isActivated: true,
+      currentValues: {
+        'pressure': 1.0,
+      },
+      setValues: {
+        'pressure': 1.0,
+      }, description: 'Controls the pressure in the reaction chamber',
+    );
+    _components['Vacuum Pump'] = SystemComponent(
+      name: 'Vacuum Pump',
+      isActivated: true,
+      currentValues: {
+        'flow_rate': 0.0,
+        'power': 50.0,
+      },
+      setValues: {
+        'flow_rate': 0.0,
+        'power': 50.0,
+      }, description: 'Pumps out gas from the reaction chamber',
+    );
+    _components['Precursor Heater 1'] = SystemComponent(
+      name: 'Precursor Heater 1',
+      isActivated: true,
+      currentValues: {
+        'temperature': 150.0,
+      },
+      setValues: {
+        'temperature': 150.0,
+      }, description: 'Heats precursor gas before entering the chamber',
+    );
+    _components['Precursor Heater 2'] = SystemComponent(
+      name: 'Precursor Heater 2',
+      isActivated: true,
+      currentValues: {
+        'temperature': 150.0,
+      },
+      setValues: {
+        'temperature': 150.0,
+      }, description: 'Heats precursor gas before entering the chamber',
+    );
+    _components['Frontline Heater'] = SystemComponent(
+      name: 'Frontline Heater',
+      isActivated: true,
+      currentValues: {
+        'temperature': 150.0,
+      },
+      setValues: {
+        'temperature': 150.0,
+      }, description: 'Heats the front of the chamber',
+    );
+    _components['Backline Heater'] = SystemComponent(
+      name: 'Backline Heater',
+      isActivated: true,
+      currentValues: {
+        'temperature': 150.0,
+      },
+      setValues: {
+        'temperature': 150.0,
+      }, description: 'Heats the back of the chamber',
+    );
+  }
 
-  // getter for activateComponent method
+  // Load system log from repository
+  void _loadSystemLog() {
+    // Implementation depends on your repository
+    // For example:
+    // _systemLog.addAll(_systemStateRepository.getSystemLog());
+  }
+
+  // Update component state with new values
+  void updateComponentState(String componentName, Map<String, double> newState) {
+    print("Updating component state: $componentName, New state: $newState");
+
+    if (_components.containsKey(componentName)) {
+      var component = _components[componentName]!;
+
+      // Update the current values
+      component.currentValues.addAll(newState);
+
+      // For each updated parameter, add the new value to its history
+      newState.forEach((parameter, value) {
+        if (!component.parameterHistory.containsKey(parameter)) {
+          component.parameterHistory[parameter] = [];
+        }
+
+        // Add the new data point to the history
+        component.parameterHistory[parameter]!.add(
+          DataPoint(
+            timestamp: DateTime.now(),
+            value: value,
+          ),
+        );
+
+        // Keep the history limited to the last 100 entries
+        if (component.parameterHistory[parameter]!.length > 1000) {
+          component.parameterHistory[parameter]!.removeAt(0);
+        }
+
+        print("Added data point to $componentName for $parameter: $value");
+      });
+
+      // Save the updated state to the repository
+      _systemStateRepository.saveComponentState(component);
+
+      // Add a log entry
+      addLogEntry('Updated $componentName: $newState', ComponentStatus.normal);
+
+      // Notify listeners to update the UI
+      notifyListeners();
+    }
+  }
+
+  // Activate a component
   void activateComponent(String componentName) {
     if (_components.containsKey(componentName)) {
       _components[componentName]!.isActivated = true;
-      addLogEntry('$componentName activated', ComponentStatus.normal);
+      addLogEntry('Activated $componentName', ComponentStatus.normal);
       notifyListeners();
     }
   }
 
-  // getter for deactivateComponent method
+  // Deactivate a component
   void deactivateComponent(String componentName) {
     if (_components.containsKey(componentName)) {
       _components[componentName]!.isActivated = false;
-      addLogEntry('$componentName deactivated', ComponentStatus.normal);
+      addLogEntry('Deactivated $componentName', ComponentStatus.normal);
       notifyListeners();
     }
   }
 
-  Future<void> _initializeComponents() async {
-    print("Starting component initialization");
-
-    // Open the Hive box
-    _componentsBox = await Hive.openBox<SystemComponent>('components');
-    print("Hive box opened. Items: ${_componentsBox.length}");
-
-    // If the box is empty, initialize with default components
-    if (_componentsBox.isEmpty) {
-      print("Initializing default components");
-      final componentsList = [
-        SystemComponent(
-          name: 'Nitrogen Generator',
-          description: 'Provides inert gas for purging and as a carrier gas',
-          currentValues: {'flow_rate': 0.0, 'purity': 99.9},
-          setValues: {'flow_rate': 0.0},
-        ),
-        SystemComponent(
-          name: 'MFC',
-          description: 'Mass Flow Controller for precise gas flow regulation',
-          currentValues: {'flow_rate': 0.0, 'pressure': 1.0, 'percent_correction': 0.0},
-          setValues: {'flow_rate': 0.0},
-        ),
-        SystemComponent(
-          name: 'Backline Heater',
-          description: 'Heats precursor gases before entering the chamber',
-          currentValues: {'temperature': 0.0},
-          setValues: {'temperature': 0.0},
-        ),
-        SystemComponent(
-          name: 'Frontline Heater',
-          description: 'Heats precursor gases before entering the chamber',
-          currentValues: {'temperature': 0.0},
-          setValues: {'temperature': 0.0},
-        ),
-        SystemComponent(
-          name: 'Precursor Heater 1',
-          description: 'Heats precursor gases before entering the chamber',
-          currentValues: {'temperature': 0.0},
-          setValues: {'temperature': 0.0},
-        ),
-        SystemComponent(
-          name: 'Precursor Heater 2',
-          description: 'Heats precursor gases before entering the chamber',
-          currentValues: {'temperature': 0.0},
-          setValues: {'temperature': 0.0},
-        ),
-        SystemComponent(
-          name: 'Reaction Chamber',
-          description: 'Main reaction chamber for precursor decomposition',
-          currentValues: {'temperature': 0.0, 'pressure': 0.0},
-          setValues: {'temperature': 0.0, 'pressure': 0.0},
-        ),
-        SystemComponent(
-          name: 'Valve 1',
-          description: 'Controls gas flow to the chamber',
-          currentValues: {'status': 0.0},
-          setValues: {'status': 0.0},
-        ),
-        SystemComponent(
-          name: 'Valve 2',
-          description: 'Controls gas flow to the chamber',
-          currentValues: {'status': 0.0},
-          setValues: {'status': 0.0},
-        ),
-        SystemComponent(
-          name: 'Pressure Control System',
-          description: 'Maintains chamber pressure within safe limits',
-          currentValues: {'pressure': 0.0},
-          setValues: {'pressure': 0.0},
-        ),
-        SystemComponent(
-          name: 'Vacuum Pump',
-          description: 'Removes gas from the chamber',
-          currentValues: {'flow_rate': 0.0},
-          setValues: {'flow_rate': 0.0},
-        ),
-      ];
-
-      // Add components to Hive box
-      for (var component in componentsList) {
-        await _componentsBox.put(component.name, component);
-      }
+  // Set a component's set value
+  void setComponentSetValue(String componentName, String parameterName, double value) {
+    if (_components.containsKey(componentName)) {
+      _components[componentName]!.setValues[parameterName] = value;
+      _systemStateRepository.saveComponent(_components[componentName]!);
+      addLogEntry('Set $parameterName of $componentName to $value', ComponentStatus.normal);
+      notifyListeners();
     }
+  }
 
-    // Load components from Hive box to _components map
-    _components.clear();
-    _components.addAll(Map<String, SystemComponent>.from(_componentsBox.toMap().map((key, value) => MapEntry(key.toString(), value))));
-
-    print("Finished component initialization. Components: ${_components.keys.join(', ')}");
+  // Add a log entry
+  void addLogEntry(String message, ComponentStatus status) {
+    _systemLog.add(SystemLogEntry(
+      timestamp: DateTime.now(),
+      message: message, severity: ComponentStatus.normal,
+    ));
+    // Optionally save to repository
     notifyListeners();
+  }
+
+
+
+  // Retrieve a component by name
+  SystemComponent? getComponentByName(String componentName) {
+    return _components[componentName];
+  }
+
+  // Start the simulation
+  void startSimulation() {
+    if (!_isSystemRunning) {
+      _isSystemRunning = true;
+      _simulationService.startSimulation();
+      addLogEntry('Simulation started', ComponentStatus.normal);
+      notifyListeners();
+    }
+  }
+
+  // Stop the simulation
+  void stopSimulation() {
+    if (_isSystemRunning) {
+      _isSystemRunning = false;
+      _simulationService.stopSimulation();
+      addLogEntry('Simulation stopped', ComponentStatus.normal);
+      notifyListeners();
+    }
+  }
+
+  // Toggle simulation state
+  void toggleSimulation() {
+    if (_isSystemRunning) {
+      stopSimulation();
+    } else {
+      startSimulation();
+    }
+  }
+
+  /// Fetch historical data for a specific component and update the `parameterHistory`
+  Future<void> _fetchComponentHistory(String componentName) async {
+    final now = DateTime.now();
+    final start = now.subtract(Duration(hours: 24)); // Example: Fetch last 24 hours
+
+    try {
+      List<Map<String, dynamic>> historyData = await _systemStateRepository.getComponentHistory(
+        componentName,
+        start,
+        now,
+      );
+
+      final component = _components[componentName];
+      if (component != null) {
+        // Parse historical data and populate the parameterHistory
+        for (var data in historyData) {
+          final timestamp = (data['timestamp'] as Timestamp).toDate();
+          final currentValues = Map<String, double>.from(data['currentValues']);
+
+          currentValues.forEach((parameter, value) {
+            if (!component.parameterHistory.containsKey(parameter)) {
+              component.parameterHistory[parameter] = [];
+            }
+            // Add historical data point
+            component.parameterHistory[parameter]!.add(DataPoint(
+              timestamp: timestamp,
+              value: value,
+            ));
+          });
+        }
+      }
+    } catch (e) {
+      print("Error fetching component history for $componentName: $e");
+    }
+  }
+
+  void startSystem() {
+    if (!_isSystemRunning && isSystemReadyForRecipe()) {
+      _isSystemRunning = true;
+      _simulationService.startSimulation();
+      _startContinuousStateLogging();
+      addLogEntry('System started', ComponentStatus.normal);
+      notifyListeners();
+    } else {
+      _alarmProvider.addAlarm(Alarm(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        message: 'System not ready to start',
+        severity: AlarmSeverity.warning,
+        timestamp: DateTime.now(),
+      ));
+    }
+  }
+
+  void stopSystem() {
+    _isSystemRunning = false;
+    _activeRecipe = null;
+    _currentRecipeStepIndex = 0;
+    _simulationService.stopSimulation();
+    _stopContinuousStateLogging();
+    _deactivateAllValves();
+    addLogEntry('System stopped', ComponentStatus.normal);
+    notifyListeners();
+  }
+
+  void _startContinuousStateLogging() {
+    _stateUpdateTimer = Timer.periodic(Duration(seconds: 5), (_) {
+      _saveCurrentState();
+    });
+  }
+
+  void _stopContinuousStateLogging() {
+    _stateUpdateTimer?.cancel();
+    _stateUpdateTimer = null;
+  }
+
+  void _saveCurrentState() {
+    for (var component in _components.values) {
+      _systemStateRepository.saveComponentState(component);
+    }
+    _systemStateRepository.saveSystemState({
+      'isRunning': _isSystemRunning,
+      'activeRecipeId': _activeRecipe?.id,
+      'currentRecipeStepIndex': _currentRecipeStepIndex,
+    });
+  }
+
+
+  void logParameterValue(String componentName, String parameter, double value) {
+    _systemStateRepository.saveComponentState(_components[componentName]!);
   }
 
   void runDiagnostic(String componentName) {
@@ -185,51 +410,9 @@ class SystemStateProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void startSystem() {
-    if (!_isSystemRunning && isSystemReadyForRecipe()) {
-      _isSystemRunning = true;
-      _simulationService.startSimulation();
-      addLogEntry('System started', ComponentStatus.normal);
-      notifyListeners();
-    } else {
-      addAlarm('System not ready to start', AlarmSeverity.warning);
-    }
-  }
-
-  void _deactivateAllValves() {
-    _deactivateComponent('Valve 1');
-    _deactivateComponent('Valve 2');
-  }
-
-  void _deactivateComponent(String componentName) {
-    if (_components.containsKey(componentName)) {
-      _components[componentName]!.isActivated = false;
-      addLogEntry('$componentName deactivated', ComponentStatus.normal);
-      notifyListeners();
-    }
-  }
-
-  void _activateComponent(String componentName) {
-    if (_components.containsKey(componentName)) {
-      _components[componentName]!.isActivated = true;
-      addLogEntry('$componentName activated', ComponentStatus.normal);
-      notifyListeners();
-    }
-  }
-
-  void stopSystem() {
-    _isSystemRunning = false;
-    _activeRecipe = null;
-    _currentRecipeStepIndex = 0;
-    _simulationService.stopSimulation();
-    _deactivateAllValves();
-    addLogEntry('System stopped', ComponentStatus.normal);
-    notifyListeners();
-  }
-
   bool isSystemReadyForRecipe() {
     return _components.values.every((component) =>
-        component.isActivated ||
+    component.isActivated ||
         component.name.toLowerCase().contains('valve'));
   }
 
@@ -245,9 +428,130 @@ class SystemStateProvider with ChangeNotifier {
       await _executeSteps(recipe.steps);
       completeRecipe();
     } else {
-      addAlarm('System not ready to start', AlarmSeverity.warning);
+      _alarmProvider.addAlarm(Alarm(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        message: 'System not ready to start',
+        severity: AlarmSeverity.warning,
+        timestamp: DateTime.now(),
+      ));
     }
   }
+
+
+  void selectRecipe(String id) {
+    _selectedRecipe = _recipeProvider.getRecipeById(id);
+    if (_selectedRecipe != null) {
+      addLogEntry(
+          'Recipe selected: ${_selectedRecipe!.name}', ComponentStatus.normal);
+    } else {
+      _alarmProvider.addAlarm(Alarm(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        message: 'Failed to select recipe: Recipe not found',
+        severity: AlarmSeverity.warning,
+        timestamp: DateTime.now(),
+      ));
+    }
+    notifyListeners();
+  }
+
+  void emergencyStop() {
+    stopSystem();
+    for (var component in _components.values) {
+      component.isActivated = false;
+      _systemStateRepository.saveComponent(component);
+    }
+    _alarmProvider.addAlarm(Alarm(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      message: 'Emergency stop activated',
+      severity: AlarmSeverity.critical,
+      timestamp: DateTime.now(),
+    ));
+    addLogEntry('Emergency stop activated', ComponentStatus.error);
+    notifyListeners();
+  }
+
+  bool isReactorPressureNormal() {
+    final pressure =
+        _components['Reaction Chamber']?.currentValues['pressure'] ?? 0.0;
+    return pressure >= 0.9 && pressure <= 1.1;
+  }
+
+  bool isReactorTemperatureNormal() {
+    final temperature =
+        _components['Reaction Chamber']?.currentValues['temperature'] ?? 0.0;
+    return temperature >= 145 && temperature <= 155;
+  }
+
+  bool isPrecursorTemperatureNormal(String precursor) {
+    final component = _components[precursor];
+    if (component != null) {
+      final temperature = component.currentValues['temperature'] ?? 0.0;
+      return temperature >= 28 && temperature <= 32;
+    }
+    return false;
+  }
+
+  void incrementRecipeStepIndex() {
+    if (_activeRecipe != null &&
+        _currentRecipeStepIndex < _activeRecipe!.steps.length - 1) {
+      _currentRecipeStepIndex++;
+      notifyListeners();
+    }
+  }
+
+  void completeRecipe() {
+    addLogEntry(
+        'Recipe completed: ${_activeRecipe?.name}', ComponentStatus.normal);
+    _activeRecipe = null;
+    _currentRecipeStepIndex = 0;
+    _isSystemRunning = false;
+    _simulationService.stopSimulation();
+    notifyListeners();
+  }
+
+  void triggerSafetyAlert(SafetyError error) {
+    _alarmProvider.addAlarm(Alarm(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      message: error.description,
+      severity: _mapSeverityToAlarmSeverity(error.severity),
+      timestamp: DateTime.now(),
+    ));
+    addLogEntry('Safety Alert: ${error.description}',
+        _mapSeverityToComponentStatus(error.severity));
+  }
+
+  AlarmSeverity _mapSeverityToAlarmSeverity(SafetyErrorSeverity severity) {
+    switch (severity) {
+      case SafetyErrorSeverity.warning:
+        return AlarmSeverity.warning;
+      case SafetyErrorSeverity.critical:
+        return AlarmSeverity.critical;
+      default:
+        return AlarmSeverity.info;
+    }
+  }
+
+  ComponentStatus _mapSeverityToComponentStatus(SafetyErrorSeverity severity) {
+    switch (severity) {
+      case SafetyErrorSeverity.warning:
+        return ComponentStatus.warning;
+      case SafetyErrorSeverity.critical:
+        return ComponentStatus.error;
+      default:
+        return ComponentStatus.normal;
+    }
+  }
+
+
+  List<Recipe> getAllRecipes() {
+    return _recipeProvider.recipes;
+  }
+
+  void refreshRecipes() {
+    _recipeProvider.loadRecipes();
+    notifyListeners();
+  }
+
 
   Future<void> _executeSteps(List<RecipeStep> steps,
       {double? inheritedTemperature, double? inheritedPressure}) async {
@@ -279,6 +583,28 @@ class SystemStateProvider with ChangeNotifier {
         break;
     }
   }
+
+  void _deactivateAllValves() {
+    _deactivateComponent('Valve 1');
+    _deactivateComponent('Valve 2');
+  }
+
+  void _deactivateComponent(String componentName) {
+    if (_components.containsKey(componentName)) {
+      _components[componentName]!.isActivated = false;
+      addLogEntry('$componentName deactivated', ComponentStatus.normal);
+      notifyListeners();
+    }
+  }
+
+  void _activateComponent(String componentName) {
+    if (_components.containsKey(componentName)) {
+      _components[componentName]!.isActivated = true;
+      addLogEntry('$componentName activated', ComponentStatus.normal);
+      notifyListeners();
+    }
+  }
+
 
   String _getStepDescription(RecipeStep step) {
     switch (step.type) {
@@ -354,13 +680,6 @@ class SystemStateProvider with ChangeNotifier {
     }
   }
 
-  void setComponentSetValue(
-      String componentName, String parameterName, double value) {
-    if (_components.containsKey(componentName)) {
-      _components[componentName]!.setValues[parameterName] = value;
-      notifyListeners();
-    }
-  }
 
   Future<void> _executeSetParameterStep(RecipeStep step) async {
     String componentName = step.parameters['component'] as String;
@@ -393,171 +712,54 @@ class SystemStateProvider with ChangeNotifier {
         ComponentStatus.normal);
   }
 
-  void updateComponentState(
-      String componentName, Map<String, double> newState) {
-    print("Updating component state: $componentName, New state: $newState");
-    if (_components.containsKey(componentName)) {
-      _components[componentName]!.currentValues.addAll(newState);
-      _componentsBox.put(componentName, _components[componentName]!);
-      notifyListeners();
-    }
-  }
-
-  void addLogEntry(String message, ComponentStatus severity) async {
-    final logEntry = SystemLogEntry(
-      timestamp: DateTime.now(),
-      message: message,
-      severity: severity,
-    );
-    _systemLog.add(logEntry);
-    await _systemStateRepository.addLogEntry(logEntry);
-
-    var storedLogs = _box.get('systemLog', defaultValue: <SystemLogEntry>[]);
-    storedLogs.add(logEntry);
-    await _box.put('systemLog', storedLogs);
-
-    notifyListeners();
-  }
-
-  void addAlarm(String message, AlarmSeverity severity) {
+  void addAlarm(String message, AlarmSeverity severity) async {
     final newAlarm = Alarm(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       message: message,
       severity: severity,
       timestamp: DateTime.now(),
     );
-    _activeAlarms.add(newAlarm);
 
-    var storedAlarms = _box.get('activeAlarms', defaultValue: <Alarm>[]);
-    storedAlarms.add(newAlarm);
-    _box.put('activeAlarms', storedAlarms);
+    await _alarmProvider.addAlarm(newAlarm);
+
+    // Log the alarm creation
+    addLogEntry('New alarm: ${newAlarm.message}', ComponentStatus.warning);
 
     notifyListeners();
   }
 
-  void acknowledgeAlarm(String alarmId) {
-    final alarmIndex = _activeAlarms.indexWhere((alarm) => alarm.id == alarmId);
-    if (alarmIndex != -1) {
-      _activeAlarms[alarmIndex].acknowledged = true;
-      _box.put('activeAlarms', _activeAlarms);
-      notifyListeners();
-    }
-  }
+  void acknowledgeAlarm(String alarmId) async {
+    await _alarmProvider.acknowledgeAlarm(alarmId);
 
-  void clearAlarm(String alarmId) {
-    _activeAlarms
-        .removeWhere((alarm) => alarm.id == alarmId && alarm.acknowledged);
-    _box.put('activeAlarms', _activeAlarms);
+    // Log the alarm acknowledgement
+    addLogEntry('Alarm acknowledged: $alarmId', ComponentStatus.normal);
+
     notifyListeners();
   }
 
-  void selectRecipe(String id) {
-    _selectedRecipe = _recipeProvider.getRecipeById(id);
-    if (_selectedRecipe != null) {
-      addLogEntry(
-          'Recipe selected: ${_selectedRecipe!.name}', ComponentStatus.normal);
-    } else {
-      addAlarm(
-          'Failed to select recipe: Recipe not found', AlarmSeverity.warning);
-    }
+  void clearAlarm(String alarmId) async {
+    await _alarmProvider.clearAlarm(alarmId);
+
+    // Log the alarm clearance
+    addLogEntry('Alarm cleared: $alarmId', ComponentStatus.normal);
+
     notifyListeners();
   }
 
-  void emergencyStop() {
-    stopSystem();
-    for (var component in _components.values) {
-      component.isActivated = false;
-    }
-    addAlarm('Emergency stop activated', AlarmSeverity.critical);
-    addLogEntry('Emergency stop activated', ComponentStatus.error);
-    notifyListeners();
-  }
+// You might also want to add this method to clear all acknowledged alarms
+  void clearAllAcknowledgedAlarms() async {
+    await _alarmProvider.clearAllAcknowledgedAlarms();
 
-  bool isReactorPressureNormal() {
-    final pressure =
-        _components['Reaction Chamber']?.currentValues['pressure'] ?? 0.0;
-    return pressure >= 0.9 && pressure <= 1.1;
-  }
+    // Log the action
+    addLogEntry('All acknowledged alarms cleared', ComponentStatus.normal);
 
-  bool isReactorTemperatureNormal() {
-    final temperature =
-        _components['Reaction Chamber']?.currentValues['temperature'] ?? 0.0;
-    return temperature >= 145 && temperature <= 155;
-  }
-
-  bool isPrecursorTemperatureNormal(String precursor) {
-    final component = _components[precursor];
-    if (component != null) {
-      final temperature = component.currentValues['temperature'] ?? 0.0;
-      return temperature >= 28 && temperature <= 32;
-    }
-    return false;
-  }
-
-  void incrementRecipeStepIndex() {
-    if (_activeRecipe != null &&
-        _currentRecipeStepIndex < _activeRecipe!.steps.length - 1) {
-      _currentRecipeStepIndex++;
-      notifyListeners();
-    }
-  }
-
-  void completeRecipe() {
-    addLogEntry(
-        'Recipe completed: ${_activeRecipe?.name}', ComponentStatus.normal);
-    _activeRecipe = null;
-    _currentRecipeStepIndex = 0;
-    _isSystemRunning = false;
-    _simulationService.stopSimulation();
-    notifyListeners();
-  }
-
-  void triggerSafetyAlert(SafetyError error) {
-    addAlarm(error.description, _mapSeverityToAlarmSeverity(error.severity));
-    addLogEntry('Safety Alert: ${error.description}',
-        _mapSeverityToComponentStatus(error.severity));
-  }
-
-  AlarmSeverity _mapSeverityToAlarmSeverity(SafetyErrorSeverity severity) {
-    switch (severity) {
-      case SafetyErrorSeverity.warning:
-        return AlarmSeverity.warning;
-      case SafetyErrorSeverity.critical:
-        return AlarmSeverity.critical;
-      default:
-        return AlarmSeverity.info;
-    }
-  }
-
-  ComponentStatus _mapSeverityToComponentStatus(SafetyErrorSeverity severity) {
-    switch (severity) {
-      case SafetyErrorSeverity.warning:
-        return ComponentStatus.warning;
-      case SafetyErrorSeverity.critical:
-        return ComponentStatus.error;
-      default:
-        return ComponentStatus.normal;
-    }
-  }
-
-  SystemComponent? getComponentByName(String name) {
-    return _components[name];
-  }
-
-  List<Recipe> getAllRecipes() {
-    return _recipeProvider.recipes;
-  }
-
-  void refreshRecipes() {
-    _recipeProvider.loadRecipes();
     notifyListeners();
   }
 
   @override
   void dispose() {
+    _stopContinuousStateLogging();
     _simulationService.stopSimulation();
-    _componentsBox.close();
-
     super.dispose();
   }
 }

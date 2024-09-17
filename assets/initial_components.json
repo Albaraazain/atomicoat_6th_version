@@ -1,0 +1,120 @@
+{
+  "components": [
+    {
+      "name": "Nitrogen Generator",
+      "description": "Provides inert gas for purging and as a carrier gas",
+      "currentValues": {
+        "flow_rate": 0.0,
+        "purity": 99.9
+      },
+      "setValues": {
+        "flow_rate": 0.0
+      }
+    },
+    {
+      "name": "MFC",
+      "description": "Mass Flow Controller for precise gas flow regulation",
+      "currentValues": {
+        "flow_rate": 0.0,
+        "pressure": 1.0,
+        "percent_correction": 0.0
+      },
+      "setValues": {
+        "flow_rate": 0.0
+      }
+    },
+    {
+      "name": "Reaction Chamber",
+      "description": "Main reaction chamber for precursor decomposition",
+      "currentValues": {
+        "temperature": 0.0,
+        "pressure": 0.0
+      },
+      "setValues": {
+        "temperature": 150.0,
+        "pressure": 1.0
+      }
+    },
+    {
+      "name": "Valve 1",
+      "description": "Controls gas flow to the chamber",
+      "currentValues": {
+        "status": 0.0
+      },
+      "setValues": {
+        "status": 0.0
+      }
+    },
+    {
+      "name": "Valve 2",
+      "description": "Controls gas flow to the chamber",
+      "currentValues": {
+        "status": 0.0
+      },
+      "setValues": {
+        "status": 0.0
+      }
+    },
+    {
+      "name": "Pressure Control System",
+      "description": "Maintains chamber pressure within safe limits",
+      "currentValues": {
+        "pressure": 0.0
+      },
+      "setValues": {
+        "pressure": 1.0
+      }
+    },
+    {
+      "name": "Vacuum Pump",
+      "description": "Removes gas from the chamber",
+      "currentValues": {
+        "flow_rate": 0.0
+      },
+      "setValues": {
+        "flow_rate": 0.0
+      }
+    },
+    {
+      "name": "Precursor Heater 1",
+      "description": "Heats precursor gas before entering the chamber",
+      "currentValues": {
+        "temperature": 0.0
+      },
+      "setValues": {
+        "temperature": 150.0
+      }
+    },
+    {
+      "name": "Precursor Heater 2",
+        "description": "Heats precursor gas before entering the chamber",
+        "currentValues": {
+          "temperature": 0.0
+        },
+        "setValues": {
+          "temperature": 150.0
+        }
+    }
+    ,
+    {
+      "name": "Frontline Heater",
+        "description": "Heats precursor gas before entering the chamber",
+        "currentValues": {
+          "temperature": 0.0
+        },
+        "setValues": {
+          "temperature": 150.0
+        }
+    },
+    {
+      "name": "Backline Heater",
+        "description": "Heats precursor gas before entering the chamber",
+        "currentValues": {
+          "temperature": 0.0
+        },
+        "setValues": {
+          "temperature": 150.0
+        }
+    }
+  ]
+}

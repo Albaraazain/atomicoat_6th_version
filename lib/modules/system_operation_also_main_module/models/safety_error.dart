@@ -1,18 +1,6 @@
-// lib/modules/system_operation_also_main_module/models/safety_error.dart
-
-import 'package:hive/hive.dart';
-
-part 'safety_error.g.dart';
-
-@HiveType(typeId: 9)
 class SafetyError {
-  @HiveField(0)
   final String id;
-
-  @HiveField(1)
   final String description;
-
-  @HiveField(2)
   final SafetyErrorSeverity severity;
 
   SafetyError({
@@ -36,10 +24,7 @@ class SafetyError {
   };
 }
 
-@HiveType(typeId: 10)
 enum SafetyErrorSeverity {
-  @HiveField(0)
   warning,
-  @HiveField(1)
   critical
 }

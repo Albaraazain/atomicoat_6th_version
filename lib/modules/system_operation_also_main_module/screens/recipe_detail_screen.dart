@@ -33,17 +33,6 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-
-  List<SystemComponent> getAvailableComponents() {
-    final systemStateProvider = Provider.of<SystemStateProvider>(context, listen: false);
-    return systemStateProvider.components.values.toList();
-  }
-
-  List<String> getAvailableParameters(SystemComponent component) {
-    return component.setValues.keys.toList();
-  }
-
-
   @override
   void initState() {
     super.initState();
@@ -67,13 +56,19 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
     if (widget.recipeId != null) {
       final recipeProvider = Provider.of<RecipeProvider>(context, listen: false);
       final recipe = recipeProvider.getRecipeById(widget.recipeId!);
-      setState(() {
-        _nameController.text = recipe.name;
-        _substrateController.text = recipe.substrate;
-        _chamberTempController.text = recipe.chamberTemperatureSetPoint.toString();
-        _pressureController.text = recipe.pressureSetPoint.toString();
-        _steps = List.from(recipe.steps);
-      });
+      if (recipe != null) {
+        setState(() {
+          _nameController.text = recipe.name;
+          _substrateController.text = recipe.substrate;
+          _chamberTempController.text = recipe.chamberTemperatureSetPoint.toString();
+          _pressureController.text = recipe.pressureSetPoint.toString();
+          _steps = List.from(recipe.steps);
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Recipe not found'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -212,7 +207,6 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
     );
   }
 
-
   Widget _buildStepsHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -229,7 +223,8 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
           icon: Icon(Icons.add),
           label: Text('Add Step'),
           style: ElevatedButton.styleFrom(
-            foregroundColor: DarkThemeColors.background, backgroundColor: DarkThemeColors.accent,
+            foregroundColor: DarkThemeColors.background,
+            backgroundColor: DarkThemeColors.accent,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -391,12 +386,13 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
         return _buildSetParameterEditor(step);
       default:
         return Text('Unknown Step Type', style: TextStyle(color: DarkThemeColors.primaryText));
-
     }
   }
 
   Widget _buildSetParameterEditor(RecipeStep step) {
-    final availableComponents = getAvailableComponents();
+    final systemStateProvider = Provider.of<SystemStateProvider>(context, listen: false);
+    final availableComponents = systemStateProvider.components.values.toList();
+
     SystemComponent? selectedComponent = step.parameters['component'] != null
         ? availableComponents.firstWhere((c) => c.name == step.parameters['component'])
         : null;
@@ -422,7 +418,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
           _buildDropdown<String>(
             label: 'Parameter',
             value: step.parameters['parameter'],
-            items: getAvailableParameters(selectedComponent),
+            items: selectedComponent.setValues.keys.toList(),
             onChanged: (value) {
               setState(() {
                 step.parameters['parameter'] = value;
@@ -454,25 +450,57 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
   }) {
     return Row(
       children: [
+      Expanded(
+      flex: 2,
+      child: Text(label, style: TextStyle(color: DarkThemeColors.secondaryText)),
+    ),
+    Expanded(
+    flex: 3,
+    child: DropdownButtonFormField<T>(
+      value: value,
+      onChanged: onChanged,
+      items: items.map((T item) {
+        return DropdownMenuItem<T>(
+          value: item,
+          child: Text(
+            itemToString != null ? itemToString(item) : item.toString(),
+            style: TextStyle(color: DarkThemeColors.primaryText),
+          ),
+        );
+      }).toList(),
+      dropdownColor: DarkThemeColors.cardBackground,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: DarkThemeColors.inputFill,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      ),
+    ),
+    ),
+      ],
+    );
+  }
+
+  Widget _buildNumberInput({
+    required String label,
+    required dynamic value,
+    required Function(dynamic) onChanged,
+  }) {
+    return Row(
+      children: [
         Expanded(
           flex: 2,
           child: Text(label, style: TextStyle(color: DarkThemeColors.secondaryText)),
         ),
         Expanded(
           flex: 3,
-          child: DropdownButtonFormField<T>(
-            value: value,
-            onChanged: onChanged,
-            items: items.map((T item) {
-              return DropdownMenuItem<T>(
-                value: item,
-                child: Text(
-                  itemToString != null ? itemToString(item) : item.toString(),
-                  style: TextStyle(color: DarkThemeColors.primaryText),
-                ),
-              );
-            }).toList(),
-            dropdownColor: DarkThemeColors.cardBackground,
+          child: TextFormField(
+            initialValue: value?.toString() ?? '',
+            style: TextStyle(color: DarkThemeColors.primaryText),
+            keyboardType: TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
               filled: true,
               fillColor: DarkThemeColors.inputFill,
@@ -482,12 +510,14 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
               ),
               contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             ),
+            onChanged: (newValue) {
+              onChanged(num.tryParse(newValue));
+            },
           ),
         ),
       ],
     );
   }
-
 
   Widget _buildLoopSubSteps(RecipeStep loopStep) {
     return Column(
@@ -512,7 +542,8 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
         ElevatedButton(
           child: Text('Add Loop Step'),
           style: ElevatedButton.styleFrom(
-            foregroundColor: DarkThemeColors.background, backgroundColor: DarkThemeColors.accent,
+            foregroundColor: DarkThemeColors.background,
+            backgroundColor: DarkThemeColors.accent,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -525,73 +556,38 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
 
   Widget _buildSubStepCard(RecipeStep step, int index, RecipeStep parentStep) {
     return Card(
-        margin: EdgeInsets.only(bottom: 8),
-        color: DarkThemeColors.inputFill,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        child: ListTile(
+      margin: EdgeInsets.only(bottom: 8),
+      color: DarkThemeColors.inputFill,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: ListTile(
         title: Text(
-        'Substep ${index + 1}: ${_getStepTitle(step)}',
-    style: TextStyle(
-    color: DarkThemeColors.primaryText,
-    fontWeight: FontWeight.w500,
-    fontSize: 14,
-    ),
-    ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon(Icons.edit, color: DarkThemeColors.accent),
-                onPressed: () {
-                  _showEditStepDialog(context, step, index);
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
-                onPressed: () {
-                  setState(() {
-                    parentStep.subSteps!.removeAt(index);
-                  });
-                },
-              ),
-            ],
+          'Substep ${index + 1}: ${_getStepTitle(step)}',
+          style: TextStyle(
+            color: DarkThemeColors.primaryText,
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
           ),
         ),
-    );
-  }
-
-  Widget _buildNumberInput({
-    required String label,
-    required dynamic value,
-    required Function(dynamic) onChanged,
-  }) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 2,
-          child: Text(label, style: TextStyle(color: DarkThemeColors.secondaryText)),
-        ),
-        Expanded(
-          flex: 1,
-          child: TextFormField(
-            initialValue: value?.toString() ?? '',
-            style: TextStyle(color: DarkThemeColors.primaryText),
-            keyboardType: TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: DarkThemeColors.inputFill,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(Icons.edit, color: DarkThemeColors.accent),
+              onPressed: () {
+                _showEditStepDialog(context, step, index, parentStep: parentStep);
+              },
             ),
-            onChanged: (newValue) {
-              onChanged(num.tryParse(newValue));
-            },
-          ),
+            IconButton(
+              icon: Icon(Icons.delete, color: Colors.red),
+              onPressed: () {
+                setState(() {
+                  parentStep.subSteps!.removeAt(index);
+                });
+              },
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -652,7 +648,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
   void _addStep(StepType type, List<RecipeStep> steps) {
     setState(() {
       switch (type) {
-       case StepType.loop:
+        case StepType.loop:
           steps.add(RecipeStep(
             type: StepType.loop,
             parameters: {'iterations': 1, 'temperature': null, 'pressure': null},
@@ -672,10 +668,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
           ));
           break;
         case StepType.setParameter:
-          final availableComponents = getAvailableComponents();
+          final systemStateProvider = Provider.of<SystemStateProvider>(context, listen: false);
+          final availableComponents = systemStateProvider.components.values.toList();
           if (availableComponents.isNotEmpty) {
             final firstComponent = availableComponents.first;
-            final availableParameters = getAvailableParameters(firstComponent);
+            final availableParameters = firstComponent.setValues.keys.toList();
             steps.add(RecipeStep(
               type: StepType.setParameter,
               parameters: {
@@ -685,18 +682,16 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
               },
             ));
           } else {
-            // Handle the case when no components are available
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('No components available to set parameters.')),
             );
           }
           break;
-
       }
     });
   }
 
-  void _showEditStepDialog(BuildContext context, RecipeStep step, int index) {
+  void _showEditStepDialog(BuildContext context, RecipeStep step, int index, {RecipeStep? parentStep}) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -726,7 +721,6 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
       },
     );
   }
-
 
   void _showDeleteStepDialog(BuildContext context, int index) {
     showDialog(
@@ -759,7 +753,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
     );
   }
 
-  void _saveRecipe(RecipeProvider recipeProvider) {
+  void _saveRecipe(RecipeProvider recipeProvider) async {
     if (_nameController.text.isEmpty) {
       _showValidationError('Please enter a recipe name');
       return;
@@ -776,29 +770,43 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
     }
 
     final newRecipe = Recipe(
-      id: widget.recipeId ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      id: widget.recipeId ?? DateTime
+          .now()
+          .millisecondsSinceEpoch
+          .toString(),
       name: _nameController.text,
       substrate: _substrateController.text,
       steps: _steps,
-      chamberTemperatureSetPoint: double.tryParse(_chamberTempController.text) ?? 150.0,
+      chamberTemperatureSetPoint: double.tryParse(
+          _chamberTempController.text) ?? 150.0,
       pressureSetPoint: double.tryParse(_pressureController.text) ?? 1.0,
     );
 
-    if (widget.recipeId == null) {
-      recipeProvider.addRecipe(newRecipe);
-    } else {
-      recipeProvider.updateRecipe(newRecipe);
+    try {
+      if (widget.recipeId == null) {
+        await recipeProvider.addRecipe(newRecipe);
+      } else {
+        await recipeProvider.updateRecipe(newRecipe);
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Recipe saved successfully'),
+          backgroundColor: DarkThemeColors.accent,
+        ),
+      );
+
+      // Use Navigator.of(context).pop() only once
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error saving recipe: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Recipe saved successfully'),
-        backgroundColor: DarkThemeColors.accent,
-      ),
-    );
-    Navigator.pop(context, true); // Return true to indicate that a recipe was saved
   }
-
 
   void _showValidationError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(

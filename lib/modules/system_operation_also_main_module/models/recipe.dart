@@ -1,34 +1,15 @@
 // lib/modules/system_operation_also_main_module/models/recipe.dart
 
-import 'package:hive/hive.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-part 'recipe.g.dart';
-
-@HiveType(typeId: 2)
 class Recipe {
-  @HiveField(0)
   String id;
-
-  @HiveField(1)
   String name;
-
-  @HiveField(2)
   List<RecipeStep> steps;
-
-  @HiveField(3)
   String substrate;
-
-  @HiveField(4)
   double chamberTemperatureSetPoint;
-
-  @HiveField(5)
   double pressureSetPoint;
-
-  @HiveField(6)
   int version;
-
-  @HiveField(7)
   DateTime lastModified;
 
   Recipe({
@@ -69,15 +50,9 @@ class Recipe {
   };
 }
 
-@HiveType(typeId: 3)
 class RecipeStep {
-  @HiveField(0)
   StepType type;
-
-  @HiveField(1)
   Map<String, dynamic> parameters;
-
-  @HiveField(2)
   List<RecipeStep>? subSteps;
 
   RecipeStep({
@@ -89,7 +64,12 @@ class RecipeStep {
   factory RecipeStep.fromJson(Map<String, dynamic> json) {
     return RecipeStep(
       type: StepType.values.firstWhere((e) => e.toString() == 'StepType.${json['type']}'),
-      parameters: Map<String, dynamic>.from(json['parameters']),
+      parameters: Map<String, dynamic>.from(json['parameters']).map((key, value) {
+        if (key == 'valveType' && value is String) {
+          return MapEntry(key, ValveType.values.firstWhere((e) => e.toString() == 'ValveType.$value'));
+        }
+        return MapEntry(key, value);
+      }),
       subSteps: json['subSteps'] != null
           ? (json['subSteps'] as List<dynamic>)
           .map((e) => RecipeStep.fromJson(e as Map<String, dynamic>))
@@ -100,27 +80,16 @@ class RecipeStep {
 
   Map<String, dynamic> toJson() => {
     'type': type.toString().split('.').last,
-    'parameters': parameters,
+    'parameters': parameters.map((key, value) {
+      if (value is ValveType) {
+        return MapEntry(key, value.toString().split('.').last);
+      }
+      return MapEntry(key, value);
+    }),
     'subSteps': subSteps?.map((e) => e.toJson()).toList(),
   };
 }
 
-@HiveType(typeId: 4)
-enum StepType {
-  @HiveField(0)
-  loop,
-  @HiveField(1)
-  valve,
-  @HiveField(2)
-  purge,
-  @HiveField(3)
-  setParameter,
-}
+enum StepType { loop, valve, purge, setParameter }
 
-@HiveType(typeId: 5)
-enum ValveType {
-  @HiveField(0)
-  valveA,
-  @HiveField(1)
-  valveB,
-}
+enum ValveType { valveA, valveB }

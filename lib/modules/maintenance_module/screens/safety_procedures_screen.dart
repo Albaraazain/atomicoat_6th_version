@@ -1,6 +1,5 @@
 // lib/screens/safety_procedures_screen.dart
 import 'package:flutter/material.dart';
-import '../widgets/app_drawer.dart';
 
 class SafetyProceduresScreen extends StatelessWidget {
   final List<SafetyProcedure> procedures = [

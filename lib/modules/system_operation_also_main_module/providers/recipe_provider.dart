@@ -1,10 +1,11 @@
+// lib/modules/system_operation_also_main_module/providers/recipe_provider.dart
+
 import 'package:flutter/foundation.dart';
 import '../../../repositories/recipe_reposiory.dart';
 import '../models/recipe.dart';
 
 class RecipeProvider with ChangeNotifier {
   final RecipeRepository _recipeRepository = RecipeRepository();
-
   List<Recipe> _recipes = [];
 
   List<Recipe> get recipes => _recipes;
@@ -13,49 +14,67 @@ class RecipeProvider with ChangeNotifier {
     loadRecipes();
   }
 
-  // Load recipes from the repository
   Future<void> loadRecipes() async {
-    _recipes = await _recipeRepository.getAll();
-    notifyListeners();
-  }
-
-  // Add a new recipe
-  Future<void> addRecipe(Recipe recipe) async {
-    await _recipeRepository.add(recipe.id, recipe);
-    _recipes.add(recipe);
-    notifyListeners();
-  }
-
-  // Update an existing recipe
-  Future<void> updateRecipe(Recipe updatedRecipe) async {
-    int index = _recipes.indexWhere((recipe) => recipe.id == updatedRecipe.id);
-    if (index != -1) {
-      _recipes[index] = updatedRecipe;
-      await _recipeRepository.update(updatedRecipe.id, updatedRecipe);
+    try {
+      _recipes = await _recipeRepository.getAll();
       notifyListeners();
-    } else {
-      throw Exception('Recipe not found for update');
+    } catch (e) {
+      print('Error loading recipes: $e');
     }
   }
 
-  // Delete a recipe
+  Future<void> addRecipe(Recipe recipe) async {
+    try {
+      await _recipeRepository.add(recipe.id, recipe);
+      _recipes.add(recipe);
+      notifyListeners();
+    } catch (e) {
+      print('Error adding recipe: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateRecipe(Recipe updatedRecipe) async {
+    try {
+      await _recipeRepository.update(updatedRecipe.id, updatedRecipe);
+      int index = _recipes.indexWhere((recipe) => recipe.id == updatedRecipe.id);
+      if (index != -1) {
+        _recipes[index] = updatedRecipe;
+        notifyListeners();
+      } else {
+        throw Exception('Recipe not found for update');
+      }
+    } catch (e) {
+      print('Error updating recipe: $e');
+      rethrow;
+    }
+  }
+
+
   Future<void> deleteRecipe(String id) async {
-    _recipes.removeWhere((recipe) => recipe.id == id);
-    await _recipeRepository.remove(id);
-    notifyListeners();
+    try {
+      await _recipeRepository.delete(id);
+      _recipes.removeWhere((recipe) => recipe.id == id);
+      notifyListeners();
+    } catch (e) {
+      print('Error deleting recipe: $e');
+      rethrow;
+    }
   }
 
-  // Get a specific recipe by ID
-  Recipe getRecipeById(String id) {
-    return _recipes.firstWhere((recipe) => recipe.id == id, orElse: () => throw Exception('Recipe not found'));
+  Recipe? getRecipeById(String id) {
+    try {
+      return _recipes.firstWhere((recipe) => recipe.id == id);
+    } catch (e) {
+      print('Recipe not found: $e');
+      return null;
+    }
   }
 
-  // Get all versions of a recipe by ID
   List<Recipe> getRecipeVersions(String id) {
     return _recipes.where((recipe) => recipe.id == id).toList();
   }
 
-  // Get the previous version of a recipe
   Recipe? getPreviousVersion(String id, int currentVersion) {
     List<Recipe> versions = getRecipeVersions(id);
     versions.sort((a, b) => b.version.compareTo(a.version));
@@ -66,7 +85,6 @@ class RecipeProvider with ChangeNotifier {
     return null;
   }
 
-  // Compare two versions of a recipe
   Map<String, dynamic> compareRecipeVersions(Recipe oldVersion, Recipe newVersion) {
     Map<String, dynamic> differences = {};
 
@@ -101,7 +119,6 @@ class RecipeProvider with ChangeNotifier {
 
     for (int i = 0; i < maxLength; i++) {
       if (i < oldSteps.length && i < newSteps.length) {
-        // Both versions have this step
         if (oldSteps[i].type != newSteps[i].type || !_areParametersEqual(oldSteps[i].parameters, newSteps[i].parameters)) {
           stepDifferences.add({
             'index': i,
@@ -119,14 +136,12 @@ class RecipeProvider with ChangeNotifier {
           }
         }
       } else if (i < oldSteps.length) {
-        // Step removed in new version
         stepDifferences.add({
           'index': i,
           'old': _stepToString(oldSteps[i]),
           'new': null,
         });
       } else {
-        // Step added in new version
         stepDifferences.add({
           'index': i,
           'old': null,

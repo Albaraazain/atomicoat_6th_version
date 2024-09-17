@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../providers/spare_parts_provider.dart';
 import '../models/spare_part.dart';
-import '../widgets/app_drawer.dart';
 import 'package:provider/provider.dart';
 
 class SparePartsScreen extends StatelessWidget {

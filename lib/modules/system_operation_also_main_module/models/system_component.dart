@@ -1,35 +1,13 @@
-// lib/modules/system_operation_also_main_module/models/system_component.dart
-
-import 'package:hive/hive.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'data_point.dart';
 
-part 'system_component.g.dart';
-
-@HiveType(typeId: 6)
 class SystemComponent {
-  @HiveField(0)
   final String name;
-
-  @HiveField(1)
   final String description;
-
-  @HiveField(2)
   ComponentStatus status;
-
-  @HiveField(3)
   Map<String, double> currentValues;
-
-  @HiveField(4)
   Map<String, double> setValues;
-
-  @HiveField(5)
   List<String> errorMessages;
-
-  @HiveField(6)
   Map<String, List<DataPoint>> parameterHistory;
-
-  @HiveField(7)
   bool isActivated;
 
   SystemComponent({
@@ -67,12 +45,8 @@ class SystemComponent {
   };
 }
 
-@HiveType(typeId: 7)
 enum ComponentStatus {
-  @HiveField(0)
   normal,
-  @HiveField(1)
   warning,
-  @HiveField(2)
   error
 }

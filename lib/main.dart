@@ -2,8 +2,6 @@ import 'package:experiment_planner/providers/auth_provider.dart';
 import 'package:experiment_planner/repositories/system_state_repository.dart';
 import 'package:experiment_planner/screens/login_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animations/animations.dart';
@@ -13,12 +11,6 @@ import 'modules/maintenance_module/providers/maintenance_provider.dart';
 import 'modules/maintenance_module/providers/calibration_provider.dart';
 import 'modules/maintenance_module/providers/spare_parts_provider.dart';
 import 'modules/maintenance_module/providers/report_provider.dart';
-import 'modules/system_operation_also_main_module/models/alarm.dart';
-import 'modules/system_operation_also_main_module/models/data_point.dart';
-import 'modules/system_operation_also_main_module/models/recipe.dart';
-import 'modules/system_operation_also_main_module/models/safety_error.dart';
-import 'modules/system_operation_also_main_module/models/system_component.dart';
-import 'modules/system_operation_also_main_module/models/system_log_entry.dart';
 import 'modules/system_operation_also_main_module/providers/alarm_provider.dart';
 import 'modules/system_operation_also_main_module/providers/recipe_provider.dart';
 import 'modules/system_operation_also_main_module/providers/system_state_provider.dart';
@@ -41,35 +33,11 @@ import 'modules/system_operation_also_main_module/screens/recipe_management_scre
 import 'enums/navigation_item.dart';
 import 'widgets/app_drawer.dart';
 
-import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await Hive.initFlutter();
-
-  Hive.registerAdapter(AlarmAdapter());
-  Hive.registerAdapter(AlarmSeverityAdapter());
-  Hive.registerAdapter(RecipeAdapter());
-  Hive.registerAdapter(RecipeStepAdapter());
-  Hive.registerAdapter(StepTypeAdapter());
-  Hive.registerAdapter(ValveTypeAdapter());
-  Hive.registerAdapter(SystemComponentAdapter());
-  Hive.registerAdapter(ComponentStatusAdapter());
-  Hive.registerAdapter(SafetyErrorAdapter());
-  Hive.registerAdapter(SafetyErrorSeverityAdapter());
-  Hive.registerAdapter(SystemLogEntryAdapter());
-
-
-
-  await Hive.openBox<Alarm>('alarms');
-  await Hive.openBox<Recipe>('recipes');
-  await Hive.openBox<SystemComponent>('system_components');
-  await Hive.openBox<SafetyError>('safety_errors');
-  await Hive.openBox<SystemLogEntry>('system_logs');
-  await Hive.openBox('systemState');
 
   runApp(
     Provider<NavigationService>(
@@ -157,10 +125,8 @@ class MyApp extends StatelessWidget {
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: Color(0xFF2C2C2C),    // Dark Grey
-        secondary: Color(0xFF4A4A4A),  // Light Grey
-        background: Color(0xFF121212), // Very Dark Grey (Almost Black)
-        surface: Color(0xFF1E1E1E),    // Dark Surface
-        onBackground: Colors.white,
+        secondary: Color(0xFF4A4A4A), // Very Dark Grey (Almost Black)
+        surface: Color(0xFF1E1E1E),
         onSurface: Colors.white,
       ),
       scaffoldBackgroundColor: Color(0xFF121212),

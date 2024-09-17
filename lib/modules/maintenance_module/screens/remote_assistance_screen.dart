@@ -1,6 +1,5 @@
 // lib/screens/remote_assistance_screen.dart
 import 'package:flutter/material.dart';
-import '../widgets/app_drawer.dart';
 
 class RemoteAssistanceScreen extends StatefulWidget {
   @override

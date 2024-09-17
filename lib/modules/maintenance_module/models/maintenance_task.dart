@@ -1,5 +1,4 @@
 // lib/models/maintenance_task.dart
-import 'package:flutter/foundation.dart';
 
 class MaintenanceTask {
   final String id;

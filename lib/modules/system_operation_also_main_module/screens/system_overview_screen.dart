@@ -66,6 +66,7 @@ class _SystemOverviewScreenState extends State<SystemOverviewScreen> {
         ],
       ),
       body: Consumer<SystemStateProvider>(
+
         builder: (context, systemProvider, child) {
           return Stack(
             children: [

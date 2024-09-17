@@ -1,5 +1,4 @@
 // lib/models/component.dart
-import 'package:flutter/foundation.dart';
 
 class Component {
   final String id;

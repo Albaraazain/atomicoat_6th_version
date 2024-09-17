@@ -1,5 +1,4 @@
 // lib/models/spare_part.dart
-import 'package:flutter/foundation.dart';
 
 class SparePart {
   final String id;

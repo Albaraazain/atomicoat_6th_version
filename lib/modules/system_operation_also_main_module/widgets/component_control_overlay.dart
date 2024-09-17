@@ -1,5 +1,7 @@
+// lib/widgets/component_control_overlay.dart
+
 import 'dart:convert';
-import 'dart:math' show min;
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,7 +9,6 @@ import '../models/recipe.dart';
 import '../models/system_component.dart';
 import '../providers/system_state_provider.dart';
 import 'component_control_dialog.dart';
-
 
 class ComponentControlOverlay extends StatefulWidget {
   final String overlayId;
@@ -82,6 +83,10 @@ class _ComponentControlOverlayState extends State<ComponentControlOverlay> {
         'Reaction Chamber': Offset(_overlaySize!.width * 0.65, _overlaySize!.height * 0.5),
         'Pressure Control System': Offset(_overlaySize!.width * 0.8, _overlaySize!.height * 0.3),
         'Vacuum Pump': Offset(_overlaySize!.width * 0.8, _overlaySize!.height * 0.7),
+        'Precursor Heater 1': Offset(_overlaySize!.width * 0.25, _overlaySize!.height * 0.3),
+        'Precursor Heater 2': Offset(_overlaySize!.width * 0.25, _overlaySize!.height * 0.7),
+        'Frontline Heater': Offset(_overlaySize!.width * 0.75, _overlaySize!.height * 0.3),
+        'Backline Heater': Offset(_overlaySize!.width * 0.75, _overlaySize!.height * 0.7),
       };
     });
     _saveComponentPositions();
@@ -177,8 +182,6 @@ class _ComponentControlOverlayState extends State<ComponentControlOverlay> {
       ),
     );
   }
-
-
 
   String _getComponentAbbreviation(String componentName) {
     final words = componentName.split(' ');

@@ -1,6 +1,5 @@
 // lib/screens/calibration_screen.dart
 import 'package:flutter/material.dart';
-import '../widgets/app_drawer.dart';
 import '../widgets/calibration_history_widget.dart';
 import '../providers/calibration_provider.dart';
 import '../models/calibration_procedure.dart';

@@ -60,11 +60,9 @@ class _MainDashboardState extends State<MainDashboard> {
   ThemeData _getSleekTheme(BuildContext context) {
     return ThemeData.dark().copyWith(
       colorScheme: ColorScheme.dark(
-        background: Color(0xFF1A1A1A),
         surface: Color(0xFF2A2A2A),
         primary: Color(0xFF4A4A4A),
         secondary: Color(0xFF3A3A3A),
-        onBackground: Color(0xFFE0E0E0),
         onSurface: Color(0xFFD0D0D0),
         onPrimary: Color(0xFFFFFFFF),
       ),

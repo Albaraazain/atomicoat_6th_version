@@ -1,5 +1,4 @@
 // lib/models/calibration_record.dart
-import 'package:flutter/foundation.dart';
 
 class CalibrationRecord {
   final String id;

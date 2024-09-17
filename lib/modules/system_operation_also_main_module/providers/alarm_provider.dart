@@ -6,15 +6,22 @@ import '../models/alarm.dart';
 
 class AlarmProvider with ChangeNotifier {
   final AlarmRepository _alarmRepository = AlarmRepository();
-  List<Alarm> get criticalAlarms => _activeAlarms.where((alarm) => alarm.severity == AlarmSeverity.critical).toList();
-
-
   List<Alarm> _activeAlarms = [];
   List<Alarm> _alarmHistory = [];
 
   List<Alarm> get activeAlarms => _activeAlarms;
-
   List<Alarm> get alarmHistory => _alarmHistory;
+  List<Alarm> get criticalAlarms => _activeAlarms.where((alarm) => alarm.severity == AlarmSeverity.critical).toList();
+
+  AlarmProvider() {
+    _loadAlarms();
+  }
+
+  Future<void> _loadAlarms() async {
+    _alarmHistory = await _alarmRepository.getAll();
+    _activeAlarms = _alarmHistory.where((alarm) => !alarm.acknowledged).toList();
+    notifyListeners();
+  }
 
   Future<void> addAlarm(Alarm alarm) async {
     await _alarmRepository.add(alarm.id, alarm);
@@ -35,28 +42,25 @@ class AlarmProvider with ChangeNotifier {
   }
 
   Future<void> acknowledgeAlarm(String alarmId) async {
-    final exists = _activeAlarms.any((alarm) => alarm.id == alarmId);
-
-    if (exists) {
-      final alarm = _activeAlarms.firstWhere((alarm) => alarm.id == alarmId);
-      alarm.acknowledged = true;
-      await _alarmRepository.update(alarmId, alarm);
+    final alarmIndex = _activeAlarms.indexWhere((alarm) => alarm.id == alarmId);
+    if (alarmIndex != -1) {
+      _activeAlarms[alarmIndex].acknowledged = true;
+      await _alarmRepository.update(alarmId, _activeAlarms[alarmIndex]);
+      _activeAlarms.removeAt(alarmIndex);
       notifyListeners();
     }
   }
 
-
-
-
   Future<void> clearAlarm(String alarmId) async {
-    _activeAlarms.removeWhere((alarm) => alarm.id == alarmId && alarm.acknowledged);
     await _alarmRepository.remove(alarmId);
+    _activeAlarms.removeWhere((alarm) => alarm.id == alarmId);
+    _alarmHistory.removeWhere((alarm) => alarm.id == alarmId);
     notifyListeners();
   }
 
   Future<void> clearAllAcknowledgedAlarms() async {
-    _activeAlarms.removeWhere((alarm) => alarm.acknowledged);
     await _alarmRepository.clearAcknowledged();
+    _alarmHistory.removeWhere((alarm) => alarm.acknowledged);
     notifyListeners();
   }
 

@@ -3,7 +3,7 @@ description: An app for planning and scheduling experiments.
 
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -49,11 +49,10 @@ dependencies:
 
 
 
+  crypto: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^2.3.3
-  hive_generator: ^2.0.0
 
 flutter:
   uses-material-design: true
@@ -65,3 +64,4 @@ flutter:
           weight: 700
   assets:
     - assets/ald_system_diagram.png
+    - assets/initial_components.json

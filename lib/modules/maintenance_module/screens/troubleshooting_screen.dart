@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/troubleshooting_step.dart';
 import '../widgets/troubleshooting_tree_widget.dart';
-import '../widgets/app_drawer.dart';
 
 class TroubleshootingScreen extends StatefulWidget {
   @override
