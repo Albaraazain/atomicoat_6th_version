@@ -2,32 +2,31 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../modules/system_operation_also_main_module/models/recipe.dart';
+import 'base_repository.dart';
 
-class RecipeRepository {
-  final CollectionReference _recipesCollection = FirebaseFirestore.instance.collection('recipes');
+class RecipeRepository extends BaseRepository<Recipe> {
+  RecipeRepository() : super('recipes');
 
-  Future<List<Recipe>> getAll() async {
-    QuerySnapshot snapshot = await _recipesCollection.get();
-    return snapshot.docs.map((doc) => Recipe.fromJson(doc.data() as Map<String, dynamic>)).toList();
+  Future<List<Recipe>> getAll(String userId) async {
+    return await super.getAll(userId);
   }
 
-  Future<void> add(String id, Recipe recipe) async {
-    await _recipesCollection.doc(id).set(recipe.toJson());
+  Future<void> add(String userId, String id, Recipe recipe) async {
+    await super.add(userId, id, recipe);
   }
 
-  Future<void> update(String id, Recipe recipe) async {
-    await _recipesCollection.doc(id).update(recipe.toJson());
+  Future<void> update(String userId, String id, Recipe recipe) async {
+    await super.update(userId, id, recipe);
   }
 
-  Future<void> delete(String id) async {
-    await _recipesCollection.doc(id).delete();
+  Future<void> delete(String userId, String id) async {
+    await super.delete(userId, id);
   }
 
-  Future<Recipe?> getById(String id) async {
-    DocumentSnapshot doc = await _recipesCollection.doc(id).get();
-    if (doc.exists) {
-      return Recipe.fromJson(doc.data() as Map<String, dynamic>);
-    }
-    return null;
+  Future<Recipe?> getById(String userId, String id) async {
+    return await super.get(userId, id);
   }
+
+  @override
+  Recipe fromJson(Map<String, dynamic> json) => Recipe.fromJson(json);
 }

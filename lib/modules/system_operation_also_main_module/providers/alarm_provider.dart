@@ -3,9 +3,11 @@
 import 'package:flutter/foundation.dart';
 import '../../../repositories/alarm_repository.dart';
 import '../models/alarm.dart';
+import '../../../services/auth_service.dart';
 
 class AlarmProvider with ChangeNotifier {
   final AlarmRepository _alarmRepository = AlarmRepository();
+  final AuthService _authService;
   List<Alarm> _activeAlarms = [];
   List<Alarm> _alarmHistory = [];
 
@@ -13,21 +15,27 @@ class AlarmProvider with ChangeNotifier {
   List<Alarm> get alarmHistory => _alarmHistory;
   List<Alarm> get criticalAlarms => _activeAlarms.where((alarm) => alarm.severity == AlarmSeverity.critical).toList();
 
-  AlarmProvider() {
+  AlarmProvider(this._authService) {
     _loadAlarms();
   }
 
   Future<void> _loadAlarms() async {
-    _alarmHistory = await _alarmRepository.getAll();
-    _activeAlarms = _alarmHistory.where((alarm) => !alarm.acknowledged).toList();
-    notifyListeners();
+    String? userId = _authService.currentUserId;
+    if (userId != null) {
+      _alarmHistory = await _alarmRepository.getAll(userId);
+      _activeAlarms = _alarmHistory.where((alarm) => !alarm.acknowledged).toList();
+      notifyListeners();
+    }
   }
 
   Future<void> addAlarm(Alarm alarm) async {
-    await _alarmRepository.add(alarm.id, alarm);
-    _activeAlarms.add(alarm);
-    _alarmHistory.add(alarm);
-    notifyListeners();
+    String? userId = _authService.currentUserId;
+    if (userId != null) {
+      await _alarmRepository.add(userId, alarm.id, alarm);
+      _activeAlarms.add(alarm);
+      _alarmHistory.add(alarm);
+      notifyListeners();
+    }
   }
 
   Future<void> addSafetyAlarm(String id, String message, AlarmSeverity severity) async {
@@ -42,27 +50,38 @@ class AlarmProvider with ChangeNotifier {
   }
 
   Future<void> acknowledgeAlarm(String alarmId) async {
-    final alarmIndex = _activeAlarms.indexWhere((alarm) => alarm.id == alarmId);
-    if (alarmIndex != -1) {
-      _activeAlarms[alarmIndex].acknowledged = true;
-      await _alarmRepository.update(alarmId, _activeAlarms[alarmIndex]);
-      _activeAlarms.removeAt(alarmIndex);
-      notifyListeners();
+    String? userId = _authService.currentUserId;
+    if (userId != null) {
+      final alarmIndex = _activeAlarms.indexWhere((alarm) => alarm.id == alarmId);
+      if (alarmIndex != -1) {
+        _activeAlarms[alarmIndex].acknowledged = true;
+        await _alarmRepository.update(userId, alarmId, _activeAlarms[alarmIndex]);
+        _activeAlarms.removeAt(alarmIndex);
+        notifyListeners();
+      }
     }
   }
 
   Future<void> clearAlarm(String alarmId) async {
-    await _alarmRepository.remove(alarmId);
-    _activeAlarms.removeWhere((alarm) => alarm.id == alarmId);
-    _alarmHistory.removeWhere((alarm) => alarm.id == alarmId);
-    notifyListeners();
+    String? userId = _authService.currentUserId;
+    if (userId != null) {
+      await _alarmRepository.remove(userId, alarmId);
+      _activeAlarms.removeWhere((alarm) => alarm.id == alarmId);
+      _alarmHistory.removeWhere((alarm) => alarm.id == alarmId);
+      notifyListeners();
+    }
   }
 
   Future<void> clearAllAcknowledgedAlarms() async {
-    await _alarmRepository.clearAcknowledged();
-    _alarmHistory.removeWhere((alarm) => alarm.acknowledged);
-    notifyListeners();
+    String? userId = _authService.currentUserId;
+    if (userId != null) {
+      await _alarmRepository.clearAcknowledged(userId);
+      _alarmHistory.removeWhere((alarm) => alarm.acknowledged);
+      notifyListeners();
+    }
   }
+
+  // The following methods don't need to change as they work on the local lists
 
   List<Alarm> getAlarmsBySeverity(AlarmSeverity severity) {
     return _activeAlarms.where((alarm) => alarm.severity == severity).toList();
@@ -83,7 +102,7 @@ class AlarmProvider with ChangeNotifier {
         .join('\n');
   }
 
-  Future<Map<String, int>> getAlarmStatistics() async {
+  Map<String, int> getAlarmStatistics() {
     return {
       'total': _alarmHistory.length,
       'critical': _alarmHistory

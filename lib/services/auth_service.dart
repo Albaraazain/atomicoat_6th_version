@@ -7,6 +7,10 @@ import '../enums/user_role.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  // getter for current user
+  User? get currentUser => _auth.currentUser;
+  // getter for current user id
+  String? get currentUserId => _auth.currentUser?.uid;
 
   // Sign up with email and password
   Future<User?> signUp({required String email, required String password, required String name, required UserRole role}) async {
@@ -59,6 +63,7 @@ class AuthService {
   Future<UserRole?> getUserRole(String userId) async {
     try {
       DocumentSnapshot doc = await _firestore.collection('users').doc(userId).get();
+      if (!doc.exists) return null;
       String roleString = doc.get('role') as String;
       return UserRole.values.firstWhere((e) => e.toString().split('.').last == roleString);
     } catch (e) {

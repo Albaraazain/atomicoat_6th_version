@@ -1,23 +1,32 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../modules/system_operation_also_main_module/models/alarm.dart';
 import 'base_repository.dart';
 
 class AlarmRepository extends BaseRepository<Alarm> {
   AlarmRepository() : super('alarms');
 
-  Future<void> remove(String alarmId) async {
-    await delete(alarmId);
+  Future<void> remove(String userId, String alarmId) async {
+    await delete(userId, alarmId);
   }
 
-  Future<void> clearAcknowledged() async {
-    QuerySnapshot acknowledgedAlarms = await collection
+  Future<void> clearAcknowledged(String userId) async {
+    QuerySnapshot acknowledgedAlarms = await getUserCollection(userId)
         .where('acknowledged', isEqualTo: true)
         .get();
 
     for (var doc in acknowledgedAlarms.docs) {
       await doc.reference.delete();
     }
+  }
+
+  Future<List<Alarm>> getActiveAlarms(String userId) async {
+    QuerySnapshot activeAlarms = await getUserCollection(userId)
+        .where('acknowledged', isEqualTo: false)
+        .get();
+
+    return activeAlarms.docs
+        .map((doc) => fromJson(doc.data() as Map<String, dynamic>))
+        .toList();
   }
 
   @override

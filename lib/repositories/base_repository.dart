@@ -6,30 +6,33 @@ abstract class BaseRepository<T> {
 
   BaseRepository(this.collectionName);
 
-  CollectionReference get collection => _firestore.collection(collectionName);
 
-  Future<void> add(String id, T item) async {
-    await collection.doc(id).set((item as dynamic).toJson());
+  CollectionReference getUserCollection(String userId) =>
+      _firestore.collection('users').doc(userId).collection(collectionName);
+
+  Future<void> add(String userId, String id, T item) async {
+    await getUserCollection(userId).doc(id).set((item as dynamic).toJson());
   }
 
-  Future<T?> get(String id) async {
-    DocumentSnapshot doc = await collection.doc(id).get();
+
+  Future<T?> get(String userId, String id) async {
+    DocumentSnapshot doc = await getUserCollection(userId).doc(id).get();
     if (doc.exists) {
       return fromJson(doc.data() as Map<String, dynamic>);
     }
     return null;
   }
 
-  Future<void> update(String id, T item) async {
-    await collection.doc(id).update((item as dynamic).toJson());
+  Future<void> update(String userId, String id, T item) async {
+    await getUserCollection(userId).doc(id).update((item as dynamic).toJson());
   }
 
-  Future<void> delete(String id) async {
-    await collection.doc(id).delete();
+  Future<void> delete(String userId, String id) async {
+    await getUserCollection(userId).doc(id).delete();
   }
 
-  Future<List<T>> getAll() async {
-    QuerySnapshot querySnapshot = await collection.get();
+  Future<List<T>> getAll(String userId) async {
+    QuerySnapshot querySnapshot = await getUserCollection(userId).get();
     return querySnapshot.docs
         .map((doc) => fromJson(doc.data() as Map<String, dynamic>))
         .toList();

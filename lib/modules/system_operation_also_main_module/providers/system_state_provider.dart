@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../../../repositories/system_state_repository.dart';
+import '../../../services/auth_service.dart';
 import '../models/data_point.dart';
 import '../models/safety_error.dart';
 import '../models/system_component.dart';
@@ -16,6 +17,7 @@ import 'alarm_provider.dart';
 
 class SystemStateProvider with ChangeNotifier {
   final SystemStateRepository _systemStateRepository;
+  final AuthService _authService;
   final Map<String, SystemComponent> _components = {};
   Recipe? _activeRecipe;
   int _currentRecipeStepIndex = 0;
@@ -31,6 +33,7 @@ class SystemStateProvider with ChangeNotifier {
       this._recipeProvider,
       this._alarmProvider,
       this._systemStateRepository,
+      this._authService,
       ) {
     _initializeComponents();
     _loadSystemLog();
@@ -171,59 +174,68 @@ class SystemStateProvider with ChangeNotifier {
   }
 
   // Load system log from repository
-  void _loadSystemLog() {
-    // Implementation depends on your repository
-    // For example:
-    // _systemLog.addAll(_systemStateRepository.getSystemLog());
+  Future<void> _loadSystemLog() async {
+    String? userId = _authService.currentUser?.uid;
+    if (userId != null) {
+      _systemLog.addAll(await _systemStateRepository.getSystemLog(userId));
+    }
   }
 
   // Update component state with new values
   void updateComponentState(String componentName, Map<String, double> newState) {
-    print("Updating component state: $componentName, New state: $newState");
+    String? userId = _authService.currentUserId;
+    if (userId != null) {
+      print("Updating component state: $componentName, New state: $newState");
 
-    if (_components.containsKey(componentName)) {
-      var component = _components[componentName]!;
+      if (_components.containsKey(componentName)) {
+        var component = _components[componentName]!;
 
-      // Update the current values
-      component.currentValues.addAll(newState);
+        // Update the current values
+        component.currentValues.addAll(newState);
 
-      // For each updated parameter, add the new value to its history
-      newState.forEach((parameter, value) {
-        if (!component.parameterHistory.containsKey(parameter)) {
-          component.parameterHistory[parameter] = [];
-        }
+        // For each updated parameter, add the new value to its history
+        newState.forEach((parameter, value) {
+          if (!component.parameterHistory.containsKey(parameter)) {
+            component.parameterHistory[parameter] = [];
+          }
 
-        // Add the new data point to the history
-        component.parameterHistory[parameter]!.add(
-          DataPoint(
-            timestamp: DateTime.now(),
-            value: value,
-          ),
-        );
+          // Add the new data point to the history
+          component.parameterHistory[parameter]!.add(
+            DataPoint(
+              timestamp: DateTime.now(),
+              value: value,
+            ),
+          );
 
-        // Keep the history limited to the last 100 entries
-        if (component.parameterHistory[parameter]!.length > 1000) {
-          component.parameterHistory[parameter]!.removeAt(0);
-        }
+          // Keep the history limited to the last 100 entries
+          if (component.parameterHistory[parameter]!.length > 1000) {
+            component.parameterHistory[parameter]!.removeAt(0);
+          }
 
-        print("Added data point to $componentName for $parameter: $value");
-      });
+          print("Added data point to $componentName for $parameter: $value");
+        });
 
-      // Save the updated state to the repository
-      _systemStateRepository.saveComponentState(component);
+        // Save the updated state to the repository
+        _systemStateRepository.saveComponentState(userId, component);
 
-      // Add a log entry
-      addLogEntry('Updated $componentName: $newState', ComponentStatus.normal);
+        // Add a log entry
+        addLogEntry(
+            'Updated $componentName: $newState', ComponentStatus.normal);
 
-      // Notify listeners to update the UI
-      notifyListeners();
+        // Notify listeners to update the UI
+        notifyListeners();
+      }
     }
   }
 
   // Activate a component
   void activateComponent(String componentName) {
+    String? userId = _authService.currentUser?.uid;
+    if (userId == null) return;
+
     if (_components.containsKey(componentName)) {
       _components[componentName]!.isActivated = true;
+      _systemStateRepository.saveComponent(userId, _components[componentName]!);
       addLogEntry('Activated $componentName', ComponentStatus.normal);
       notifyListeners();
     }
@@ -240,24 +252,32 @@ class SystemStateProvider with ChangeNotifier {
 
   // Set a component's set value
   void setComponentSetValue(String componentName, String parameterName, double value) {
-    if (_components.containsKey(componentName)) {
-      _components[componentName]!.setValues[parameterName] = value;
-      _systemStateRepository.saveComponent(_components[componentName]!);
-      addLogEntry('Set $parameterName of $componentName to $value', ComponentStatus.normal);
-      notifyListeners();
+    String? userId = _authService.currentUserId;
+    if (userId != null) {
+      if (_components.containsKey(componentName)) {
+        _components[componentName]!.setValues[parameterName] = value;
+        _systemStateRepository.saveComponent(userId, _components[componentName]!);
+        addLogEntry('Set $parameterName of $componentName to $value', ComponentStatus.normal);
+        notifyListeners();
+      }
     }
   }
 
+
   // Add a log entry
   void addLogEntry(String message, ComponentStatus status) {
-    _systemLog.add(SystemLogEntry(
+    String? userId = _authService.currentUser?.uid;
+    if (userId == null) return;
+
+    SystemLogEntry logEntry = SystemLogEntry(
       timestamp: DateTime.now(),
-      message: message, severity: ComponentStatus.normal,
-    ));
-    // Optionally save to repository
+      message: message,
+      severity: status,
+    );
+    _systemLog.add(logEntry);
+    _systemStateRepository.addLogEntry(userId, logEntry);
     notifyListeners();
   }
-
 
 
   // Retrieve a component by name
@@ -296,15 +316,20 @@ class SystemStateProvider with ChangeNotifier {
 
   /// Fetch historical data for a specific component and update the `parameterHistory`
   Future<void> _fetchComponentHistory(String componentName) async {
+    String? userId = _authService.currentUser?.uid;
+    if (userId == null) return;
+
     final now = DateTime.now();
-    final start = now.subtract(Duration(hours: 24)); // Example: Fetch last 24 hours
+    final start = now.subtract(Duration(hours: 24));
 
     try {
       List<Map<String, dynamic>> historyData = await _systemStateRepository.getComponentHistory(
+        userId,
         componentName,
         start,
         now,
       );
+
 
       final component = _components[componentName];
       if (component != null) {
@@ -370,10 +395,13 @@ class SystemStateProvider with ChangeNotifier {
   }
 
   void _saveCurrentState() {
+    String? userId = _authService.currentUser?.uid;
+    if (userId == null) return;
+
     for (var component in _components.values) {
-      _systemStateRepository.saveComponentState(component);
+      _systemStateRepository.saveComponentState(userId, component);
     }
-    _systemStateRepository.saveSystemState({
+    _systemStateRepository.saveSystemState(userId, {
       'isRunning': _isSystemRunning,
       'activeRecipeId': _activeRecipe?.id,
       'currentRecipeStepIndex': _currentRecipeStepIndex,
@@ -382,7 +410,16 @@ class SystemStateProvider with ChangeNotifier {
 
 
   void logParameterValue(String componentName, String parameter, double value) {
-    _systemStateRepository.saveComponentState(_components[componentName]!);
+    _systemStateRepository.saveComponentState(
+      _authService.currentUserId!,
+      SystemComponent(
+        name: componentName,
+        isActivated: true,
+        currentValues: {parameter: value},
+        setValues: {parameter: value},
+        description: '',
+      ),
+    );
   }
 
   void runDiagnostic(String componentName) {
@@ -458,7 +495,8 @@ class SystemStateProvider with ChangeNotifier {
     stopSystem();
     for (var component in _components.values) {
       component.isActivated = false;
-      _systemStateRepository.saveComponent(component);
+      _systemStateRepository.saveComponentState(
+          _authService.currentUser!.uid, component);
     }
     _alarmProvider.addAlarm(Alarm(
       id: DateTime.now().millisecondsSinceEpoch.toString(),

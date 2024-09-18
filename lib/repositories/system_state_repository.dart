@@ -8,19 +8,18 @@ import '../modules/system_operation_also_main_module/models/system_log_entry.dar
 class SystemStateRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  CollectionReference get _componentsCollection => _firestore.collection('system_components');
-  CollectionReference get _logCollection => _firestore.collection('system_logs');
-  CollectionReference get _safetyErrorCollection => _firestore.collection('safety_errors');
-  CollectionReference get _systemStateCollection => _firestore.collection('system_states');
+  CollectionReference _getUserCollection(String userId, String collectionName) {
+    return _firestore.collection('users').doc(userId).collection(collectionName);
+  }
 
-  Future<void> saveComponentState(SystemComponent component) async {
-    await _componentsCollection.doc(component.name).set({
+  Future<void> saveComponentState(String userId, SystemComponent component) async {
+    await _getUserCollection(userId, 'system_components').doc(component.name).set({
       ...component.toJson(),
       'timestamp': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
 
     // Save historical data
-    await _componentsCollection
+    await _getUserCollection(userId, 'system_components')
         .doc(component.name)
         .collection('history')
         .add({
@@ -31,67 +30,60 @@ class SystemStateRepository {
     });
   }
 
-  Future<void> saveSystemState(Map<String, dynamic> systemState) async {
-    await _systemStateCollection.add({
+  Future<void> saveSystemState(String userId, Map<String, dynamic> systemState) async {
+    await _getUserCollection(userId, 'system_states').add({
       ...systemState,
       'timestamp': FieldValue.serverTimestamp(),
     });
   }
 
-  Future<void> addLogEntry(SystemLogEntry logEntry) async {
-    await _logCollection.add(logEntry.toJson());
+  Future<void> addLogEntry(String userId, SystemLogEntry logEntry) async {
+    await _getUserCollection(userId, 'system_logs').add(logEntry.toJson());
   }
 
-  // Fetch all system components
-  Future<List<SystemComponent>> getAllComponents() async {
-    QuerySnapshot snapshot = await _componentsCollection.get();
+  Future<List<SystemComponent>> getAllComponents(String userId) async {
+    QuerySnapshot snapshot = await _getUserCollection(userId, 'system_components').get();
     return snapshot.docs
         .map((doc) => SystemComponent.fromJson(doc.data() as Map<String, dynamic>))
         .toList();
   }
 
-  // Add or update a system component
-  Future<void> saveComponent(SystemComponent component) async {
-    await _componentsCollection.doc(component.name).set(component.toJson());
+  Future<void> saveComponent(String userId, SystemComponent component) async {
+    await _getUserCollection(userId, 'system_components').doc(component.name).set(component.toJson());
   }
 
-  // Fetch a single system component by name
-  Future<SystemComponent?> getComponentByName(String name) async {
-    DocumentSnapshot doc = await _componentsCollection.doc(name).get();
+  Future<SystemComponent?> getComponentByName(String userId, String name) async {
+    DocumentSnapshot doc = await _getUserCollection(userId, 'system_components').doc(name).get();
     if (doc.exists) {
       return SystemComponent.fromJson(doc.data() as Map<String, dynamic>);
     }
     return null;
   }
 
-  // Fetch all system log entries
-  Future<List<SystemLogEntry>> getAllLogs() async {
-    QuerySnapshot snapshot = await _logCollection.get();
+  Future<List<SystemLogEntry>> getAllLogs(String userId) async {
+    QuerySnapshot snapshot = await _getUserCollection(userId, 'system_logs').get();
     return snapshot.docs
         .map((doc) => SystemLogEntry.fromJson(doc.data() as Map<String, dynamic>))
         .toList();
   }
 
-  // Fetch all safety errors
-  Future<List<SafetyError>> getAllSafetyErrors() async {
-    QuerySnapshot snapshot = await _safetyErrorCollection.get();
+  Future<List<SafetyError>> getAllSafetyErrors(String userId) async {
+    QuerySnapshot snapshot = await _getUserCollection(userId, 'safety_errors').get();
     return snapshot.docs
         .map((doc) => SafetyError.fromJson(doc.data() as Map<String, dynamic>))
         .toList();
   }
 
-  // Add or update a safety error
-  Future<void> saveSafetyError(SafetyError safetyError) async {
-    await _safetyErrorCollection.doc(safetyError.id).set(safetyError.toJson());
+  Future<void> saveSafetyError(String userId, SafetyError safetyError) async {
+    await _getUserCollection(userId, 'safety_errors').doc(safetyError.id).set(safetyError.toJson());
   }
 
-  // Remove a safety error by ID
-  Future<void> removeSafetyError(String id) async {
-    await _safetyErrorCollection.doc(id).delete();
+  Future<void> removeSafetyError(String userId, String id) async {
+    await _getUserCollection(userId, 'safety_errors').doc(id).delete();
   }
 
-  Future<List<Map<String, dynamic>>> getComponentHistory(String componentName, DateTime start, DateTime end) async {
-    final snapshot = await _componentsCollection
+  Future<List<Map<String, dynamic>>> getComponentHistory(String userId, String componentName, DateTime start, DateTime end) async {
+    final snapshot = await _getUserCollection(userId, 'system_components')
         .doc(componentName)
         .collection('history')
         .where('timestamp', isGreaterThanOrEqualTo: start)
@@ -101,5 +93,14 @@ class SystemStateRepository {
     return snapshot.docs.map((doc) => doc.data()).toList();
   }
 
+  Future<List<SystemLogEntry>> getSystemLog(String userId) async {
+    QuerySnapshot snapshot = await _getUserCollection(userId, 'system_logs')
+        .orderBy('timestamp', descending: true)
+        .limit(100) // Limit to last 100 entries, adjust as needed
+        .get();
 
+    return snapshot.docs
+        .map((doc) => SystemLogEntry.fromJson(doc.data() as Map<String, dynamic>))
+        .toList();
+  }
 }

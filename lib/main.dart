@@ -1,6 +1,7 @@
 import 'package:experiment_planner/providers/auth_provider.dart';
 import 'package:experiment_planner/repositories/system_state_repository.dart';
 import 'package:experiment_planner/screens/login_screen.dart';
+import 'package:experiment_planner/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,6 +14,7 @@ import 'modules/maintenance_module/providers/spare_parts_provider.dart';
 import 'modules/maintenance_module/providers/report_provider.dart';
 import 'modules/system_operation_also_main_module/providers/alarm_provider.dart';
 import 'modules/system_operation_also_main_module/providers/recipe_provider.dart';
+import 'modules/system_operation_also_main_module/providers/safety_error_provider.dart';
 import 'modules/system_operation_also_main_module/providers/system_state_provider.dart';
 import 'services/navigation_service.dart';
 
@@ -39,9 +41,18 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
+  final authService = AuthService();
+
   runApp(
-    Provider<NavigationService>(
-      create: (_) => NavigationService(),
+    MultiProvider(
+      providers: [
+        Provider<NavigationService>(
+          create: (_) => NavigationService(),
+        ),
+        Provider<AuthService>(
+          create: (_) => authService,
+        ),
+      ],
       child: MyApp(),
     ),
   );
@@ -49,13 +60,6 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   MyApp({Key? key}) : super(key: key);
-
-  ReportProvider _initReportProvider(BuildContext context) {
-    return ReportProvider(
-      Provider.of<MaintenanceProvider>(context, listen: false),
-      Provider.of<CalibrationProvider>(context, listen: false),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,26 +69,37 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MaintenanceProvider()),
         ChangeNotifierProvider(create: (_) => CalibrationProvider()),
         ChangeNotifierProvider(create: (_) => SparePartsProvider()),
-        ChangeNotifierProvider(create: (_) => RecipeProvider()),
-        ChangeNotifierProvider(create: (_) => AlarmProvider()),
+        ChangeNotifierProvider(
+          create: (context) => SafetyErrorProvider(context.read<AuthService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => RecipeProvider(context.read<AuthService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => AlarmProvider(context.read<AuthService>()),
+        ),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
 
         Provider<SystemStateRepository>(
           create: (_) => SystemStateRepository(),
         ),
-        ChangeNotifierProxyProvider3<RecipeProvider, AlarmProvider, SystemStateRepository, SystemStateProvider>(
+        ChangeNotifierProxyProvider4<RecipeProvider, AlarmProvider, SystemStateRepository, AuthService, SystemStateProvider>(
           create: (context) => SystemStateProvider(
             context.read<RecipeProvider>(),
             context.read<AlarmProvider>(),
             context.read<SystemStateRepository>(),
+            context.read<AuthService>(),
           ),
-          update: (context, recipeProvider, alarmProvider, systemStateRepository, previous) =>
+          update: (context, recipeProvider, alarmProvider, systemStateRepository, authService, previous) =>
           previous!..updateProviders(recipeProvider, alarmProvider),
         ),
 
         // ReportProvider depends on MaintenanceProvider and CalibrationProvider
         ChangeNotifierProxyProvider2<MaintenanceProvider, CalibrationProvider, ReportProvider>(
-          create: (ctx) => _initReportProvider(ctx),
+          create: (ctx) => ReportProvider(
+            Provider.of<MaintenanceProvider>(ctx, listen: false),
+            Provider.of<CalibrationProvider>(ctx, listen: false),
+          ),
           update: (ctx, maintenance, calibration, previous) =>
               ReportProvider(maintenance, calibration),
         ),
@@ -118,6 +133,7 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+
 
   ThemeData _getTeslaTheme() {
     return ThemeData(

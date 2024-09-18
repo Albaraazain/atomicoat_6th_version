@@ -1,73 +1,86 @@
 // lib/modules/system_operation_also_main_module/providers/safety_error_provider.dart
 
 import 'package:flutter/foundation.dart';
-import '../../../repositories/recipe_reposiory.dart';
-import '../models/recipe.dart';
+import '../../../repositories/safety_error_repository.dart';
+import '../models/safety_error.dart';
+import '../../../services/auth_service.dart';
 
-class RecipeProvider with ChangeNotifier {
-  final RecipeRepository _recipeRepository = RecipeRepository();
-  List<Recipe> _recipes = [];
+class SafetyErrorProvider with ChangeNotifier {
+  final SafetyErrorRepository _safetyErrorRepository = SafetyErrorRepository();
+  final AuthService _authService;
+  List<SafetyError> _safetyErrors = [];
 
-  List<Recipe> get recipes => _recipes;
+  List<SafetyError> get safetyErrors => _safetyErrors;
 
-  RecipeProvider() {
-    loadRecipes();
+  SafetyErrorProvider(this._authService) {
+    loadSafetyErrors();
   }
 
-  Future<void> loadRecipes() async {
+  Future<void> loadSafetyErrors() async {
     try {
-      _recipes = await _recipeRepository.getAll();
-      notifyListeners();
-    } catch (e) {
-      print('Error loading recipes: $e');
-    }
-  }
-
-  Future<void> addRecipe(Recipe recipe) async {
-    try {
-      await _recipeRepository.add(recipe.id, recipe);
-      _recipes.add(recipe);
-      notifyListeners();
-    } catch (e) {
-      print('Error adding recipe: $e');
-      rethrow; // Rethrow the error so it can be handled in the UI
-    }
-  }
-
-  Future<void> updateRecipe(Recipe updatedRecipe) async {
-    try {
-      await _recipeRepository.update(updatedRecipe.id, updatedRecipe);
-      int index = _recipes.indexWhere((recipe) => recipe.id == updatedRecipe.id);
-      if (index != -1) {
-        _recipes[index] = updatedRecipe;
+      String? userId = _authService.currentUserId;
+      if (userId != null) {
+        _safetyErrors = await _safetyErrorRepository.getAll(userId);
         notifyListeners();
-      } else {
-        throw Exception('Recipe not found for update');
       }
     } catch (e) {
-      print('Error updating recipe: $e');
+      print('Error loading safety errors: $e');
+    }
+  }
+
+  Future<void> addSafetyError(SafetyError safetyError) async {
+    try {
+      String? userId = _authService.currentUserId;
+      if (userId != null) {
+        await _safetyErrorRepository.add(userId, safetyError.id, safetyError);
+        _safetyErrors.add(safetyError);
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error adding safety error: $e');
       rethrow;
     }
   }
 
-  Future<void> deleteRecipe(String id) async {
+  Future<void> updateSafetyError(SafetyError updatedSafetyError) async {
     try {
-      await _recipeRepository.delete(id);
-      _recipes.removeWhere((recipe) => recipe.id == id);
-      notifyListeners();
+      String? userId = _authService.currentUserId;
+      if (userId != null) {
+        await _safetyErrorRepository.update(userId, updatedSafetyError.id, updatedSafetyError);
+        int index = _safetyErrors.indexWhere((safetyError) => safetyError.id == updatedSafetyError.id);
+        if (index != -1) {
+          _safetyErrors[index] = updatedSafetyError;
+          notifyListeners();
+        } else {
+          throw Exception('Safety error not found for update');
+        }
+      }
     } catch (e) {
-      print('Error deleting recipe: $e');
+      print('Error updating safety error: $e');
       rethrow;
     }
   }
 
-  Recipe? getRecipeById(String id) {
+  Future<void> deleteSafetyError(String id) async {
     try {
-      return _recipes.firstWhere((recipe) => recipe.id == id);
+      String? userId = _authService.currentUserId;
+      if (userId != null) {
+        await _safetyErrorRepository.delete(userId, id);
+        _safetyErrors.removeWhere((safetyError) => safetyError.id == id);
+        notifyListeners();
+      }
     } catch (e) {
-      print('Recipe not found: $e');
+      print('Error deleting safety error: $e');
+      rethrow;
+    }
+  }
+
+  SafetyError? getSafetyErrorById(String id) {
+    try {
+      return _safetyErrors.firstWhere((safetyError) => safetyError.id == id);
+    } catch (e) {
+      print('Safety error not found: $e');
       return null;
     }
   }
-
 }

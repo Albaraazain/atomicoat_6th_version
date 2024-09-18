@@ -11,10 +11,20 @@ class AuthProvider with ChangeNotifier {
   UserRole? _userRole;
 
   User? get user => _user;
+  String? get userId => _user?.uid;
   UserRole? get userRole => _userRole;
   bool get isAuthenticated => _user != null;
 
+  // current user id getter
+
+
   AuthProvider() {
+    _init();
+  }
+
+  Future<void> _init() async {
+    _user = _authService.currentUser;
+    await _updateUserRole();
     _authService.authStateChanges.listen((User? user) {
       _user = user;
       _updateUserRole();
@@ -26,6 +36,8 @@ class AuthProvider with ChangeNotifier {
     if (_user != null) {
       _userRole = await _authService.getUserRole(_user!.uid);
       notifyListeners();
+    } else {
+      _userRole = null;
     }
   }
 
@@ -63,6 +75,12 @@ class AuthProvider with ChangeNotifier {
     await _authService.signOut();
     _user = null;
     _userRole = null;
+    notifyListeners();
+  }
+
+  Future<void> refreshUser() async {
+    _user = _authService.currentUser;
+    await _updateUserRole();
     notifyListeners();
   }
 }

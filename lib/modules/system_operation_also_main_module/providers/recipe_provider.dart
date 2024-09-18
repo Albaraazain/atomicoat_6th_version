@@ -2,22 +2,27 @@
 
 import 'package:flutter/foundation.dart';
 import '../../../repositories/recipe_reposiory.dart';
+import '../../../services/auth_service.dart';
 import '../models/recipe.dart';
 
 class RecipeProvider with ChangeNotifier {
   final RecipeRepository _recipeRepository = RecipeRepository();
+  final AuthService _authService;
   List<Recipe> _recipes = [];
 
   List<Recipe> get recipes => _recipes;
 
-  RecipeProvider() {
+  RecipeProvider(this._authService) {
     loadRecipes();
   }
 
   Future<void> loadRecipes() async {
     try {
-      _recipes = await _recipeRepository.getAll();
-      notifyListeners();
+      String? userId = _authService.currentUser?.uid;
+      if (userId != null) {
+        _recipes = await _recipeRepository.getAll(userId);
+        notifyListeners();
+      }
     } catch (e) {
       print('Error loading recipes: $e');
     }
@@ -25,9 +30,12 @@ class RecipeProvider with ChangeNotifier {
 
   Future<void> addRecipe(Recipe recipe) async {
     try {
-      await _recipeRepository.add(recipe.id, recipe);
-      _recipes.add(recipe);
-      notifyListeners();
+      String? userId = _authService.currentUser?.uid;
+      if (userId != null) {
+        await _recipeRepository.add(userId, recipe.id, recipe);
+        _recipes.add(recipe);
+        notifyListeners();
+      }
     } catch (e) {
       print('Error adding recipe: $e');
       rethrow;
@@ -36,13 +44,16 @@ class RecipeProvider with ChangeNotifier {
 
   Future<void> updateRecipe(Recipe updatedRecipe) async {
     try {
-      await _recipeRepository.update(updatedRecipe.id, updatedRecipe);
-      int index = _recipes.indexWhere((recipe) => recipe.id == updatedRecipe.id);
-      if (index != -1) {
-        _recipes[index] = updatedRecipe;
-        notifyListeners();
-      } else {
-        throw Exception('Recipe not found for update');
+      String? userId = _authService.currentUser?.uid;
+      if (userId != null) {
+        await _recipeRepository.update(userId, updatedRecipe.id, updatedRecipe);
+        int index = _recipes.indexWhere((recipe) => recipe.id == updatedRecipe.id);
+        if (index != -1) {
+          _recipes[index] = updatedRecipe;
+          notifyListeners();
+        } else {
+          throw Exception('Recipe not found for update');
+        }
       }
     } catch (e) {
       print('Error updating recipe: $e');
@@ -50,12 +61,14 @@ class RecipeProvider with ChangeNotifier {
     }
   }
 
-
   Future<void> deleteRecipe(String id) async {
     try {
-      await _recipeRepository.delete(id);
-      _recipes.removeWhere((recipe) => recipe.id == id);
-      notifyListeners();
+      String? userId = _authService.currentUser?.uid;
+      if (userId != null) {
+        await _recipeRepository.delete(userId, id);
+        _recipes.removeWhere((recipe) => recipe.id == id);
+        notifyListeners();
+      }
     } catch (e) {
       print('Error deleting recipe: $e');
       rethrow;
@@ -70,6 +83,8 @@ class RecipeProvider with ChangeNotifier {
       return null;
     }
   }
+
+
 
   List<Recipe> getRecipeVersions(String id) {
     return _recipes.where((recipe) => recipe.id == id).toList();
