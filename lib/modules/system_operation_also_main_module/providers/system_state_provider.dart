@@ -15,6 +15,23 @@ import '../services/ald_system_simulation_service.dart';
 import 'recipe_provider.dart';
 import 'alarm_provider.dart';
 
+enum NotificationSeverity { info, warning, error }
+
+class Notification {
+  final String id;
+  final String message;
+  final NotificationSeverity severity;
+  final DateTime timestamp;
+
+
+  Notification({
+    required this.id,
+    required this.message,
+    required this.severity,
+    required this.timestamp,
+  });
+}
+
 class SystemStateProvider with ChangeNotifier {
   final SystemStateRepository _systemStateRepository;
   final AuthService _authService;
@@ -28,6 +45,20 @@ class SystemStateProvider with ChangeNotifier {
   late RecipeProvider _recipeProvider;
   late AlarmProvider _alarmProvider;
   Timer? _stateUpdateTimer;
+  double _systemHealth = 1.0;
+  List<Notification> _notifications = [];
+  List<String> _dashboardWidgetOrder = [];
+
+  final Map<String, double> _precursorLevels = {
+    'Precursor A': 100.0,
+    'Precursor B': 100.0,
+  };
+
+  final Map<String, Map<String, double>> _vacuumSystemStatus = {
+    'Roughing Pump': {'speed': 0.0, 'pressure': 760.0},
+    'Turbo Pump': {'speed': 0.0, 'pressure': 1e-3},
+    'Chamber': {'pressure': 1e-3},
+  };
 
   SystemStateProvider(
       this._recipeProvider,
@@ -48,6 +79,12 @@ class SystemStateProvider with ChangeNotifier {
   bool get isSystemRunning => _isSystemRunning;
   List<SystemLogEntry> get systemLog => _systemLog;
   List<Alarm> get activeAlarms => _alarmProvider.activeAlarms;
+  double get systemHealth => _systemHealth;
+  List<Notification> get notifications => _notifications;
+  List<String> get dashboardWidgetOrder => _dashboardWidgetOrder;
+  Map<String, double> get precursorLevels => _precursorLevels;
+  Map<String, Map<String, double>> get vacuumSystemStatus => _vacuumSystemStatus;
+
 
   // Initialize all system components with their parameters
   void _initializeComponents() {
@@ -173,6 +210,157 @@ class SystemStateProvider with ChangeNotifier {
     );
   }
 
+  void updateVacuumSystemStatus(String component, String parameter, double value) {
+    if (_vacuumSystemStatus.containsKey(component) &&
+        _vacuumSystemStatus[component]!.containsKey(parameter)) {
+      _vacuumSystemStatus[component]![parameter] = value;
+      notifyListeners();
+    }
+  }
+
+  // Add this method to simulate vacuum system changes
+  void simulateVacuumSystem() {
+    // Simulate roughing pump
+    double roughingPumpSpeed = _vacuumSystemStatus['Roughing Pump']!['speed']!;
+    double roughingPumpPressure = _vacuumSystemStatus['Roughing Pump']!['pressure']!;
+    if (roughingPumpSpeed < 100.0) {
+      roughingPumpSpeed += 1.0;
+      updateVacuumSystemStatus('Roughing Pump', 'speed', roughingPumpSpeed);
+    }
+    if (roughingPumpPressure > 1e-3) {
+      roughingPumpPressure *= 0.9;
+      updateVacuumSystemStatus('Roughing Pump', 'pressure', roughingPumpPressure);
+    }
+
+    // Simulate turbo pump
+    double turboPumpSpeed = _vacuumSystemStatus['Turbo Pump']!['speed']!;
+    double turboPumpPressure = _vacuumSystemStatus['Turbo Pump']!['pressure']!;
+    if (roughingPumpPressure < 1.0 && turboPumpSpeed < 1000.0) {
+      turboPumpSpeed += 10.0;
+      updateVacuumSystemStatus('Turbo Pump', 'speed', turboPumpSpeed);
+    }
+    if (turboPumpSpeed > 500.0 && turboPumpPressure > 1e-8) {
+      turboPumpPressure *= 0.9;
+      updateVacuumSystemStatus('Turbo Pump', 'pressure', turboPumpPressure);
+    }
+
+    // Update chamber pressure
+    double chamberPressure = _vacuumSystemStatus['Chamber']!['pressure']!;
+    if (turboPumpSpeed > 900.0 && chamberPressure > 1e-7) {
+      chamberPressure *= 0.95;
+      updateVacuumSystemStatus('Chamber', 'pressure', chamberPressure);
+    }
+  }
+
+  void updatePrecursorLevel(String precursor, double level) {
+    if (_precursorLevels.containsKey(precursor)) {
+      _precursorLevels[precursor] = level;
+      if (level < 20.0) {
+        addNotification('$precursor level is low (${level.toStringAsFixed(1)}%)', NotificationSeverity.warning);
+      }
+      notifyListeners();
+    }
+  }
+
+  // Add this method to simulate precursor consumption
+  void simulatePrecursorConsumption() {
+    _precursorLevels.forEach((precursor, level) {
+      double newLevel = level - 0.1;
+      if (newLevel < 0) newLevel = 0;
+      updatePrecursorLevel(precursor, newLevel);
+    });
+  }
+
+  // System Health methods
+  void _calculateSystemHealth() {
+    double totalHealth = 0;
+    int componentCount = 0;
+
+    _components.forEach((_, component) {
+      if (component.isActivated) {
+        totalHealth += _getComponentHealth(component);
+        componentCount++;
+      }
+    });
+
+    _systemHealth = componentCount > 0 ? totalHealth / componentCount : 1.0;
+    notifyListeners();
+  }
+
+  double _getComponentHealth(SystemComponent component) {
+    // Implement component-specific health calculation logic here
+    // This is a simplified example
+    if (!component.isActivated) return 0.0;
+
+    double health = 1.0;
+    component.currentValues.forEach((parameter, value) {
+      double setPoint = component.setValues[parameter] ?? value;
+      double deviation = (value - setPoint).abs() / setPoint;
+      health *= (1 - deviation);
+    });
+
+    return health;
+  }
+
+  // Customizable Dashboard methods
+  void updateDashboardWidgetOrder(List<String> newOrder) {
+    _dashboardWidgetOrder = newOrder;
+    _systemStateRepository.saveDashboardWidgetOrder(_authService.currentUserId!, newOrder);
+    notifyListeners();
+  }
+
+  Future<void> loadDashboardWidgetOrder() async {
+    String? userId = _authService.currentUserId;
+    if (userId != null) {
+      _dashboardWidgetOrder = await _systemStateRepository.getDashboardWidgetOrder(userId);
+      notifyListeners();
+    }
+  }
+
+  // Quick Actions methods
+  void runDiagnostic(String componentName) async {
+    addNotification('Running diagnostic for $componentName', NotificationSeverity.info);
+
+    // Simulate a diagnostic run
+    await Future.delayed(Duration(seconds: 2));
+
+    bool diagnosticPassed = true; // Replace with actual diagnostic logic
+
+    if (diagnosticPassed) {
+      addNotification('Diagnostic for $componentName completed successfully', NotificationSeverity.info);
+    } else {
+      addNotification('Diagnostic for $componentName failed', NotificationSeverity.warning);
+    }
+  }
+
+  // Notification methods
+  void addNotification(String message, NotificationSeverity severity) {
+    Notification notification = Notification(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      message: message,
+      severity: severity,
+      timestamp: DateTime.now(),
+    );
+    _notifications.add(notification);
+    _systemStateRepository.saveNotification(_authService.currentUserId!, notification);
+    notifyListeners();
+  }
+
+  void dismissNotification(String id) {
+    _notifications.removeWhere((notification) => notification.id == id);
+    _systemStateRepository.removeNotification(_authService.currentUserId!, id);
+    notifyListeners();
+  }
+
+  Future<void> loadNotifications() async {
+    String? userId = _authService.currentUserId;
+    if (userId != null) {
+      _notifications = await _systemStateRepository.getNotifications(userId);
+      notifyListeners();
+    }
+  }
+
+
   // Load system log from repository
   Future<void> _loadSystemLog() async {
     String? userId = _authService.currentUser?.uid;
@@ -221,6 +409,8 @@ class SystemStateProvider with ChangeNotifier {
         // Add a log entry
         addLogEntry(
             'Updated $componentName: $newState', ComponentStatus.normal);
+
+        _calculateSystemHealth();
 
         // Notify listeners to update the UI
         notifyListeners();
@@ -361,6 +551,8 @@ class SystemStateProvider with ChangeNotifier {
       _simulationService.startSimulation();
       _startContinuousStateLogging();
       addLogEntry('System started', ComponentStatus.normal);
+      addNotification('System started', NotificationSeverity.info);
+      _calculateSystemHealth();
       notifyListeners();
     } else {
       _alarmProvider.addAlarm(Alarm(
@@ -370,6 +562,7 @@ class SystemStateProvider with ChangeNotifier {
         timestamp: DateTime.now(),
       ));
     }
+
   }
 
   void stopSystem() {
@@ -380,6 +573,8 @@ class SystemStateProvider with ChangeNotifier {
     _stopContinuousStateLogging();
     _deactivateAllValves();
     addLogEntry('System stopped', ComponentStatus.normal);
+    addNotification('System stopped', NotificationSeverity.info);
+    _calculateSystemHealth();
     notifyListeners();
   }
 
@@ -422,19 +617,6 @@ class SystemStateProvider with ChangeNotifier {
     );
   }
 
-  void runDiagnostic(String componentName) {
-    final component = _components[componentName];
-    if (component != null) {
-      addLogEntry(
-          'Running diagnostic for ${component.name}', ComponentStatus.normal);
-      Future.delayed(const Duration(seconds: 2), () {
-        addLogEntry(
-            '${component.name} diagnostic completed: All systems nominal',
-            ComponentStatus.normal);
-        notifyListeners();
-      });
-    }
-  }
 
   void updateProviders(
       RecipeProvider recipeProvider, AlarmProvider alarmProvider) {
