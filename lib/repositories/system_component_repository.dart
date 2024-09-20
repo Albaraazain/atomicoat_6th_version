@@ -7,27 +7,31 @@ import 'base_repository.dart';
 class SystemComponentRepository extends BaseRepository<SystemComponent> {
   SystemComponentRepository() : super('system_components');
 
-  Future<List<SystemComponent>> getAll(String userId) async {
-    return await super.getAll(userId);
+  @override
+  Future<List<SystemComponent>> getAll({String? userId}) async {
+    return await super.getAll(userId: userId);
   }
 
-  Future<void> add(String userId, String name, SystemComponent component) async {
-    await super.add(userId, name, component);
+  @override
+  Future<void> add(String name, SystemComponent component, {String? userId}) async {
+    await super.add(name, component, userId: userId);
   }
 
-  Future<void> update(String userId, String name, SystemComponent component) async {
-    await super.update(userId, name, component);
+  @override
+  Future<void> update(String name, SystemComponent component, {String? userId}) async {
+    await super.update(name, component, userId: userId);
   }
 
-  Future<void> delete(String userId, String name) async {
-    await super.delete(userId, name);
+  @override
+  Future<void> delete(String name, {String? userId}) async {
+    await super.delete(name, userId: userId);
   }
 
-  Future<SystemComponent?> getByName(String userId, String name) async {
-    return await super.get(userId, name);
+  Future<SystemComponent?> getByName(String name, {String? userId}) async {
+    return await super.get(name, userId: userId);
   }
 
-  Future<void> updateComponentState(String userId, String name, Map<String, double> newState) async {
+  Future<void> updateComponentState(String name, Map<String, double> newState, {required String userId}) async {
     await getUserCollection(userId).doc(name).update({'currentValues': newState});
   }
 

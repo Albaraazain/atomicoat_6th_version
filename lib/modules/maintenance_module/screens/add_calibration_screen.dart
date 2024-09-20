@@ -1,6 +1,10 @@
 // lib/screens/add_calibration_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../enums/navigation_item.dart';
+import '../../../utils/navigation_helper.dart';
+import '../../../widgets/app_drawer.dart';
+import '../../../widgets/custom_app_bar.dart';
 import '../providers/calibration_provider.dart';
 import '../providers/maintenance_provider.dart';
 import '../models/calibration_record.dart';
@@ -24,6 +28,12 @@ class _AddCalibrationScreenState extends State<AddCalibrationScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+        ),
         title: Text('Add Calibration Record'),
       ),
       body: Padding(

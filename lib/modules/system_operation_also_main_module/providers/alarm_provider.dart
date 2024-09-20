@@ -22,8 +22,8 @@ class AlarmProvider with ChangeNotifier {
   Future<void> _loadAlarms() async {
     String? userId = _authService.currentUserId;
     if (userId != null) {
-      _alarmHistory = await _alarmRepository.getAll(userId);
-      _activeAlarms = _alarmHistory.where((alarm) => !alarm.acknowledged).toList();
+      _alarmHistory = await _alarmRepository.getAll(userId: userId);
+      _activeAlarms = await _alarmRepository.getActiveAlarms(userId);
       notifyListeners();
     }
   }
@@ -31,7 +31,7 @@ class AlarmProvider with ChangeNotifier {
   Future<void> addAlarm(Alarm alarm) async {
     String? userId = _authService.currentUserId;
     if (userId != null) {
-      await _alarmRepository.add(userId, alarm.id, alarm);
+      await _alarmRepository.add(alarm.id, alarm, userId: userId);
       _activeAlarms.add(alarm);
       _alarmHistory.add(alarm);
       notifyListeners();
@@ -54,9 +54,13 @@ class AlarmProvider with ChangeNotifier {
     if (userId != null) {
       final alarmIndex = _activeAlarms.indexWhere((alarm) => alarm.id == alarmId);
       if (alarmIndex != -1) {
-        _activeAlarms[alarmIndex].acknowledged = true;
-        await _alarmRepository.update(userId, alarmId, _activeAlarms[alarmIndex]);
+        final updatedAlarm = _activeAlarms[alarmIndex].copyWith(acknowledged: true);
+        await _alarmRepository.update(alarmId, updatedAlarm, userId: userId);
         _activeAlarms.removeAt(alarmIndex);
+        final historyIndex = _alarmHistory.indexWhere((alarm) => alarm.id == alarmId);
+        if (historyIndex != -1) {
+          _alarmHistory[historyIndex] = updatedAlarm;
+        }
         notifyListeners();
       }
     }
@@ -65,7 +69,7 @@ class AlarmProvider with ChangeNotifier {
   Future<void> clearAlarm(String alarmId) async {
     String? userId = _authService.currentUserId;
     if (userId != null) {
-      await _alarmRepository.remove(userId, alarmId);
+      await _alarmRepository.remove(alarmId, userId: userId);
       _activeAlarms.removeWhere((alarm) => alarm.id == alarmId);
       _alarmHistory.removeWhere((alarm) => alarm.id == alarmId);
       notifyListeners();
@@ -81,7 +85,7 @@ class AlarmProvider with ChangeNotifier {
     }
   }
 
-  // The following methods don't need to change as they work on the local lists
+  // The following methods work on the local lists
 
   List<Alarm> getAlarmsBySeverity(AlarmSeverity severity) {
     return _activeAlarms.where((alarm) => alarm.severity == severity).toList();

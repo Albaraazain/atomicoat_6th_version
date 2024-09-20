@@ -1,6 +1,8 @@
 import 'package:experiment_planner/providers/auth_provider.dart';
 import 'package:experiment_planner/repositories/system_state_repository.dart';
+import 'package:experiment_planner/screens/admin_dashboard_screen.dart';
 import 'package:experiment_planner/screens/login_screen.dart';
+import 'package:experiment_planner/screens/main_screen.dart';
 import 'package:experiment_planner/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:animations/animations.dart';
 
 // Import Providers
+import 'enums/user_role.dart';
 import 'modules/maintenance_module/providers/maintenance_provider.dart';
 import 'modules/maintenance_module/providers/calibration_provider.dart';
 import 'modules/maintenance_module/providers/spare_parts_provider.dart';
@@ -42,47 +45,21 @@ void main() async {
   await Firebase.initializeApp();
 
   final authService = AuthService();
+  final navigationService = NavigationService();
 
   runApp(
     MultiProvider(
       providers: [
-        Provider<NavigationService>(
-          create: (_) => NavigationService(),
-        ),
-        Provider<AuthService>(
-          create: (_) => authService,
-        ),
-      ],
-      child: MyApp(),
-    ),
-  );
-}
-
-class MyApp extends StatelessWidget {
-  MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        // Maintenance Module Providers
+        Provider<NavigationService>(create: (_) => NavigationService()),
+        Provider<AuthService>(create: (_) => authService),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => MaintenanceProvider()),
         ChangeNotifierProvider(create: (_) => CalibrationProvider()),
         ChangeNotifierProvider(create: (_) => SparePartsProvider()),
-        ChangeNotifierProvider(
-          create: (context) => SafetyErrorProvider(context.read<AuthService>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => RecipeProvider(context.read<AuthService>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => AlarmProvider(context.read<AuthService>()),
-        ),
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-
-        Provider<SystemStateRepository>(
-          create: (_) => SystemStateRepository(),
-        ),
+        ChangeNotifierProvider(create: (context) => SafetyErrorProvider(context.read<AuthService>())),
+        ChangeNotifierProvider(create: (context) => RecipeProvider(context.read<AuthService>())),
+        ChangeNotifierProvider(create: (context) => AlarmProvider(context.read<AuthService>())),
+        Provider<SystemStateRepository>(create: (_) => SystemStateRepository()),
         ChangeNotifierProxyProvider4<RecipeProvider, AlarmProvider, SystemStateRepository, AuthService, SystemStateProvider>(
           create: (context) => SystemStateProvider(
             context.read<RecipeProvider>(),
@@ -93,8 +70,6 @@ class MyApp extends StatelessWidget {
           update: (context, recipeProvider, alarmProvider, systemStateRepository, authService, previous) =>
           previous!..updateProviders(recipeProvider, alarmProvider),
         ),
-
-        // ReportProvider depends on MaintenanceProvider and CalibrationProvider
         ChangeNotifierProxyProvider2<MaintenanceProvider, CalibrationProvider, ReportProvider>(
           create: (ctx) => ReportProvider(
             Provider.of<MaintenanceProvider>(ctx, listen: false),
@@ -104,250 +79,185 @@ class MyApp extends StatelessWidget {
               ReportProvider(maintenance, calibration),
         ),
       ],
-      child: MaterialApp(
-        title: 'Tesla ALD Machine Maintenance',
-        navigatorKey: Provider.of<NavigationService>(context, listen: false).navigatorKey,
-        debugShowCheckedModeBanner: false,
-        theme: _getTeslaTheme(),
-        home: Consumer<AuthProvider>(
-          builder: (context, authProvider, _) {
-            if (authProvider.isAuthenticated) {
-              return MainScreen();
-            } else {
-              return LoginScreen();
-            }
-          },
-        ),
-        routes: {
-          '/maintenance': (ctx) => MaintenanceHomeScreen(),
-          '/calibration': (ctx) => CalibrationScreen(),
-          '/troubleshooting': (ctx) => TroubleshootingScreen(),
-          '/spare_parts': (ctx) => SparePartsScreen(),
-          '/documentation': (ctx) => DocumentationScreen(),
-          '/reporting': (ctx) => ReportingScreen(),
-          '/remote_assistance': (ctx) => RemoteAssistanceScreen(),
-          '/safety_procedures': (ctx) => SafetyProceduresScreen(),
-          '/system_overview': (ctx) => SystemOverviewScreen(),
-          '/recipe_management': (ctx) => RecipeManagementScreen(),
+      child: Builder(  // Add this Builder widget
+        builder: (BuildContext context) {
+          return MaterialApp(
+            title: 'ALD Machine Maintenance',
+            navigatorKey: Provider.of<NavigationService>(context, listen: false).navigatorKey,
+            debugShowCheckedModeBanner: false,
+            theme: _getTeslaTheme(),
+            home: Consumer<AuthProvider>(
+              builder: (BuildContext context, authProvider, _) {
+                if (authProvider.isLoading()) {
+                  return _buildLoadingScreen();
+                }
+                if (authProvider.isAuthenticated) {
+                  if (authProvider.userStatus == 'approved' || authProvider.userRole == 'active') {
+                    return MainScreen();
+                  } else if (authProvider.userStatus == 'pending') {
+                    return _buildPendingApprovalScreen(context);
+                  } else {
+                    return _buildAccessDeniedScreen(context);
+                  }
+                } else {
+                  return LoginScreen();
+                }
+              },
+            ),
+          );
         },
       ),
-    );
-  }
-
-
-  ThemeData _getTeslaTheme() {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      colorScheme: ColorScheme.dark(
-        primary: Color(0xFF2C2C2C),    // Dark Grey
-        secondary: Color(0xFF4A4A4A), // Very Dark Grey (Almost Black)
-        surface: Color(0xFF1E1E1E),
-        onSurface: Colors.white,
-      ),
-      scaffoldBackgroundColor: Color(0xFF121212),
-      fontFamily: GoogleFonts.roboto().fontFamily,
-      textTheme: TextTheme(
-        displayLarge: GoogleFonts.roboto(fontSize: 56, fontWeight: FontWeight.w300, letterSpacing: -1.5),
-        displayMedium: GoogleFonts.roboto(fontSize: 45, fontWeight: FontWeight.w300, letterSpacing: -0.5),
-        displaySmall: GoogleFonts.roboto(fontSize: 36, fontWeight: FontWeight.w400),
-        headlineMedium: GoogleFonts.roboto(fontSize: 28, fontWeight: FontWeight.w400, letterSpacing: 0.25),
-        headlineSmall: GoogleFonts.roboto(fontSize: 24, fontWeight: FontWeight.w400),
-        titleLarge: GoogleFonts.roboto(fontSize: 20, fontWeight: FontWeight.w500, letterSpacing: 0.15),
-        titleMedium: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400, letterSpacing: 0.15),
-        titleSmall: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w500, letterSpacing: 0.1),
-        bodyLarge: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400, letterSpacing: 0.5),
-        bodyMedium: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w400, letterSpacing: 0.25),
-        labelLarge: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w500, letterSpacing: 1.25),
-        bodySmall: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.w400, letterSpacing: 0.4),
-        labelSmall: GoogleFonts.roboto(fontSize: 10, fontWeight: FontWeight.w400, letterSpacing: 1.5),
-      ).apply(
-        bodyColor: Colors.white,
-        displayColor: Colors.white,
-      ),
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        titleTextStyle: GoogleFonts.roboto(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.15,
-        ),
-        iconTheme: IconThemeData(color: Colors.white),
-      ),
-      cardTheme: CardTheme(
-        color: Color(0xFF1E1E1E),
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: Color(0xFF2C2C2C),
-          textStyle: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w500, letterSpacing: 1.25),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-        ),
-      ),
-      drawerTheme: DrawerThemeData(
-        backgroundColor: Color(0xFF1E1E1E),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.horizontal(right: Radius.circular(0))),
-      ),
-      iconTheme: IconThemeData(color: Colors.white, size: 24),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: Color(0xFF2C2C2C),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-        hintStyle: TextStyle(color: Colors.white70),
-      ),
-      dividerTheme: DividerThemeData(
-        color: Color(0xFF2C2C2C),
-        thickness: 1,
-      ),
-    );
-  }
+    ),
+  );
 }
 
-class MainScreen extends StatefulWidget {
-  @override
-  _MainScreenState createState() => _MainScreenState();
+ThemeData _getTeslaTheme() {
+  return ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    colorScheme: ColorScheme.dark(
+      primary: Color(0xFF2C2C2C),    // Dark Grey
+      secondary: Color(0xFF4A4A4A), // Very Dark Grey (Almost Black)
+      surface: Color(0xFF1E1E1E),
+      onSurface: Colors.white,
+    ),
+    scaffoldBackgroundColor: Color(0xFF121212),
+    fontFamily: GoogleFonts.roboto().fontFamily,
+    textTheme: TextTheme(
+      displayLarge: GoogleFonts.roboto(fontSize: 56, fontWeight: FontWeight.w300, letterSpacing: -1.5),
+      displayMedium: GoogleFonts.roboto(fontSize: 45, fontWeight: FontWeight.w300, letterSpacing: -0.5),
+      displaySmall: GoogleFonts.roboto(fontSize: 36, fontWeight: FontWeight.w400),
+      headlineMedium: GoogleFonts.roboto(fontSize: 28, fontWeight: FontWeight.w400, letterSpacing: 0.25),
+      headlineSmall: GoogleFonts.roboto(fontSize: 24, fontWeight: FontWeight.w400),
+      titleLarge: GoogleFonts.roboto(fontSize: 20, fontWeight: FontWeight.w500, letterSpacing: 0.15),
+      titleMedium: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400, letterSpacing: 0.15),
+      titleSmall: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w500, letterSpacing: 0.1),
+      bodyLarge: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400, letterSpacing: 0.5),
+      bodyMedium: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w400, letterSpacing: 0.25),
+      labelLarge: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w500, letterSpacing: 1.25),
+      bodySmall: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.w400, letterSpacing: 0.4),
+      labelSmall: GoogleFonts.roboto(fontSize: 10, fontWeight: FontWeight.w400, letterSpacing: 1.5),
+    ).apply(
+      bodyColor: Colors.white,
+      displayColor: Colors.white,
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: true,
+      titleTextStyle: GoogleFonts.roboto(
+        color: Colors.white,
+        fontSize: 20,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.15,
+      ),
+      iconTheme: IconThemeData(color: Colors.white),
+    ),
+    cardTheme: CardTheme(
+      color: Color(0xFF1E1E1E),
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white,
+        backgroundColor: Color(0xFF2C2C2C),
+        textStyle: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w500, letterSpacing: 1.25),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+      ),
+    ),
+    drawerTheme: DrawerThemeData(
+      backgroundColor: Color(0xFF1E1E1E),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.horizontal(right: Radius.circular(0))),
+    ),
+    iconTheme: IconThemeData(color: Colors.white, size: 24),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Color(0xFF2C2C2C),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide.none,
+      ),
+      hintStyle: TextStyle(color: Colors.white70),
+    ),
+    dividerTheme: DividerThemeData(
+      color: Color(0xFF2C2C2C),
+      thickness: 1,
+    ),
+  );
 }
 
-class _MainScreenState extends State<MainScreen> {
-  NavigationItem _selectedItem = NavigationItem.mainDashboard;
-
-  void _selectNavigationItem(NavigationItem item) {
-    setState(() {
-      _selectedItem = item;
-    });
-    if (MediaQuery.of(context).size.width <= 800) {
-      Navigator.of(context).pop();
-    }
-  }
-
-  Widget _getSelectedScreen() {
-    switch (_selectedItem) {
-      case NavigationItem.mainDashboard:
-        return MainDashboard();
-      case NavigationItem.recipeManagement:
-        return RecipeManagementScreen();
-      case NavigationItem.calibration:
-        return CalibrationScreen();
-      case NavigationItem.reporting:
-        return ReportingScreen();
-      case NavigationItem.troubleshooting:
-        return TroubleshootingScreen();
-      case NavigationItem.spareParts:
-        return SparePartsScreen();
-      case NavigationItem.documentation:
-        return DocumentationScreen();
-      case NavigationItem.remoteAssistance:
-        return RemoteAssistanceScreen();
-      case NavigationItem.safetyProcedures:
-        return SafetyProceduresScreen();
-      case NavigationItem.overview:
-        return MaintenanceHomeScreen();
-      default:
-        return MainDashboard();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isLargeScreen = MediaQuery.of(context).size.width > 800;
-    final authProvider = Provider.of<AuthProvider>(context);
-
-    return LayoutBuilder(builder: (context, constraints) {
-      if (isLargeScreen) {
-        return Row(
-          children: [
-            Container(
-              width: 240,
-              color: Theme.of(context).drawerTheme.backgroundColor,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: AppDrawer(
-                      onSelectItem: _selectNavigationItem,
-                      selectedItem: _selectedItem,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        await authProvider.signOut();
-                      },
-                      child: Text('Logout'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: PageTransitionSwitcher(
-                duration: Duration(milliseconds: 300),
-                transitionBuilder: (child, animation, secondaryAnimation) =>
-                    FadeThroughTransition(
-                      animation: animation,
-                      secondaryAnimation: secondaryAnimation,
-                      child: child,
-                    ),
-                child: _getSelectedScreen(),
-              ),
-            ),
-          ],
-        );
-      } else {
-        return Scaffold(
-          extendBodyBehindAppBar: true,
-          appBar: AppBar(
-            title: Text('Tesla ALD Maintenance'),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.search),
-                onPressed: () {
-                  // Implement search functionality
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.notifications),
-                onPressed: () {
-                  // Implement notifications functionality
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.logout),
-                onPressed: () async {
-                  await authProvider.signOut();
-                },
-              ),
-            ],
-          ),
-          drawer: Container(
-            width: 240,
-            child: AppDrawer(
-              onSelectItem: _selectNavigationItem,
-              selectedItem: _selectedItem,
-            ),
-          ),
-          body: PageTransitionSwitcher(
-            duration: Duration(milliseconds: 300),
-            transitionBuilder: (child, animation, secondaryAnimation) =>
-                FadeThroughTransition(
-                  animation: animation,
-                  secondaryAnimation: secondaryAnimation,
-                  child: child,
-                ),
-            child: _getSelectedScreen(),
-          ),
-        );
-      }
-    });
-  }
+Widget _buildLoadingScreen() {
+  return Scaffold(
+    body: Center(
+      child: CircularProgressIndicator(),
+    ),
+  );
 }
+
+
+Widget _buildPendingApprovalScreen(BuildContext context) {
+  return Scaffold(
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.hourglass_empty, size: 64, color: Colors.orange),
+          SizedBox(height: 16),
+          Text(
+            'Your account is pending approval',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Please wait for an administrator to approve your account.',
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () async {
+              await Provider.of<AuthProvider>(context, listen: false).signOut();
+            },
+            child: Text('Logout'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildAccessDeniedScreen(BuildContext context) {
+  return Scaffold(
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.block, size: 64, color: Colors.red),
+          SizedBox(height: 16),
+          Text(
+            'Access Denied',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Your account has been deactivated or denied access.',
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () async {
+              await Provider.of<AuthProvider>(context, listen: false).signOut();
+            },
+            child: Text('Logout'),
+          ),
+        ],
+      ),
+    ),
+  );
+
+}
+
+
+
+

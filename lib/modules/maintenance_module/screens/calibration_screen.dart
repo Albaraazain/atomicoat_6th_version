@@ -1,5 +1,9 @@
 // lib/screens/calibration_screen.dart
 import 'package:flutter/material.dart';
+import '../../../enums/navigation_item.dart';
+import '../../../utils/navigation_helper.dart';
+import '../../../widgets/app_drawer.dart';
+import '../../../widgets/custom_app_bar.dart';
 import '../widgets/calibration_history_widget.dart';
 import '../providers/calibration_provider.dart';
 import '../models/calibration_procedure.dart';
@@ -30,8 +34,16 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Calibration'),
+      appBar: CustomAppBar(
+        title: 'Calibration',
+        onDrawerIconPressed: () => Scaffold.of(context).openDrawer(),
+      ),
+      drawer: AppDrawer(
+        onSelectItem: (item) {
+          Navigator.pop(context); // Close the drawer
+          handleNavigation(context, item);
+        },
+        selectedItem: NavigationItem.mainDashboard,
       ),
       body: Consumer<CalibrationProvider>(
         builder: (ctx, calibrationProvider, _) {

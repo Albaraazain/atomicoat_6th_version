@@ -3,5 +3,5 @@
 enum UserRole {
   operator,
   engineer,
-  admin
+  admin, user
 }

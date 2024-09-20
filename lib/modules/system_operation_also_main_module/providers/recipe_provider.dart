@@ -20,7 +20,7 @@ class RecipeProvider with ChangeNotifier {
     try {
       String? userId = _authService.currentUser?.uid;
       if (userId != null) {
-        _recipes = await _recipeRepository.getAll(userId);
+        _recipes = await _recipeRepository.getAll(userId: userId);
         notifyListeners();
       }
     } catch (e) {
@@ -32,7 +32,7 @@ class RecipeProvider with ChangeNotifier {
     try {
       String? userId = _authService.currentUser?.uid;
       if (userId != null) {
-        await _recipeRepository.add(userId, recipe.id, recipe);
+        await _recipeRepository.add(recipe.id, recipe, userId: userId);
         _recipes.add(recipe);
         notifyListeners();
       }
@@ -46,7 +46,7 @@ class RecipeProvider with ChangeNotifier {
     try {
       String? userId = _authService.currentUser?.uid;
       if (userId != null) {
-        await _recipeRepository.update(userId, updatedRecipe.id, updatedRecipe);
+        await _recipeRepository.update(updatedRecipe.id, updatedRecipe, userId: userId);
         int index = _recipes.indexWhere((recipe) => recipe.id == updatedRecipe.id);
         if (index != -1) {
           _recipes[index] = updatedRecipe;
@@ -61,11 +61,12 @@ class RecipeProvider with ChangeNotifier {
     }
   }
 
+
   Future<void> deleteRecipe(String id) async {
     try {
       String? userId = _authService.currentUser?.uid;
       if (userId != null) {
-        await _recipeRepository.delete(userId, id);
+        await _recipeRepository.delete(id, userId: userId);
         _recipes.removeWhere((recipe) => recipe.id == id);
         notifyListeners();
       }

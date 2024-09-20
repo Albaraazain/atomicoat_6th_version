@@ -38,6 +38,24 @@ class Alarm {
     'acknowledged': acknowledged,
     'isSafetyAlert': isSafetyAlert,
   };
+
+  Alarm copyWith({
+    String? id,
+    String? message,
+    AlarmSeverity? severity,
+    DateTime? timestamp,
+    bool? acknowledged,
+    bool? isSafetyAlert,
+  }) {
+    return Alarm(
+      id: id ?? this.id,
+      message: message ?? this.message,
+      severity: severity ?? this.severity,
+      timestamp: timestamp ?? this.timestamp,
+      acknowledged: acknowledged ?? this.acknowledged,
+      isSafetyAlert: isSafetyAlert ?? this.isSafetyAlert,
+    );
+  }
 }
 
 enum AlarmSeverity {

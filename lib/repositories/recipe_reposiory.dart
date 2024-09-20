@@ -7,24 +7,28 @@ import 'base_repository.dart';
 class RecipeRepository extends BaseRepository<Recipe> {
   RecipeRepository() : super('recipes');
 
-  Future<List<Recipe>> getAll(String userId) async {
-    return await super.getAll(userId);
+  @override
+  Future<List<Recipe>> getAll({String? userId}) async {
+    return await super.getAll(userId: userId);
   }
 
-  Future<void> add(String userId, String id, Recipe recipe) async {
-    await super.add(userId, id, recipe);
+  @override
+  Future<void> add(String id, Recipe recipe, {String? userId}) async {
+    await super.add(id, recipe, userId: userId);
   }
 
-  Future<void> update(String userId, String id, Recipe recipe) async {
-    await super.update(userId, id, recipe);
+  @override
+  Future<void> update(String id, Recipe recipe, {String? userId}) async {
+    await super.update(id, recipe, userId: userId);
   }
 
-  Future<void> delete(String userId, String id) async {
-    await super.delete(userId, id);
+  @override
+  Future<void> delete(String id, {String? userId}) async {
+    await super.delete(id, userId: userId);
   }
 
-  Future<Recipe?> getById(String userId, String id) async {
-    return await super.get(userId, id);
+  Future<Recipe?> getById(String id, {String? userId}) async {
+    return await super.get(id, userId: userId);
   }
 
   @override

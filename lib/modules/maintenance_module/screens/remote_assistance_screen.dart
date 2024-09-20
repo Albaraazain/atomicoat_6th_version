@@ -13,6 +13,12 @@ class _RemoteAssistanceScreenState extends State<RemoteAssistanceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+        ),
         title: Text('Remote Assistance'),
       ),
       body: Center(

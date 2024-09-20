@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../enums/navigation_item.dart';
+import '../../../widgets/app_drawer.dart';
 import '../models/recipe.dart';
 import '../providers/recipe_provider.dart';
 import 'recipe_detail_screen.dart';
@@ -11,6 +13,12 @@ class RecipeManagementScreen extends StatelessWidget {
       builder: (context, recipeProvider, child) {
         return Scaffold(
           appBar: AppBar(
+            leading: IconButton(
+              icon: Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            ),
             title: Text(
               'Recipe Management',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -22,6 +30,7 @@ class RecipeManagementScreen extends StatelessWidget {
               ),
             ],
           ),
+
           body: Padding(
             padding: const EdgeInsets.all(8.0),
             child: ListView.builder(

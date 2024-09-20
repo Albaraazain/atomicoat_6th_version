@@ -5,8 +5,8 @@ import 'base_repository.dart';
 class AlarmRepository extends BaseRepository<Alarm> {
   AlarmRepository() : super('alarms');
 
-  Future<void> remove(String userId, String alarmId) async {
-    await delete(userId, alarmId);
+  Future<void> remove(String alarmId, {String? userId}) async {
+    await delete(alarmId, userId: userId);
   }
 
   Future<void> clearAcknowledged(String userId) async {

@@ -41,6 +41,13 @@ class _SystemOverviewScreenState extends State<SystemOverviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // back button
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
         title: const Text('ALD System Overview'),
         actions: [
           IconButton(

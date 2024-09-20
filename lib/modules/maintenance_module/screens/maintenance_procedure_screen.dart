@@ -40,6 +40,12 @@ class _MaintenanceProcedureScreenState extends State<MaintenanceProcedureScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+        ),
         title: Text('Maintenance Procedure'),
       ),
       body: FutureBuilder<MaintenanceProcedure?>(

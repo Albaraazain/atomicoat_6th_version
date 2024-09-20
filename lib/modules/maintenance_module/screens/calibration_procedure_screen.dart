@@ -22,6 +22,13 @@ class _CalibrationProcedureScreenState extends State<CalibrationProcedureScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // menu button
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+        ),
         title: Text('Calibrate ${widget.procedure.componentName}'),
       ),
       body: Stepper(

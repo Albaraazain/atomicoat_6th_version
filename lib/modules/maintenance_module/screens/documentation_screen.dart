@@ -16,7 +16,13 @@ class _DocumentationScreenState extends State<DocumentationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Documentation Library'),
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+        ),
+        title: Text('Documentation'),
       ),
       body: Column(
         children: [

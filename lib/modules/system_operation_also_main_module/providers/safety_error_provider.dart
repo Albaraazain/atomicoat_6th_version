@@ -20,7 +20,7 @@ class SafetyErrorProvider with ChangeNotifier {
     try {
       String? userId = _authService.currentUserId;
       if (userId != null) {
-        _safetyErrors = await _safetyErrorRepository.getAll(userId);
+        _safetyErrors = await _safetyErrorRepository.getAll(userId: userId);
         notifyListeners();
       }
     } catch (e) {
@@ -32,7 +32,7 @@ class SafetyErrorProvider with ChangeNotifier {
     try {
       String? userId = _authService.currentUserId;
       if (userId != null) {
-        await _safetyErrorRepository.add(userId, safetyError.id, safetyError);
+        await _safetyErrorRepository.add(safetyError.id, safetyError, userId: userId);
         _safetyErrors.add(safetyError);
         notifyListeners();
       }
@@ -46,7 +46,7 @@ class SafetyErrorProvider with ChangeNotifier {
     try {
       String? userId = _authService.currentUserId;
       if (userId != null) {
-        await _safetyErrorRepository.update(userId, updatedSafetyError.id, updatedSafetyError);
+        await _safetyErrorRepository.update(updatedSafetyError.id, updatedSafetyError, userId: userId);
         int index = _safetyErrors.indexWhere((safetyError) => safetyError.id == updatedSafetyError.id);
         if (index != -1) {
           _safetyErrors[index] = updatedSafetyError;
@@ -65,7 +65,7 @@ class SafetyErrorProvider with ChangeNotifier {
     try {
       String? userId = _authService.currentUserId;
       if (userId != null) {
-        await _safetyErrorRepository.delete(userId, id);
+        await _safetyErrorRepository.delete(id, userId: userId);
         _safetyErrors.removeWhere((safetyError) => safetyError.id == id);
         notifyListeners();
       }

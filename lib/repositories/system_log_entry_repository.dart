@@ -7,12 +7,16 @@ import 'base_repository.dart';
 class SystemLogEntryRepository extends BaseRepository<SystemLogEntry> {
   SystemLogEntryRepository() : super('system_log_entries');
 
-  Future<List<SystemLogEntry>> getAll(String userId) async {
-    return await super.getAll(userId);
+  @override
+  Future<List<SystemLogEntry>> getAll({String? userId}) async {
+    return await super.getAll(userId: userId);
   }
 
   @override
-  Future<void> add(String userId, String id, SystemLogEntry item) async {
+  Future<void> add(String id, SystemLogEntry item, {String? userId}) async {
+    if (userId == null) {
+      throw ArgumentError('userId is required for adding system log entries');
+    }
     await getUserCollection(userId).add(item.toJson());
   }
 
