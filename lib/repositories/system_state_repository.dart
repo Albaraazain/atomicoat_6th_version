@@ -4,60 +4,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../modules/system_operation_also_main_module/models/safety_error.dart';
 import '../modules/system_operation_also_main_module/models/system_component.dart';
 import '../modules/system_operation_also_main_module/models/system_log_entry.dart';
-import '../modules/system_operation_also_main_module/providers/system_state_provider.dart';
 
 class SystemStateRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   CollectionReference _getUserCollection(String userId, String collectionName) {
     return _firestore.collection('users').doc(userId).collection(collectionName);
-  }
-
-  Future<void> saveDashboardWidgetOrder(String userId, List<String> order) async {
-    await _getUserCollection(userId, 'user_preferences').doc('dashboard').set({
-      'widgetOrder': order,
-    }, SetOptions(merge: true));
-  }
-
-  Future<List<String>> getDashboardWidgetOrder(String userId) async {
-    DocumentSnapshot doc = await _getUserCollection(userId, 'user_preferences').doc('dashboard').get();
-    if (doc.exists) {
-      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-      return List<String>.from(data['widgetOrder'] ?? []);
-    }
-    return [];
-  }
-
-  Future<void> saveNotification(String userId, Notification notification) async {
-    await _getUserCollection(userId, 'notifications').doc(notification.id).set({
-      'message': notification.message,
-      'severity': notification.severity.toString(),
-      'timestamp': notification.timestamp,
-    });
-  }
-
-  Future<void> removeNotification(String userId, String notificationId) async {
-    await _getUserCollection(userId, 'notifications').doc(notificationId).delete();
-  }
-
-  Future<List<Notification>> getNotifications(String userId) async {
-    QuerySnapshot snapshot = await _getUserCollection(userId, 'notifications')
-        .orderBy('timestamp', descending: true)
-        .limit(100) // Limit to last 100 notifications, adjust as needed
-        .get();
-
-    return snapshot.docs.map((doc) {
-      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-      return Notification(
-        id: doc.id,
-        message: data['message'],
-        severity: NotificationSeverity.values.firstWhere(
-              (e) => e.toString() == data['severity'],
-          orElse: () => NotificationSeverity.info,
-        ),
-        timestamp: (data['timestamp'] as Timestamp).toDate(),
-      );
-    }).toList();
   }
 
   Future<void> saveComponentState(String userId, SystemComponent component) async {

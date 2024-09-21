@@ -18,19 +18,6 @@ import '../widgets/recipe_control.dart';
 import '../widgets/alarm_display.dart';
 import '../widgets/system_diagram_view.dart';
 import '../widgets/troubleshooting_overlay.dart';
-import '../widgets/system_health_indicator.dart';
-import '../widgets/notification_center.dart';
-
-import '../widgets/real_time_process_monitor.dart';
-import '../widgets/recipe_visualization.dart';
-import '../widgets/substrate_status.dart';
-
-import '../widgets/recipe_visualization.dart';
-import '../widgets/substrate_status.dart';
-import '../widgets/precursor_level_monitor.dart';
-import '../widgets/vacuum_system_status.dart';
-
-
 
 class MainDashboard extends StatefulWidget {
   @override
@@ -57,51 +44,48 @@ class _MainDashboardState extends State<MainDashboard> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final systemStateProvider = Provider.of<SystemStateProvider>(context);
-
     return Scaffold(
-      backgroundColor: Color(0xFF1A1A1A),
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: () {
-            Scaffold.of(context).openDrawer();
-          },
-        ),
-        title: Text('Main Dashboard'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications),
+        backgroundColor: Color(0xFF1A1A1A),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.menu),
             onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => NotificationCenter(),
-              );
+              Scaffold.of(context).openDrawer();
             },
           ),
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () async {
-              await authProvider.signOut();
-            },
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            SystemHealthIndicator(
-              systemHealth: systemStateProvider.systemHealth,
+          title: Text('Main Dashboard'),
+          actions: [
+            // notification button
+            IconButton(
+              icon: Icon(Icons.notifications),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Notifications not implemented yet')),
+                );
+              },
             ),
-            _buildTabBar(),
-            Expanded(
-              child: _buildTabContent(),
+            IconButton(
+              icon: Icon(Icons.logout),
+              onPressed: () async {
+                await authProvider.signOut();
+              },
             ),
           ],
         ),
-      ),
-      floatingActionButton: _buildSpeedDial(context),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTabBar(),
+              Expanded(
+                child: _buildTabContent(),
+              ),
+            ],
+          ),
+        ),
+        floatingActionButton: _buildSpeedDial(context),
+
     );
+
   }
 
 
@@ -208,14 +192,15 @@ class _MainDashboardState extends State<MainDashboard> {
   }
 
   Widget _buildOverviewTab(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isLargeScreen = constraints.maxWidth > 600;
+        return Column(
           children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
+            Expanded(
+              flex: isLargeScreen ? 2 : 1,
               child: Card(
+                margin: EdgeInsets.all(12),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: Stack(
@@ -235,57 +220,34 @@ class _MainDashboardState extends State<MainDashboard> {
                 ),
               ),
             ),
-            SizedBox(height: 8),
-            _buildWidgetRow(RecipeVisualization(), SubstrateStatus()),
-            SizedBox(height: 8),
-            _buildWidgetRow(PrecursorLevelMonitor(), VacuumSystemStatus()),
-            SizedBox(height: 8),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ParameterDisplay(),
+            Expanded(
+              flex: 1,
+              child: Card(
+                margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: ParameterDisplay(),
+                ),
               ),
             ),
-            SizedBox(height: 8),
-            ElevatedButton.icon(
-              onPressed: () => Navigator.pushNamed(context, '/system_overview'),
-              icon: Icon(Icons.fullscreen, size: 18),
-              label: Text('Full System Overview', style: TextStyle(fontSize: 14)),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Color(0xFFFFFFFF),
-                backgroundColor: Color(0xFF4A4A4A),
-                minimumSize: Size(double.infinity, 48),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.pushNamed(context, '/system_overview'),
+                icon: Icon(Icons.fullscreen, size: 18),
+                label: Text('Full System Overview', style: TextStyle(fontSize: 14)),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Color(0xFFFFFFFF),
+                  backgroundColor: Color(0xFF4A4A4A),
+                  minimumSize: Size(double.infinity, 48),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                ),
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWidgetRow(Widget leftWidget, Widget rightWidget) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth > 600) {
-          return Row(
-            children: [
-              Expanded(child: leftWidget),
-              SizedBox(width: 8),
-              Expanded(child: rightWidget),
-            ],
-          );
-        } else {
-          return Column(
-            children: [
-              leftWidget,
-              SizedBox(height: 8),
-              rightWidget,
-            ],
-          );
-        }
+        );
       },
     );
   }
