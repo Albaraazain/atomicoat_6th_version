@@ -30,8 +30,6 @@ import '../widgets/substrate_status.dart';
 import '../widgets/precursor_level_monitor.dart';
 import '../widgets/vacuum_system_status.dart';
 
-
-
 class MainDashboard extends StatefulWidget {
   @override
   _MainDashboardState createState() => _MainDashboardState();
@@ -103,8 +101,6 @@ class _MainDashboardState extends State<MainDashboard> {
       floatingActionButton: _buildSpeedDial(context),
     );
   }
-
-
 
   Widget _buildTabBar() {
     return Container(
@@ -208,84 +204,96 @@ class _MainDashboardState extends State<MainDashboard> {
   }
 
   Widget _buildOverviewTab(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Card(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Stack(
-                    children: [
-                      SystemDiagramView(
-                        overlays: [_currentOverlay],
-                        zoomFactor: 1.0,
-                        enableOverlaySwiping: true,
-                      ),
-                      Positioned(
-                        top: 12,
-                        left: 12,
-                        child: _buildOverlaySelector(),
-                      ),
-                    ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isLargeScreen = constraints.maxWidth > 600;
+        return SingleChildScrollView(
+          // Add scrollable behavior
+          child: Column(
+            children: [
+              // System diagram view and overlay selector
+              SizedBox(
+                height: isLargeScreen ? 400 : 200, // Adjust height as needed
+                child: Card(
+                  margin: EdgeInsets.all(12),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Stack(
+                      children: [
+                        SystemDiagramView(
+                          overlays: [_currentOverlay],
+                          zoomFactor: 1.0,
+                          enableOverlaySwiping: true,
+                        ),
+                        Positioned(
+                          top: 12,
+                          left: 12,
+                          child: _buildOverlaySelector(),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 8),
-            _buildWidgetRow(RecipeVisualization(), SubstrateStatus()),
-            SizedBox(height: 8),
-            _buildWidgetRow(PrecursorLevelMonitor(), VacuumSystemStatus()),
-            SizedBox(height: 8),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ParameterDisplay(),
+              // Row of Recipe Visualization and Substrate Status
+              Column(
+                children: [
+                  // Individual Recipe Visualization Row
+                  Card(
+                    margin: EdgeInsets.all(6),
+                    child: Container(
+                      constraints: BoxConstraints(minHeight: 50),
+                      child: RecipeVisualization(),
+                    ),
+                  ),
+                  // Individual Substrate Status Row
+                  Card(
+                    margin: EdgeInsets.all(6),
+                    child: SubstrateStatus(),
+                  ),
+                  // Individual Precursor Level Monitor Row
+                  Card(
+                    margin: EdgeInsets.all(6),
+                    child: PrecursorLevelMonitor(),
+                  ),
+                  // Individual Vacuum System Status Row
+                  Card(
+                    margin: EdgeInsets.all(6),
+                    child: VacuumSystemStatus(),
+                  ),
+                ],
               ),
-            ),
-            SizedBox(height: 8),
-            ElevatedButton.icon(
-              onPressed: () => Navigator.pushNamed(context, '/system_overview'),
-              icon: Icon(Icons.fullscreen, size: 18),
-              label: Text('Full System Overview', style: TextStyle(fontSize: 14)),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Color(0xFFFFFFFF),
-                backgroundColor: Color(0xFF4A4A4A),
-                minimumSize: Size(double.infinity, 48),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              // Parameter Display section
+              Card(
+                margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: ParameterDisplay(),
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWidgetRow(Widget leftWidget, Widget rightWidget) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth > 600) {
-          return Row(
-            children: [
-              Expanded(child: leftWidget),
-              SizedBox(width: 8),
-              Expanded(child: rightWidget),
+              // Full System Overview Button
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: ElevatedButton.icon(
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/system_overview'),
+                  icon: Icon(Icons.fullscreen, size: 18),
+                  label: Text('Full System Overview',
+                      style: TextStyle(fontSize: 14)),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Color(0xFFFFFFFF),
+                    backgroundColor: Color(0xFF4A4A4A),
+                    minimumSize: Size(double.infinity, 48),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  ),
+                ),
+              ),
             ],
-          );
-        } else {
-          return Column(
-            children: [
-              leftWidget,
-              SizedBox(height: 8),
-              rightWidget,
-            ],
-          );
-        }
+          ),
+        );
       },
     );
   }
@@ -305,13 +313,15 @@ class _MainDashboardState extends State<MainDashboard> {
           setState(() {
             switch (value) {
               case 'Control':
-                _currentOverlay = ComponentControlOverlay(overlayId: 'main_dashboard');
+                _currentOverlay =
+                    ComponentControlOverlay(overlayId: 'main_dashboard');
                 break;
               case 'Graph':
                 _currentOverlay = GraphOverlay(overlayId: 'main_dashboard');
                 break;
               case 'Troubleshoot':
-                _currentOverlay = TroubleshootingOverlay(overlayId: 'main_dashboard');
+                _currentOverlay =
+                    TroubleshootingOverlay(overlayId: 'main_dashboard');
                 break;
             }
           });
@@ -319,15 +329,18 @@ class _MainDashboardState extends State<MainDashboard> {
         itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
           PopupMenuItem<String>(
             value: 'Control',
-            child: Text('Control', style: TextStyle(fontSize: 14, color: Color(0xFFD0D0D0))),
+            child: Text('Control',
+                style: TextStyle(fontSize: 14, color: Color(0xFFD0D0D0))),
           ),
           PopupMenuItem<String>(
             value: 'Graph',
-            child: Text('Graph', style: TextStyle(fontSize: 14, color: Color(0xFFD0D0D0))),
+            child: Text('Graph',
+                style: TextStyle(fontSize: 14, color: Color(0xFFD0D0D0))),
           ),
           PopupMenuItem<String>(
             value: 'Troubleshoot',
-            child: Text('Troubleshoot', style: TextStyle(fontSize: 14, color: Color(0xFFD0D0D0))),
+            child: Text('Troubleshoot',
+                style: TextStyle(fontSize: 14, color: Color(0xFFD0D0D0))),
           ),
         ],
       ),
@@ -335,8 +348,7 @@ class _MainDashboardState extends State<MainDashboard> {
   }
 
   Widget _buildRecipeControlTab(BuildContext context) {
-    return RecipeControl(
-    );
+    return RecipeControl();
   }
 
   Widget _buildSpeedDial(BuildContext context) {
@@ -384,7 +396,8 @@ class _MainDashboardState extends State<MainDashboard> {
     Provider.of<SystemStateProvider>(context, listen: false).emergencyStop();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Emergency Stop Activated!', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Text('Emergency Stop Activated!',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         backgroundColor: Color(0xFF8B0000),
         duration: Duration(seconds: 5),
         behavior: SnackBarBehavior.floating,
