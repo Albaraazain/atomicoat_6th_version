@@ -4,11 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import '../../../enums/navigation_item.dart';
 import '../../../providers/auth_provider.dart';
-import '../../../utils/navigation_helper.dart';
-import '../../../widgets/app_drawer.dart';
-import '../../../widgets/custom_app_bar.dart';
 import '../providers/system_state_provider.dart';
 import '../widgets/component_control_overlay.dart';
 import '../widgets/data_visualization.dart';
@@ -45,49 +41,45 @@ class _MainDashboardState extends State<MainDashboard> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     return Scaffold(
-        backgroundColor: Color(0xFF1A1A1A),
-        appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.menu),
+      backgroundColor: Color(0xFF1A1A1A),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+        ),
+        title: Text('Main Dashboard'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications),
             onPressed: () {
-              Scaffold.of(context).openDrawer();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Notifications not implemented yet')),
+              );
             },
           ),
-          title: Text('Main Dashboard'),
-          actions: [
-            // notification button
-            IconButton(
-              icon: Icon(Icons.notifications),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Notifications not implemented yet')),
-                );
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.logout),
-              onPressed: () async {
-                await authProvider.signOut();
-              },
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              await authProvider.signOut();
+            },
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildTabBar(),
+            Expanded(
+              child: _buildTabContent(),
             ),
           ],
         ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              _buildTabBar(),
-              Expanded(
-                child: _buildTabContent(),
-              ),
-            ],
-          ),
-        ),
-        floatingActionButton: _buildSpeedDial(context),
-
+      ),
+      floatingActionButton: _buildSpeedDial(context),
     );
-
   }
-
 
 
   Widget _buildTabBar() {
@@ -233,7 +225,7 @@ class _MainDashboardState extends State<MainDashboard> {
             Padding(
               padding: const EdgeInsets.all(12),
               child: ElevatedButton.icon(
-                onPressed: () => Navigator.pushNamed(context, '/system_overview'),
+                onPressed: () => Navigator.of(context).pushNamed('/system_overview'),
                 icon: Icon(Icons.fullscreen, size: 18),
                 label: Text('Full System Overview', style: TextStyle(fontSize: 14)),
                 style: ElevatedButton.styleFrom(

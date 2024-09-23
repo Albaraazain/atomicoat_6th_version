@@ -13,26 +13,26 @@ class SystemComponentRepository extends BaseRepository<SystemComponent> {
   }
 
   @override
-  Future<void> add(String name, SystemComponent component, {String? userId}) async {
-    await super.add(name, component, userId: userId);
+  Future<void> add(String id, SystemComponent component, {String? userId}) async {
+    await super.add(id, component, userId: userId);
   }
 
   @override
-  Future<void> update(String name, SystemComponent component, {String? userId}) async {
-    await super.update(name, component, userId: userId);
+  Future<void> update(String id, SystemComponent component, {String? userId}) async {
+    await super.update(id, component, userId: userId);
   }
 
   @override
-  Future<void> delete(String name, {String? userId}) async {
-    await super.delete(name, userId: userId);
+  Future<void> delete(String id, {String? userId}) async {
+    await super.delete(id, userId: userId);
   }
 
-  Future<SystemComponent?> getByName(String name, {String? userId}) async {
-    return await super.get(name, userId: userId);
+  Future<SystemComponent?> getById(String id, {String? userId}) async {
+    return await super.get(id, userId: userId);
   }
 
-  Future<void> updateComponentState(String name, Map<String, double> newState, {required String userId}) async {
-    await getUserCollection(userId).doc(name).update({'currentValues': newState});
+  Future<void> updateComponentState(String id, Map<String, double> newState, {required String userId}) async {
+    await getUserCollection(userId).doc(id).update({'currentValues': newState});
   }
 
   Future<List<SystemComponent>> getActiveComponents(String userId) async {

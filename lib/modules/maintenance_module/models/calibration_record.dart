@@ -57,6 +57,8 @@ class CalibrationRecord {
     );
   }
 
+  get componentName => id.toString();
+
   @override
   String toString() {
     return 'CalibrationRecord(id: $id, componentId: $componentId, calibrationDate: $calibrationDate, performedBy: $performedBy, calibrationData: $calibrationData, notes: $notes)';

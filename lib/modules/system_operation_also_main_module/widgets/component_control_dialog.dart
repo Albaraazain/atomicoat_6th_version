@@ -1,10 +1,10 @@
 // lib/widgets/component_control_dialog.dart
 
+import 'package:experiment_planner/modules/system_operation_also_main_module/providers/system_copmonent_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/system_component.dart';
 import '../models/recipe.dart';
-import '../providers/system_state_provider.dart';
 
 class ComponentControlDialog extends StatefulWidget {
   final SystemComponent component;
@@ -42,7 +42,7 @@ class _ComponentControlDialogState extends State<ComponentControlDialog> {
 
   void _updateSetValues(BuildContext context) {
     if (_formKey.currentState!.validate()) {
-      final systemProvider = Provider.of<SystemStateProvider>(context, listen: false);
+      final systemProvider = Provider.of<SystemComponentProvider>(context, listen: false);
       _controllers.forEach((parameter, controller) {
         double? newValue = double.tryParse(controller.text);
         if (newValue != null) {
@@ -124,7 +124,7 @@ class _ComponentControlDialogState extends State<ComponentControlDialog> {
   }
 
   void _toggleComponentActivation(BuildContext context) {
-    final systemProvider = Provider.of<SystemStateProvider>(context, listen: false);
+    final systemProvider = Provider.of<SystemComponentProvider>(context, listen: false);
     if (widget.component.isActivated) {
       systemProvider.deactivateComponent(widget.component.name);
     } else {

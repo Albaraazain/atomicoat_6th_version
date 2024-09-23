@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'base_repository.dart';
 
 class   MachineSerial {

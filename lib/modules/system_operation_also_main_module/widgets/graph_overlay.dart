@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/system_component.dart';
+import '../providers/system_copmonent_provider.dart';
 import '../providers/system_state_provider.dart';
 
 class GraphOverlay extends StatefulWidget {
@@ -153,10 +154,10 @@ class _GraphOverlayState extends State<GraphOverlay> {
       children: [
         Consumer<SystemStateProvider>(
           builder: (context, systemStateProvider, child) {
-            print("Consumer rebuilding. Components count: ${systemStateProvider.components.length}");
+            //print("Consumer rebuilding. Components count: ${systemStateProvider.components.length}");
             return LayoutBuilder(
               builder: (context, constraints) {
-                print("LayoutBuilder: ${constraints.maxWidth} x ${constraints.maxHeight}");
+                //print("LayoutBuilder: ${constraints.maxWidth} x ${constraints.maxHeight}");
 
                 return Stack(
                   children: _componentPositions.entries.map((entry) {
@@ -415,6 +416,8 @@ class _GraphOverlayState extends State<GraphOverlay> {
     }
   }
 
+
+
   double _calculateYRange(SystemComponent component, String parameter, double? setValue) {
     final dataPoints = component.parameterHistory[parameter];
     if (dataPoints == null || dataPoints.isEmpty) {
@@ -455,14 +458,12 @@ class _GraphOverlayState extends State<GraphOverlay> {
       );
     }
 
-    print('Building graph for $parameter in ${component.name}. Data points count: ${dataPoints.length}');
-
     // Get the set value for the parameter
     double? setValue = component.setValues[parameter];
 
     // Convert data points to FlSpot
-    final firstTimestamp = dataPoints.first.timestamp.millisecondsSinceEpoch.toDouble();
-    List<FlSpot> spots = dataPoints.map((dp) {
+    final firstTimestamp = dataPoints.first!.timestamp.millisecondsSinceEpoch.toDouble();
+    List<FlSpot> spots = dataPoints.toList().map((dp) {
       double x = (dp.timestamp.millisecondsSinceEpoch.toDouble() - firstTimestamp) / 1000; // in seconds
       double y = dp.value;
       return FlSpot(x, y);
@@ -528,4 +529,5 @@ class _GraphOverlayState extends State<GraphOverlay> {
       ),
     );
   }
+
 }

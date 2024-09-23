@@ -1,13 +1,15 @@
 // lib/widgets/system_overview_widget.dart
+import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-import '../models/component.dart';
 import '../providers/maintenance_ald_system_provider.dart';
 
 class SystemOverviewWidget extends StatelessWidget {
-  final List<Component> components;
-  final Function(Component) onComponentTap;
+  // components of type <String, Component>
+  final Map<String, SystemComponent> components;
+
+  final Function(SystemComponent) onComponentTap;
 
   const SystemOverviewWidget({
     Key? key,

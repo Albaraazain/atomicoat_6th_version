@@ -1,23 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../modules/system_operation_also_main_module/screens/main_dashboard.dart';
 import '../providers/auth_provider.dart';
 import '../repositories/user_request_repository.dart';
 import '../repositories/user_repository.dart';
 import '../enums/user_role.dart';
 import '../services/auth_service.dart';
-import '../widgets/app_drawer.dart';
-import '../enums/navigation_item.dart';
 
 // Import all the necessary screens
-import '../modules/maintenance_module/screens/calibration_screen.dart';
-import '../modules/maintenance_module/screens/reporting_screen.dart';
-import '../modules/maintenance_module/screens/troubleshooting_screen.dart';
-import '../modules/maintenance_module/screens/spare_parts_screen.dart';
-import '../modules/maintenance_module/screens/documentation_screen.dart';
-import '../modules/maintenance_module/screens/remote_assistance_screen.dart';
-import '../modules/maintenance_module/screens/safety_procedures_screen.dart';
-import '../modules/system_operation_also_main_module/screens/recipe_management_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   @override

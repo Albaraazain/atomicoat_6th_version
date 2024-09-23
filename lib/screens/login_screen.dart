@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../enums/user_role.dart';
-import '../main.dart';
 import '../providers/auth_provider.dart';
 import 'registration_screen.dart';
 

@@ -127,8 +127,8 @@ class ReportingScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
-            children: maintenanceProvider.components.map((component) =>
-                Text('${component.name}: ${component.status}'),
+            children: maintenanceProvider.components.entries.map((entry) =>
+                Text('${entry.value.name}: ${entry.value.status}'),
             ).toList(),
           ),
         ),

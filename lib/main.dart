@@ -7,36 +7,32 @@ import 'package:experiment_planner/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:animations/animations.dart';
 
 // Import Providers
-import 'enums/user_role.dart';
 import 'modules/maintenance_module/providers/maintenance_provider.dart';
 import 'modules/maintenance_module/providers/calibration_provider.dart';
 import 'modules/maintenance_module/providers/spare_parts_provider.dart';
 import 'modules/maintenance_module/providers/report_provider.dart';
+import 'modules/maintenance_module/screens/calibration_screen.dart';
+import 'modules/maintenance_module/screens/documentation_screen.dart';
+import 'modules/maintenance_module/screens/remote_assistance_screen.dart';
+import 'modules/maintenance_module/screens/reporting_screen.dart';
+import 'modules/maintenance_module/screens/safety_procedures_screen.dart';
+import 'modules/maintenance_module/screens/spare_parts_screen.dart';
+import 'modules/maintenance_module/screens/troubleshooting_screen.dart';
 import 'modules/system_operation_also_main_module/providers/alarm_provider.dart';
 import 'modules/system_operation_also_main_module/providers/recipe_provider.dart';
 import 'modules/system_operation_also_main_module/providers/safety_error_provider.dart';
+import 'modules/system_operation_also_main_module/providers/system_copmonent_provider.dart';
 import 'modules/system_operation_also_main_module/providers/system_state_provider.dart';
+import 'modules/system_operation_also_main_module/screens/main_dashboard.dart';
+import 'modules/system_operation_also_main_module/screens/recipe_management_screen.dart';
+import 'modules/system_operation_also_main_module/screens/system_overview_screen.dart';
 import 'services/navigation_service.dart';
 
 // Import Screens
-import 'modules/maintenance_module/screens/maintenance_home_screen.dart';
-import 'modules/maintenance_module/screens/calibration_screen.dart';
-import 'modules/maintenance_module/screens/troubleshooting_screen.dart';
-import 'modules/maintenance_module/screens/spare_parts_screen.dart';
-import 'modules/maintenance_module/screens/documentation_screen.dart';
-import 'modules/maintenance_module/screens/reporting_screen.dart';
-import 'modules/maintenance_module/screens/remote_assistance_screen.dart';
-import 'modules/maintenance_module/screens/safety_procedures_screen.dart';
-import 'modules/system_operation_also_main_module/screens/system_overview_screen.dart';
-import 'modules/system_operation_also_main_module/screens/main_dashboard.dart';
-import 'modules/system_operation_also_main_module/screens/recipe_management_screen.dart';
 
 // Import Enums and Widgets
-import 'enums/navigation_item.dart';
-import 'widgets/app_drawer.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 
@@ -50,66 +46,115 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        Provider<NavigationService>(create: (_) => NavigationService()),
+        // Services
+        Provider<NavigationService>(create: (_) => navigationService),
         Provider<AuthService>(create: (_) => authService),
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => MaintenanceProvider()),
-        ChangeNotifierProvider(create: (_) => CalibrationProvider()),
-        ChangeNotifierProvider(create: (_) => SparePartsProvider()),
-        ChangeNotifierProvider(create: (context) => SafetyErrorProvider(context.read<AuthService>())),
-        ChangeNotifierProvider(create: (context) => RecipeProvider(context.read<AuthService>())),
-        ChangeNotifierProvider(create: (context) => AlarmProvider(context.read<AuthService>())),
         Provider<SystemStateRepository>(create: (_) => SystemStateRepository()),
-        ChangeNotifierProxyProvider4<RecipeProvider, AlarmProvider, SystemStateRepository, AuthService, SystemStateProvider>(
+
+        // Global Providers
+        ChangeNotifierProvider(create: (_) => AuthProvider(authService)),
+        ChangeNotifierProvider(create: (_) => SystemComponentProvider()),
+
+        // Maintenance Module Providers
+        ChangeNotifierProvider(
+          create: (context) => MaintenanceProvider(
+            context.read<SystemComponentProvider>(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => CalibrationProvider(
+            context.read<SystemComponentProvider>(),
+          ),
+        ),
+        ChangeNotifierProvider(create: (_) => SparePartsProvider()),
+
+        // System Operation Module Providers
+        ChangeNotifierProvider(create: (_) => SafetyErrorProvider(authService)),
+        ChangeNotifierProvider(create: (_) => RecipeProvider(authService)),
+        ChangeNotifierProvider(create: (_) => AlarmProvider(authService)),
+
+        // System State Provider
+        ChangeNotifierProxyProvider5<
+            SystemComponentProvider,
+            RecipeProvider,
+            AlarmProvider,
+            SystemStateRepository,
+            AuthService,
+            SystemStateProvider>(
           create: (context) => SystemStateProvider(
+            context.read<SystemComponentProvider>(),
             context.read<RecipeProvider>(),
             context.read<AlarmProvider>(),
             context.read<SystemStateRepository>(),
             context.read<AuthService>(),
           ),
-          update: (context, recipeProvider, alarmProvider, systemStateRepository, authService, previous) =>
+          update: (context, componentProvider, recipeProvider, alarmProvider,
+              systemStateRepository, authService, previous) =>
           previous!..updateProviders(recipeProvider, alarmProvider),
         ),
-        ChangeNotifierProxyProvider2<MaintenanceProvider, CalibrationProvider, ReportProvider>(
+
+        // Maintenance Module Report Provider
+        ChangeNotifierProxyProvider2<MaintenanceProvider, CalibrationProvider,
+            ReportProvider>(
           create: (ctx) => ReportProvider(
-            Provider.of<MaintenanceProvider>(ctx, listen: false),
-            Provider.of<CalibrationProvider>(ctx, listen: false),
+            ctx.read<MaintenanceProvider>(),
+            ctx.read<CalibrationProvider>(),
           ),
           update: (ctx, maintenance, calibration, previous) =>
-              ReportProvider(maintenance, calibration),
+          previous!..updateProviders(maintenance, calibration),
         ),
       ],
-      child: Builder(  // Add this Builder widget
+      child: Builder(
         builder: (BuildContext context) {
           return MaterialApp(
             title: 'ALD Machine Maintenance',
             navigatorKey: Provider.of<NavigationService>(context, listen: false).navigatorKey,
             debugShowCheckedModeBanner: false,
             theme: _getTeslaTheme(),
-            home: Consumer<AuthProvider>(
-              builder: (BuildContext context, authProvider, _) {
-                if (authProvider.isLoading()) {
-                  return _buildLoadingScreen();
-                }
-                if (authProvider.isAuthenticated) {
-                  if (authProvider.userStatus == 'approved' || authProvider.userRole == 'active') {
-                    return MainScreen();
-                  } else if (authProvider.userStatus == 'pending') {
-                    return _buildPendingApprovalScreen(context);
-                  } else {
-                    return _buildAccessDeniedScreen(context);
+            initialRoute: '/',
+            routes: {
+              '/': (context) => Consumer<AuthProvider>(
+                builder: (BuildContext context, authProvider, _) {
+                  if (authProvider.isLoading()) {
+                    return _buildLoadingScreen();
                   }
-                } else {
-                  return LoginScreen();
-                }
-              },
-            ),
+                  if (authProvider.isAuthenticated) {
+                    if (authProvider.userStatus == 'approved' || authProvider.userRole == 'active') {
+                      return MainScreen();
+                    } else if (authProvider.userStatus == 'pending') {
+                      return _buildPendingApprovalScreen(context);
+                    } else {
+                      return _buildAccessDeniedScreen(context);
+                    }
+                  } else {
+                    return LoginScreen();
+                  }
+                },
+              ),
+              '/main_dashboard': (context) => MainDashboard(),
+              '/system_overview': (context) => SystemOverviewScreen(),
+              '/calibration': (context) => CalibrationScreen(),
+              '/reporting': (context) => ReportingScreen(),
+              '/troubleshooting': (context) => TroubleshootingScreen(),
+              '/spare_parts': (context) => SparePartsScreen(),
+              '/documentation': (context) => DocumentationScreen(),
+              '/remote_assistance': (context) => RemoteAssistanceScreen(),
+              '/safety_procedures': (context) => SafetyProceduresScreen(),
+              '/recipe_management': (context) => RecipeManagementScreen(),
+              // '/profile': (context) => ProfileScreen(),
+              // '/settings': (context) => SettingsScreen(),
+              // '/help_support': (context) => HelpSupportScreen(),
+              '/overview': (context) => SystemOverviewScreen(),
+              // '/diagram_details': (context) => DiagramDetailsScreen(),
+              '/admin_dashboard': (context) => AdminDashboardScreen(),
+            },
           );
         },
       ),
     ),
   );
 }
+
 
 ThemeData _getTeslaTheme() {
   return ThemeData(

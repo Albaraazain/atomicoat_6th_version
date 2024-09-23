@@ -1,8 +1,9 @@
 // lib/screens/component_detail_screen.dart
+import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';
+import 'package:experiment_planner/modules/system_operation_also_main_module/providers/system_copmonent_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../models/component.dart';
 import '../models/calibration_record.dart';
 import '../providers/maintenance_provider.dart';
 import '../providers/calibration_provider.dart';
@@ -12,7 +13,7 @@ import '../widgets/component_status_update_dialog.dart';
 import 'maintenance_procedures_list_screen.dart';
 
 class ComponentDetailScreen extends StatelessWidget {
-  final Component component;
+  final SystemComponent component;
 
   ComponentDetailScreen({required this.component});
 
@@ -20,7 +21,6 @@ class ComponentDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final maintenanceProvider = Provider.of<MaintenanceProvider>(context);
     final calibrationProvider = Provider.of<CalibrationProvider>(context);
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -137,8 +137,7 @@ class ComponentDetailScreen extends StatelessWidget {
       builder: (ctx) => ComponentStatusUpdateDialog(
         component: component,
         onUpdate: (newStatus, notes) {
-          Provider.of<MaintenanceProvider>(context, listen: false)
-              .updateComponentStatus(component.id, newStatus);
+          Provider.of<SystemComponentProvider>(context, listen: false).updateComponentStatus(component.id, newStatus);
         },
       ),
     );

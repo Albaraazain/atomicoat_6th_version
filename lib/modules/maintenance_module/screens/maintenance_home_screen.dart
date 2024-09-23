@@ -1,6 +1,8 @@
 // lib/screens/maintenance_home_screen.dart
+import 'package:experiment_planner/modules/system_operation_also_main_module/providers/system_copmonent_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../system_operation_also_main_module/models/system_component.dart';
 import '../models/maintenance_task.dart';
 import '../providers/maintenance_provider.dart';
 import '../providers/calibration_provider.dart';
@@ -8,7 +10,6 @@ import '../widgets/system_overview_widget.dart';
 import '../widgets/maintenance_schedule_widget.dart';
 import '../widgets/calibration_summary_widget.dart';
 import '../widgets/error_dialog.dart';
-import '../models/component.dart';
 import '../models/calibration_record.dart';
 import './add_task_screen.dart';
 import './add_calibration_screen.dart';
@@ -32,7 +33,7 @@ class _MaintenanceHomeScreenState extends State<MaintenanceHomeScreen> {
 
   Future<void> _fetchData() async {
     try {
-      await Provider.of<MaintenanceProvider>(context, listen: false).fetchComponents();
+      await Provider.of<SystemComponentProvider>(context, listen: false).components;
       await Provider.of<MaintenanceProvider>(context, listen: false).fetchTasks();
       await Provider.of<CalibrationProvider>(context, listen: false).fetchCalibrationRecords();
     } catch (error) {
@@ -97,9 +98,10 @@ class _MaintenanceHomeScreenState extends State<MaintenanceHomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SystemOverviewWidget(
-                      components: maintenanceProvider.components,
+                      components: maintenanceProvider.components, // Ensure this is a list of SystemComponent
                       onComponentTap: (component) => _showComponentDetails(context, component),
                     ),
+
                     SizedBox(height: 24),
                     MaintenanceScheduleWidget(
                       tasks: maintenanceProvider.tasks,
@@ -133,8 +135,8 @@ class _MaintenanceHomeScreenState extends State<MaintenanceHomeScreen> {
     );
   }
 
-  void _showComponentDetails(BuildContext context, Component component) {
-    // TODO: Navigate to a detailed component screen
+  void _showComponentDetails(BuildContext context, SystemComponent component) {
+    // Updated to use SystemComponent fields
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -143,9 +145,15 @@ class _MaintenanceHomeScreenState extends State<MaintenanceHomeScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Type: ${component.type}'),
-            Text('Status: ${component.status}'),
-            Text('Last Maintenance: ${component.lastMaintenanceDate.toString()}'),
+            Text('Description: ${component.description}'),
+            Text('Status: ${component.status.toString().split('.').last}'),
+            Text('Last Maintenance: ${component.lastCheckDate.toString()}'),
+            Text('Is Activated: ${component.isActivated ? "Yes" : "No"}'),
+            // Optionally, show min/max values or other details:
+            if (component.minValues.isNotEmpty)
+              Text('Min Values: ${component.minValues.toString()}'),
+            if (component.maxValues.isNotEmpty)
+              Text('Max Values: ${component.maxValues.toString()}'),
           ],
         ),
         actions: [
@@ -183,7 +191,7 @@ class _MaintenanceHomeScreenState extends State<MaintenanceHomeScreen> {
     );
   }
 
-  void _showCalibrationDetails(BuildContext context, Component component, CalibrationRecord? calibration) {
+  void _showCalibrationDetails(BuildContext context, SystemComponent component, CalibrationRecord? calibration) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

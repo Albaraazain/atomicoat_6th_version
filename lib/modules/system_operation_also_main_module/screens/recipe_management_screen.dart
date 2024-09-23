@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../enums/navigation_item.dart';
-import '../../../widgets/app_drawer.dart';
 import '../models/recipe.dart';
 import '../providers/recipe_provider.dart';
 import 'recipe_detail_screen.dart';

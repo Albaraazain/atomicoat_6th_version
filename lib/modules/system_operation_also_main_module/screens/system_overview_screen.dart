@@ -1,3 +1,5 @@
+// lib/modules/system_operation_also_main_module/screens/system_overview_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -41,7 +43,6 @@ class _SystemOverviewScreenState extends State<SystemOverviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // back button
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -73,7 +74,6 @@ class _SystemOverviewScreenState extends State<SystemOverviewScreen> {
         ],
       ),
       body: Consumer<SystemStateProvider>(
-
         builder: (context, systemProvider, child) {
           return Stack(
             children: [
@@ -136,15 +136,7 @@ class _SystemOverviewScreenState extends State<SystemOverviewScreen> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'system_overview_fab', // Unique tag for this FloatingActionButton
-        mini: true,
-        child: Icon(Icons.refresh, size: 20),
-        onPressed: () {
-          Provider.of<SystemStateProvider>(context, listen: false).refreshRecipes();
-        },
-        tooltip: 'Refresh System State',
-      ),
+
     );
   }
 }

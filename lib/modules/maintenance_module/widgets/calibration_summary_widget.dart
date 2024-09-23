@@ -1,16 +1,17 @@
 // lib/widgets/calibration_summary_widget.dart
+import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';
 import 'package:flutter/material.dart';
-import '../models/component.dart';
 import '../models/calibration_record.dart';
 import 'package:intl/intl.dart';
 
 class CalibrationSummaryWidget extends StatelessWidget {
-  final List<Component> components;
   final List<CalibrationRecord> calibrationRecords;
   final Function(String) getLatestCalibrationForComponent;
   final Function(String, Duration) isCalibrationDue;
-  final Function(BuildContext, Component, CalibrationRecord?) showCalibrationDetailsDialog;
+  final Function(BuildContext, SystemComponent, CalibrationRecord?) showCalibrationDetailsDialog;
   final Function(BuildContext) showCalibrationHistoryDialog;
+  // components of type <String, Component> meaning a map with String keys and Component values. a map is a collection of key-value pairs
+  final Map<String, SystemComponent> components;
 
   const CalibrationSummaryWidget({
     Key? key,
@@ -43,7 +44,7 @@ class CalibrationSummaryWidget extends StatelessWidget {
                 physics: NeverScrollableScrollPhysics(),
                 itemCount: components.length,
                 itemBuilder: (ctx, index) {
-                  return _buildComponentCalibrationStatus(ctx, components[index]);
+                  return _buildComponentCalibrationStatus(context, components.values.elementAt(index));
                 },
               ),
             SizedBox(height: 16),
@@ -57,7 +58,7 @@ class CalibrationSummaryWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildComponentCalibrationStatus(BuildContext context, Component component) {
+  Widget _buildComponentCalibrationStatus(BuildContext context, SystemComponent component) {
     final latestCalibration = getLatestCalibrationForComponent(component.id);
     final isCalibrationDueForComponent = isCalibrationDue(component.id, Duration(days: 30));
 
