@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'data_point.dart';
 
-enum ComponentStatus { normal, warning, error }
+enum ComponentStatus { normal, warning, error, ok }
 
 class SystemComponent {
   final String name;

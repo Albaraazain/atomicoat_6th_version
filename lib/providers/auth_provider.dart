@@ -99,7 +99,7 @@ class AuthProvider with ChangeNotifier {
       if (user != null) {
         await _updateUserInfo();
         print('After sign in - User role: $_userRole, User status: $_userStatus'); // Debug log
-        if (_userRole == UserRole.admin || _userStatus == 'approved') {
+        if (_userRole == UserRole.admin || _userStatus == 'active') {
           _isLoading = false;
           notifyListeners();
           return true;

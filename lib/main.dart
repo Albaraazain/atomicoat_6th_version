@@ -119,7 +119,7 @@ void main() async {
                     return _buildLoadingScreen();
                   }
                   if (authProvider.isAuthenticated) {
-                    if (authProvider.userStatus == 'approved' || authProvider.userRole == 'active') {
+                    if (authProvider.userStatus == 'approved' || authProvider.userStatus == 'active') {
                       return MainScreen();
                     } else if (authProvider.userStatus == 'pending') {
                       return _buildPendingApprovalScreen(context);

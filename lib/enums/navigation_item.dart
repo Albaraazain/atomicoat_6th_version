@@ -25,8 +25,6 @@ enum NavigationItem {
   overview,
   diagramDetails,
 
-  users,
-  requests,
   adminDashboard,
 
 }

@@ -153,6 +153,22 @@ class SystemComponentProvider with ChangeNotifier {
     }
   }
 
+  List<String> getSystemIssues() {
+    List<String> issues = [];
+    checkSystemReadiness(); // This will populate the issues list
+    return issues;
+  }
+
+  bool checkSystemReadiness() {
+    bool isReady = true;
+    _components.forEach((key, component) {
+      if (component.status != ComponentStatus.ok) {
+        isReady = false;
+      }
+    });
+    return isReady;
+  }
+
 
   Future<void> updateLastCheckDate(String componentId, DateTime date, {String? userId}) async {
     final component = _components[componentId];

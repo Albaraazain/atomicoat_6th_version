@@ -287,6 +287,12 @@ class SystemStateProvider with ChangeNotifier {
     }
   }
 
+  List<String> getSystemIssues() {
+    List<String> issues = [];
+    checkSystemReadiness(); // This will populate the issues list
+    return issues;
+  }
+
   void batchUpdateComponentValues(Map<String, Map<String, double>> updates) {
     updates.forEach((componentName, newStates) {
       final component = _componentProvider.getComponent(componentName);
@@ -295,6 +301,90 @@ class SystemStateProvider with ChangeNotifier {
       }
     });
     notifyListeners();
+  }
+
+  bool checkSystemReadiness() {
+    bool isReady = true;
+    List<String> issues = [];
+
+    // Check Nitrogen Flow
+    final nitrogenGenerator = getComponentByName('Nitrogen Generator');
+    if (nitrogenGenerator != null) {
+      if (!nitrogenGenerator.isActivated) {
+        isReady = false;
+        issues.add('Nitrogen Generator is not activated');
+      } else if (nitrogenGenerator.currentValues['flow_rate']! < 10.0) {
+        isReady = false;
+        issues.add('Nitrogen flow rate is too low');
+      }
+    } else {
+      isReady = false;
+      issues.add('Nitrogen Generator not found');
+    }
+
+    // Check MFC
+    final mfc = getComponentByName('MFC');
+    if (mfc != null) {
+      if (!mfc.isActivated) {
+        isReady = false;
+        issues.add('MFC is not activated');
+      } else if (mfc.currentValues['flow_rate']! != 20.0) {
+        isReady = false;
+        issues.add('MFC flow rate is not set to 20 SCCM');
+      }
+    } else {
+      isReady = false;
+      issues.add('MFC not found');
+    }
+
+    // Check Pressure
+    final pressureControlSystem = getComponentByName('Pressure Control System');
+    if (pressureControlSystem != null) {
+      if (!pressureControlSystem.isActivated) {
+        isReady = false;
+        issues.add('Pressure Control System is not activated');
+      } else if (pressureControlSystem.currentValues['pressure']! >= 760.0) {
+        isReady = false;
+        issues.add('Pressure is not below 760 Torr');
+      }
+    } else {
+      isReady = false;
+      issues.add('Pressure Control System not found');
+    }
+
+    // Check Pump
+    final pump = getComponentByName('Vacuum Pump');
+    if (pump != null) {
+      if (!pump.isActivated) {
+        isReady = false;
+        issues.add('Vacuum Pump is not activated');
+      }
+    } else {
+      isReady = false;
+      issues.add('Vacuum Pump not found');
+    }
+
+    // Check Heaters
+    final heaters = ['Precursor Heater 1', 'Precursor Heater 2', 'Frontline Heater', 'Backline Heater'];
+    for (var heaterName in heaters) {
+      final heater = getComponentByName(heaterName);
+      if (heater != null) {
+        if (!heater.isActivated) {
+          isReady = false;
+          issues.add('$heaterName is not activated');
+        }
+      } else {
+        isReady = false;
+        issues.add('$heaterName not found');
+      }
+    }
+
+    // Log issues if any
+    if (!isReady) {
+      issues.forEach((issue) => addLogEntry(issue, ComponentStatus.warning));
+    }
+
+    return isReady;
   }
 
   // Add a log entry
@@ -392,7 +482,7 @@ class SystemStateProvider with ChangeNotifier {
 
   // Start the system
   void startSystem() {
-    if (!_isSystemRunning && isSystemReadyForRecipe()) {
+    if (!_isSystemRunning && checkSystemReadiness()) {
       _isSystemRunning = true;
       _simulationService.startSimulation();
       _startContinuousStateLogging();
@@ -401,11 +491,24 @@ class SystemStateProvider with ChangeNotifier {
     } else {
       _alarmProvider.addAlarm(Alarm(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        message: 'System not ready to start',
+        message: 'System not ready to start. Check system readiness.',
         severity: AlarmSeverity.warning,
         timestamp: DateTime.now(),
       ));
     }
+  }
+
+  bool validateSetVsMonitoredValues() {
+    bool isValid = true;
+    for (var component in _componentProvider.components.values) {
+      for (var entry in component.currentValues.entries) {
+        if ((component.setValues[entry.key] ?? 0.0) != entry.value) {
+          isValid = false;
+          addLogEntry('Mismatch in ${component.name}: ${entry.key} set value does not match monitored value', ComponentStatus.warning);
+        }
+      }
+    }
+    return isValid;
   }
 
   // Stop the system
@@ -485,9 +588,7 @@ class SystemStateProvider with ChangeNotifier {
 
   // Check if system is ready for a recipe
   bool isSystemReadyForRecipe() {
-    return _componentProvider.components.values.every((component) =>
-    component.isActivated ||
-        component.name.toLowerCase().contains('valve'));
+    return checkSystemReadiness() && validateSetVsMonitoredValues();
   }
 
   // Execute a recipe

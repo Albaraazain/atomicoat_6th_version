@@ -30,20 +30,24 @@ class _LoginScreenState extends State<LoginScreen> {
         bool success = await authProvider.signIn(email: _email, password: _password);
 
         if (success) {
-          print('Login successful'); // Debug log
-          if (authProvider.userRole == UserRole.admin) {
-            print('Logged in as admin'); // Debug log
-            Navigator.of(context).pushReplacementNamed('/admin_dashboard');
-          } else {
-            print('Logged in as regular user'); // Debug log
-            Navigator.of(context).pushReplacementNamed('/home');
+          if (mounted) {
+            print('Login successful'); // Debug log
+            if (authProvider.userRole == UserRole.admin) {
+              print('Logged in as admin'); // Debug log
+              Navigator.of(context).pushReplacementNamed('/admin_dashboard');
+            } else {
+              print('Logged in as regular user'); // Debug log
+              Navigator.of(context).pushReplacementNamed('/home');
+            }
           }
         }
       } catch (e) {
-        print('Login error: $e'); // Debug log
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        if (mounted) {
+          print('Login error: $e'); // Debug log
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.toString())),
+          );
+        }
       } finally {
         if (mounted) {
           setState(() {
@@ -53,6 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
+
 
 
   Widget _buildTextFormField({

@@ -13,6 +13,75 @@ import '../widgets/recipe_progress_indicator.dart';
 import '../widgets/alarm_indicator.dart';
 import '../widgets/recipe_control.dart';
 
+class SystemReadinessIndicator extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final systemProvider = Provider.of<SystemStateProvider>(context);
+    final isReady = systemProvider.checkSystemReadiness();
+    final issues = systemProvider.getSystemIssues();
+
+    return Container(
+      padding: EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: isReady ? Colors.green.withOpacity(0.7) : Colors.red.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            isReady ? 'System Ready' : 'System Not Ready',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          if (!isReady) ...[
+            SizedBox(height: 8),
+            Text(
+              'Issues:',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            ...issues.map((issue) => Text(
+              '• $issue',
+              style: TextStyle(color: Colors.white, fontSize: 12),
+            )),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class SystemIssuesDisplay extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final systemProvider = Provider.of<SystemStateProvider>(context);
+    final issues = systemProvider.getSystemIssues();
+
+    return Container(
+      width: 300,
+      padding: EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.black54,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'System Issues:',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          if (issues.isEmpty)
+            Text('No issues detected', style: TextStyle(color: Colors.green))
+          else
+            ...issues.map((issue) => Text('• $issue', style: TextStyle(color: Colors.white))),
+        ],
+      ),
+    );
+  }
+}
+
 class SystemOverviewScreen extends StatefulWidget {
   const SystemOverviewScreen({Key? key}) : super(key: key);
 
@@ -132,11 +201,16 @@ class _SystemOverviewScreenState extends State<SystemOverviewScreen> {
                     ),
                   ),
                 ),
+              // Add the new SystemReadinessIndicator
+              Positioned(
+                top: 60,
+                left: 10,
+                child: SystemReadinessIndicator(),
+              ),
             ],
           );
         },
       ),
-
     );
   }
 }
