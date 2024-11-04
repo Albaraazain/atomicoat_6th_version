@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/system_component.dart';
-import '../providers/system_copmonent_provider.dart';
 import '../providers/system_state_provider.dart';
 
 class GraphOverlay extends StatefulWidget {

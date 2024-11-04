@@ -2,7 +2,6 @@
 
 import 'package:flutter/foundation.dart';
 import '../../../repositories/system_component_repository.dart';
-import '../../../utils/data_point_cache.dart';
 import '../models/system_component.dart';
 import '../models/data_point.dart';
 
@@ -13,14 +12,9 @@ class SystemComponentProvider with ChangeNotifier {
   // cache datapoints
   // final DataPointCache _dataPointCache = DataPointCache();
 
-
-
-
   // getter for components names
   List<String> get componentNames => _components.keys.toList();
   Map<String, SystemComponent> get components => {..._components};
-
-
 
   Future<void> fetchComponents({String? userId}) async {
     try {
@@ -63,7 +57,8 @@ class SystemComponentProvider with ChangeNotifier {
   }
 
   Future<void> updateComponentCurrentValues(
-      String componentId, Map<String, double> newValues, {String? userId}) async {
+      String componentId, Map<String, double> newValues,
+      {String? userId}) async {
     final component = _components[componentId];
     if (component != null) {
       component.updateCurrentValues(newValues);
@@ -73,7 +68,8 @@ class SystemComponentProvider with ChangeNotifier {
   }
 
   Future<void> updateComponentSetValues(
-      String componentId, Map<String, double> newSetValues, {String? userId}) async {
+      String componentId, Map<String, double> newSetValues,
+      {String? userId}) async {
     final component = _components[componentId];
     if (component != null) {
       component.updateSetValues(newSetValues);
@@ -100,13 +96,16 @@ class SystemComponentProvider with ChangeNotifier {
     }
   }
 
-  Future<void> activateComponents(List<String> componentIds, {String? userId}) async {
+  Future<void> activateComponents(List<String> componentIds,
+      {String? userId}) async {
     for (var componentId in componentIds) {
       await activateComponent(componentId, userId: userId);
     }
   }
 
-  Future<void> updateComponentStatus(String componentId, ComponentStatus newStatus, {String? userId}) async {
+  Future<void> updateComponentStatus(
+      String componentId, ComponentStatus newStatus,
+      {String? userId}) async {
     final component = _components[componentId];
     if (component != null && component.status != newStatus) {
       component.status = newStatus;
@@ -115,7 +114,29 @@ class SystemComponentProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addErrorMessage(String componentId, String message, {String? userId}) async {
+  Future<void> updateComponentValue(
+      String componentId, String parameter, double newValue,
+      {String? userId}) async {
+    final component = _components[componentId];
+    if (component != null) {
+      // Update both set and current values
+      component.setValues[parameter] = newValue;
+      component.updateCurrentValues({parameter: newValue});
+
+      // Add to parameter history
+      addParameterDataPoint(
+        componentId,
+        parameter,
+        DataPoint(timestamp: DateTime.now(), value: newValue),
+      );
+
+      await _repository.update(componentId, component, userId: userId);
+      notifyListeners();
+    }
+  }
+
+  Future<void> addErrorMessage(String componentId, String message,
+      {String? userId}) async {
     final component = _components[componentId];
     if (component != null) {
       component.addErrorMessage(message);
@@ -134,15 +155,13 @@ class SystemComponentProvider with ChangeNotifier {
   }
 
   Future<void> addParameterDataPoint(
-      String componentId,
-      String parameter,
-      DataPoint dataPoint,
-      {int maxDataPoints = 1000}
-      ) async {
+      String componentId, String parameter, DataPoint dataPoint,
+      {int maxDataPoints = 1000}) async {
     final component = _components[componentId];
     if (component != null) {
       if (!component.parameterHistory.containsKey(parameter)) {
-        component.parameterHistory[parameter] = CircularBuffer<DataPoint>(maxDataPoints);
+        component.parameterHistory[parameter] =
+            CircularBuffer<DataPoint>(maxDataPoints);
       }
       component.parameterHistory[parameter]!.add(dataPoint);
       if (component.parameterHistory[parameter]!.length > maxDataPoints) {
@@ -169,8 +188,8 @@ class SystemComponentProvider with ChangeNotifier {
     return isReady;
   }
 
-
-  Future<void> updateLastCheckDate(String componentId, DateTime date, {String? userId}) async {
+  Future<void> updateLastCheckDate(String componentId, DateTime date,
+      {String? userId}) async {
     final component = _components[componentId];
     if (component != null) {
       component.updateLastCheckDate(date);
@@ -179,7 +198,9 @@ class SystemComponentProvider with ChangeNotifier {
     }
   }
 
-  Future<void> updateMinValues(String componentId, Map<String, double> minValues, {String? userId}) async {
+  Future<void> updateMinValues(
+      String componentId, Map<String, double> minValues,
+      {String? userId}) async {
     final component = _components[componentId];
     if (component != null) {
       component.updateMinValues(minValues);
@@ -188,7 +209,9 @@ class SystemComponentProvider with ChangeNotifier {
     }
   }
 
-  Future<void> updateMaxValues(String componentId, Map<String, double> maxValues, {String? userId}) async {
+  Future<void> updateMaxValues(
+      String componentId, Map<String, double> maxValues,
+      {String? userId}) async {
     final component = _components[componentId];
     if (component != null) {
       component.updateMaxValues(maxValues);
@@ -206,7 +229,9 @@ class SystemComponentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setComponentSetValue(String componentId, String parameter, double newValue, {String? userId}) async {
+  Future<void> setComponentSetValue(
+      String componentId, String parameter, double newValue,
+      {String? userId}) async {
     final component = _components[componentId];
     if (component != null) {
       component.setValues[parameter] = newValue;
@@ -219,6 +244,4 @@ class SystemComponentProvider with ChangeNotifier {
     _components[component.id] = component;
     notifyListeners();
   }
-
-
 }

@@ -222,3 +222,65 @@ class CircularBuffer<T> {
     return Iterable.generate(_length, (index) => toElement(this[index]!));
   }
 }
+
+// enum ComponentStatus { normal, warning, error, ok }
+
+// class SystemComponent {
+//     // Core properties for component identification and status
+//     final String name;
+//     final String description;
+//     ComponentStatus status;
+//     final Map<String, double> currentValues;
+//     final Map<String, double> setValues;
+//     final List<String> errorMessages;
+//     final Map<String, CircularBuffer<DataPoint>> parameterHistory;
+//     bool isActivated;
+//     DateTime? lastCheckDate;
+//     final Map<String, double> minValues;
+//     final Map<String, double> maxValues;
+
+//     /// Constructor to initialize a system component with required parameters
+//     /// @param name: Component identifier
+//     /// @param description: Component description
+//     /// @param currentValues: Current parameter values
+//     /// @param setValues: Target parameter values
+//     SystemComponent({
+//         required this.name,
+//         required this.description,
+//         this.status = ComponentStatus.normal,
+//         required Map<String, double> currentValues,
+//         required Map<String, double> setValues,
+//         List<String>? errorMessages,
+//         this.isActivated = false,
+//         this.lastCheckDate,
+//         Map<String, double>? minValues,
+//         Map<String, double>? maxValues,
+//     });
+
+//     /// Updates the current values of component parameters
+//     /// @param values: Map of parameter names to new values
+//     void updateCurrentValues(Map<String, double> values);
+
+//     /// Updates the set/target values for component parameters
+//     /// @param values: Map of parameter names to new target values
+//     void updateSetValues(Map<String, double> values);
+
+//     /// Adds an error message to the component's error log
+//     /// @param message: Error message to add
+//     void addErrorMessage(String message);
+
+//     /// Clears all error messages from the component
+//     void clearErrorMessages();
+
+//     /// Updates the last maintenance check date
+//     /// @param date: New check date
+//     void updateLastCheckDate(DateTime date);
+
+//     /// Updates minimum allowed values for parameters
+//     /// @param newMinValues: Map of parameter names to minimum values
+//     void updateMinValues(Map<String, double> newMinValues);
+
+//     /// Updates maximum allowed values for parameters
+//     /// @param newMaxValues: Map of parameter names to maximum values
+//     void updateMaxValues(Map<String, double> newMaxValues);
+// }

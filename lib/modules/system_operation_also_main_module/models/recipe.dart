@@ -93,3 +93,57 @@ class RecipeStep {
 enum StepType { loop, valve, purge, setParameter }
 
 enum ValveType { valveA, valveB }
+
+
+/*
+class Recipe {
+    /// Unique identifier for the recipe
+    String id;
+    /// Recipe name
+    String name;
+    /// Ordered list of recipe steps
+    List<RecipeStep> steps;
+    /// Substrate material
+    String substrate;
+    /// Target chamber temperature
+    double chamberTemperatureSetPoint;
+    /// Target pressure
+    double pressureSetPoint;
+    /// Recipe version number
+    int version;
+    /// Last modification timestamp
+    DateTime lastModified;
+
+    /// Constructor for creating a new recipe
+    Recipe({
+        required this.id,
+        required this.name,
+        required this.steps,
+        required this.substrate,
+        this.chamberTemperatureSetPoint = 150.0,
+        this.pressureSetPoint = 1.0,
+        this.version = 1,
+        DateTime? lastModified,
+    });
+}
+
+class RecipeStep {
+    /// Type of recipe step (loop, valve, purge, setParameter)
+    StepType type;
+    /// Parameters specific to the step type
+    Map<String, dynamic> parameters;
+    /// Sub-steps for loop type steps
+    List<RecipeStep>? subSteps;
+
+    /// Constructor for creating a recipe step
+    RecipeStep({
+        required this.type,
+        required this.parameters,
+        this.subSteps,
+    });
+}
+
+enum StepType { loop, valve, purge, setParameter }
+enum ValveType { valveA, valveB }
+
+*/

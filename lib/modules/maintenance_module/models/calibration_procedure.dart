@@ -46,3 +46,45 @@ class CalibrationProcedure {
     steps: (json['steps'] as List).map((step) => CalibrationStep.fromJson(step)).toList(),
   );
 }
+
+/*
+dart
+Copy
+class CalibrationStep {
+    /// Instruction text for this calibration step
+    final String instruction;
+    /// Expected measurement value
+    final String? expectedValue;
+    /// Unit of measurement
+    final String? unit;
+
+    /// Constructor for creating a calibration step
+    /// @param instruction: Step instruction text
+    /// @param expectedValue: Optional expected measurement
+    /// @param unit: Optional unit of measurement
+    CalibrationStep({
+        required this.instruction,
+        this.expectedValue,
+        this.unit,
+    });
+}
+
+class CalibrationProcedure {
+    /// ID of component to calibrate
+    final String componentId;
+    /// Name of component to calibrate
+    final String componentName;
+    /// Ordered list of calibration steps
+    final List<CalibrationStep> steps;
+
+    /// Constructor for creating a calibration procedure
+    /// @param componentId: Component to calibrate
+    /// @param componentName: Name of component
+    /// @param steps: Ordered list of calibration steps
+    CalibrationProcedure({
+        required this.componentId,
+        required this.componentName,
+        required this.steps,
+    });
+}
+*/

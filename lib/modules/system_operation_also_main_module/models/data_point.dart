@@ -28,3 +28,26 @@ class DataPoint {
     return 'DataPoint(timestamp: $timestamp, value: ${value.toStringAsFixed(2)})';
   }
 }
+
+/*
+
+class DataPoint {
+    /// Timestamp of the data point
+    final DateTime timestamp;
+    /// Measured value
+    final double value;
+
+    /// Constructor for creating a new data point
+    DataPoint({
+        required this.timestamp,
+        required this.value
+    });
+
+    /// Creates a data point with reduced precision for storage efficiency
+    DataPoint.reducedPrecision({
+        required this.timestamp,
+        required double value
+    });
+}
+
+ */
