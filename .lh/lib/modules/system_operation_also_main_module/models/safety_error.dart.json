@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/modules/system_operation_also_main_module/models/safety_error.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1730731498058,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1730731498058,
+            "name": "Commit-0",
+            "content": "class SafetyError {\r\n  final String id;\r\n  final String description;\r\n  final SafetyErrorSeverity severity;\r\n\r\n  SafetyError({\r\n    required this.id,\r\n    required this.description,\r\n    required this.severity,\r\n  });\r\n\r\n  factory SafetyError.fromJson(Map<String, dynamic> json) {\r\n    return SafetyError(\r\n      id: json['id'] as String,\r\n      description: json['description'] as String,\r\n      severity: SafetyErrorSeverity.values.firstWhere((e) => e.toString() == 'SafetyErrorSeverity.${json['severity']}'),\r\n    );\r\n  }\r\n\r\n  Map<String, dynamic> toJson() => {\r\n    'id': id,\r\n    'description': description,\r\n    'severity': severity.toString().split('.').last,\r\n  };\r\n}\r\n\r\nenum SafetyErrorSeverity {\r\n  warning,\r\n  critical\r\n}\r\n\r\n/*\r\n\r\nenum SafetyErrorSeverity { warning, critical }\r\n\r\nclass SafetyError {\r\n    /// Unique identifier for the safety error\r\n    final String id;\r\n    /// Description of the safety issue\r\n    final String description;\r\n    /// Severity level of the safety error\r\n    final SafetyErrorSeverity severity;\r\n\r\n    /// Constructor for creating a new safety error\r\n    SafetyError({\r\n        required this.id,\r\n        required this.description,\r\n        required this.severity,\r\n    });\r\n}\r\n */"
+        }
+    ]
+}

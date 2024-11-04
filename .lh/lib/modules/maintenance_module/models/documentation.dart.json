@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/modules/maintenance_module/models/documentation.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1730749697613,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1730749697613,
+            "name": "Commit-0",
+            "content": "// lib/models/documentation.dart\r\nclass Documentation {\r\n  final String id;\r\n  final String title;\r\n  final String content;\r\n  final String category;\r\n  final DateTime lastUpdated;\r\n\r\n  Documentation({\r\n    required this.id,\r\n    required this.title,\r\n    required this.content,\r\n    required this.category,\r\n    required this.lastUpdated,\r\n  });\r\n\r\n  factory Documentation.fromJson(Map<String, dynamic> json) {\r\n    return Documentation(\r\n      id: json['id'],\r\n      title: json['title'],\r\n      content: json['content'],\r\n      category: json['category'],\r\n      lastUpdated: DateTime.parse(json['lastUpdated']),\r\n    );\r\n  }\r\n\r\n  Map<String, dynamic> toJson() {\r\n    return {\r\n      'id': id,\r\n      'title': title,\r\n      'content': content,\r\n      'category': category,\r\n      'lastUpdated': lastUpdated.toIso8601String(),\r\n    };\r\n  }\r\n}\r\n\r\n/*\r\n\r\nclass Documentation {\r\n    /// Unique identifier for the document\r\n    final String id;\r\n    /// Document title\r\n    final String title;\r\n    /// Document content\r\n    final String content;\r\n    /// Document category/type\r\n    final String category;\r\n    /// Last update timestamp\r\n    final DateTime lastUpdated;\r\n\r\n    /// Constructor for creating a new documentation entry\r\n    /// @param id: Unique identifier\r\n    /// @param title: Document title\r\n    /// @param content: Document content\r\n    /// @param category: Document category\r\n    /// @param lastUpdated: Last modification timestamp\r\n    Documentation({\r\n        required this.id,\r\n        required this.title,\r\n        required this.content,\r\n        required this.category,\r\n        required this.lastUpdated,\r\n    });\r\n}\r\n\r\n */"
+        }
+    ]
+}

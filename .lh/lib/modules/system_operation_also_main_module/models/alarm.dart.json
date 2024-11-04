@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/modules/system_operation_also_main_module/models/alarm.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1730731474793,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1730731474793,
+            "name": "Commit-0",
+            "content": "// lib/modules/system_operation_also_main_module/models/alarm.dart\r\n\r\nimport 'package:cloud_firestore/cloud_firestore.dart';\r\n\r\nclass Alarm {\r\n  final String id;\r\n  final String message;\r\n  final AlarmSeverity severity;\r\n  final DateTime timestamp;\r\n  bool acknowledged;\r\n  final bool isSafetyAlert;\r\n\r\n  Alarm({\r\n    required this.id,\r\n    required this.message,\r\n    required this.severity,\r\n    required this.timestamp,\r\n    this.acknowledged = false,\r\n    this.isSafetyAlert = false,\r\n  });\r\n\r\n  factory Alarm.fromJson(Map<String, dynamic> json) {\r\n    return Alarm(\r\n      id: json['id'] as String,\r\n      message: json['message'] as String,\r\n      severity: AlarmSeverity.values.firstWhere((e) => e.toString() == 'AlarmSeverity.${json['severity']}'),\r\n      timestamp: (json['timestamp'] as Timestamp).toDate(),\r\n      acknowledged: json['acknowledged'] as bool? ?? false,\r\n      isSafetyAlert: json['isSafetyAlert'] as bool? ?? false,\r\n    );\r\n  }\r\n\r\n  Map<String, dynamic> toJson() => {\r\n    'id': id,\r\n    'message': message,\r\n    'severity': severity.toString().split('.').last,\r\n    'timestamp': Timestamp.fromDate(timestamp),\r\n    'acknowledged': acknowledged,\r\n    'isSafetyAlert': isSafetyAlert,\r\n  };\r\n\r\n  Alarm copyWith({\r\n    String? id,\r\n    String? message,\r\n    AlarmSeverity? severity,\r\n    DateTime? timestamp,\r\n    bool? acknowledged,\r\n    bool? isSafetyAlert,\r\n  }) {\r\n    return Alarm(\r\n      id: id ?? this.id,\r\n      message: message ?? this.message,\r\n      severity: severity ?? this.severity,\r\n      timestamp: timestamp ?? this.timestamp,\r\n      acknowledged: acknowledged ?? this.acknowledged,\r\n      isSafetyAlert: isSafetyAlert ?? this.isSafetyAlert,\r\n    );\r\n  }\r\n}\r\n\r\nenum AlarmSeverity {\r\n  info,\r\n  warning,\r\n  critical\r\n}\r\n\r\n/*\r\ndart\r\nCopy\r\nenum AlarmSeverity { info, warning, critical }\r\n\r\nclass Alarm {\r\n    /// Unique identifier for the alarm\r\n    final String id;\r\n    /// Alarm message describing the issue\r\n    final String message;\r\n    /// Severity level of the alarm\r\n    final AlarmSeverity severity;\r\n    /// Timestamp when alarm was created\r\n    final DateTime timestamp;\r\n    /// Whether the alarm has been acknowledged\r\n    bool acknowledged;\r\n    /// Whether this is a safety-related alarm\r\n    final bool isSafetyAlert;\r\n\r\n    /// Constructor for creating a new alarm\r\n    Alarm({\r\n        required this.id,\r\n        required this.message,\r\n        required this.severity,\r\n        required this.timestamp,\r\n        this.acknowledged = false,\r\n        this.isSafetyAlert = false,\r\n    });\r\n\r\n    /// Creates a copy of the alarm with optional parameter updates\r\n    Alarm copyWith({\r\n        String? id,\r\n        String? message,\r\n        AlarmSeverity? severity,\r\n        DateTime? timestamp,\r\n        bool? acknowledged,\r\n        bool? isSafetyAlert,\r\n    });\r\n}\r\n*/"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/modules/maintenance_module/models/calibration_procedure.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1730731684544,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1730731684544,
+            "name": "Commit-0",
+            "content": "// lib/models/calibration_procedure.dart\r\nclass CalibrationStep {\r\n  final String instruction;\r\n  final String? expectedValue;\r\n  final String? unit;\r\n\r\n  CalibrationStep({\r\n    required this.instruction,\r\n    this.expectedValue,\r\n    this.unit,\r\n  });\r\n\r\n  Map<String, dynamic> toJson() => {\r\n    'instruction': instruction,\r\n    'expectedValue': expectedValue,\r\n    'unit': unit,\r\n  };\r\n\r\n  factory CalibrationStep.fromJson(Map<String, dynamic> json) => CalibrationStep(\r\n    instruction: json['instruction'],\r\n    expectedValue: json['expectedValue'],\r\n    unit: json['unit'],\r\n  );\r\n}\r\n\r\nclass CalibrationProcedure {\r\n  final String componentId;\r\n  final String componentName;\r\n  final List<CalibrationStep> steps;\r\n\r\n  CalibrationProcedure({\r\n    required this.componentId,\r\n    required this.componentName,\r\n    required this.steps,\r\n  });\r\n\r\n  Map<String, dynamic> toJson() => {\r\n    'componentId': componentId,\r\n    'componentName': componentName,\r\n    'steps': steps.map((step) => step.toJson()).toList(),\r\n  };\r\n\r\n  factory CalibrationProcedure.fromJson(Map<String, dynamic> json) => CalibrationProcedure(\r\n    componentId: json['componentId'],\r\n    componentName: json['componentName'],\r\n    steps: (json['steps'] as List).map((step) => CalibrationStep.fromJson(step)).toList(),\r\n  );\r\n}\r\n\r\n/*\r\ndart\r\nCopy\r\nclass CalibrationStep {\r\n    /// Instruction text for this calibration step\r\n    final String instruction;\r\n    /// Expected measurement value\r\n    final String? expectedValue;\r\n    /// Unit of measurement\r\n    final String? unit;\r\n\r\n    /// Constructor for creating a calibration step\r\n    /// @param instruction: Step instruction text\r\n    /// @param expectedValue: Optional expected measurement\r\n    /// @param unit: Optional unit of measurement\r\n    CalibrationStep({\r\n        required this.instruction,\r\n        this.expectedValue,\r\n        this.unit,\r\n    });\r\n}\r\n\r\nclass CalibrationProcedure {\r\n    /// ID of component to calibrate\r\n    final String componentId;\r\n    /// Name of component to calibrate\r\n    final String componentName;\r\n    /// Ordered list of calibration steps\r\n    final List<CalibrationStep> steps;\r\n\r\n    /// Constructor for creating a calibration procedure\r\n    /// @param componentId: Component to calibrate\r\n    /// @param componentName: Name of component\r\n    /// @param steps: Ordered list of calibration steps\r\n    CalibrationProcedure({\r\n        required this.componentId,\r\n        required this.componentName,\r\n        required this.steps,\r\n    });\r\n}\r\n*/"
+        }
+    ]
+}

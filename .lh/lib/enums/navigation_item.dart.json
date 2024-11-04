@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/enums/navigation_item.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1730731808695,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1730731808695,
+            "name": "Commit-0",
+            "content": "// lib/enums/navigation_item.dart\r\n\r\nenum NavigationItem {\r\n  // Maintenance Module\r\n  mainDashboard,\r\n  calibration,\r\n  reporting,\r\n  schedule,\r\n  reports,\r\n  troubleshooting,\r\n  spareParts,\r\n  documentation,\r\n  remoteAssistance,\r\n  safetyProcedures,\r\n\r\n  // System Operation Module\r\n  recipeManagement,\r\n\r\n  // Others Section\r\n  profile,\r\n  settings,\r\n  helpSupport,\r\n\r\n  // System Diagram View Module\r\n  overview,\r\n  diagramDetails,\r\n\r\n  adminDashboard,\r\n\r\n}\r\n\r\n/*\r\n/// Enum defining all available navigation destinations in the app\r\nenum NavigationItem {\r\n    // Maintenance Module\r\n    mainDashboard,\r\n    calibration,\r\n    reporting,\r\n    schedule,\r\n    reports,\r\n    troubleshooting,\r\n    spareParts,\r\n    documentation,\r\n    remoteAssistance,\r\n    safetyProcedures,\r\n\r\n    // System Operation Module\r\n    recipeManagement,\r\n\r\n    // Others Section\r\n    profile,\r\n    settings,\r\n    helpSupport,\r\n\r\n    // System Diagram View Module\r\n    overview,\r\n    diagramDetails,\r\n    \r\n    adminDashboard,\r\n}\r\n*/\r\n"
+        }
+    ]
+}

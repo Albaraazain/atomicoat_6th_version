@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/modules/system_operation_also_main_module/models/data_point.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1730731536073,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1730731536073,
+            "name": "Commit-0",
+            "content": "// In data_point.dart\r\n\r\nclass DataPoint {\r\n  final DateTime timestamp;\r\n  final double value;\r\n\r\n  DataPoint({required this.timestamp, required this.value});\r\n\r\n  DataPoint.reducedPrecision({required this.timestamp, required double value})\r\n      : this.value = double.parse(value.toStringAsFixed(2));\r\n\r\n  factory DataPoint.fromJson(Map<String, dynamic> json) {\r\n    return DataPoint(\r\n      timestamp: DateTime.fromMillisecondsSinceEpoch(json['timestamp']),\r\n      value: json['value'].toDouble(),\r\n    );\r\n  }\r\n\r\n  Map<String, dynamic> toJson() {\r\n    return {\r\n      'timestamp': timestamp.millisecondsSinceEpoch,\r\n      'value': value,\r\n    };\r\n  }\r\n\r\n  @override\r\n  String toString() {\r\n    return 'DataPoint(timestamp: $timestamp, value: ${value.toStringAsFixed(2)})';\r\n  }\r\n}\r\n\r\n/*\r\n\r\nclass DataPoint {\r\n    /// Timestamp of the data point\r\n    final DateTime timestamp;\r\n    /// Measured value\r\n    final double value;\r\n\r\n    /// Constructor for creating a new data point\r\n    DataPoint({\r\n        required this.timestamp,\r\n        required this.value\r\n    });\r\n\r\n    /// Creates a data point with reduced precision for storage efficiency\r\n    DataPoint.reducedPrecision({\r\n        required this.timestamp,\r\n        required double value\r\n    });\r\n}\r\n\r\n */"
+        }
+    ]
+}
