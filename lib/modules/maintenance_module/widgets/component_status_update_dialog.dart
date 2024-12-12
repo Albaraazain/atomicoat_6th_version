@@ -1,11 +1,12 @@
 // lib/widgets/component_status_update_dialog.dart
 import 'package:flutter/material.dart';
-import '../models/component.dart';
+
+import '../../system_operation_also_main_module/models/system_component.dart';
 
 class ComponentStatusUpdateDialog extends StatefulWidget {
-  final Component component;
-  final Function(String, String) onUpdate;
-
+  final SystemComponent component;
+  final Function(ComponentStatus, String) onUpdate;
+  
   const ComponentStatusUpdateDialog({
     Key? key,
     required this.component,
@@ -17,7 +18,7 @@ class ComponentStatusUpdateDialog extends StatefulWidget {
 }
 
 class _ComponentStatusUpdateDialogState extends State<ComponentStatusUpdateDialog> {
-  late String _selectedStatus;
+  late ComponentStatus _selectedStatus;
   final TextEditingController _notesController = TextEditingController();
 
   @override
@@ -44,9 +45,9 @@ class _ComponentStatusUpdateDialogState extends State<ComponentStatusUpdateDialo
             Text('Current Status: ${widget.component.status}'),
             SizedBox(height: 16),
             Text('Select New Status:'),
-            _buildStatusRadioListTile('Normal', 'normal'),
-            _buildStatusRadioListTile('Warning', 'warning'),
-            _buildStatusRadioListTile('Error', 'error'),
+            _buildStatusRadioListTile('Normal', ComponentStatus.normal),
+            _buildStatusRadioListTile('Warning', ComponentStatus.warning),
+            _buildStatusRadioListTile('Error', ComponentStatus.error),
             SizedBox(height: 16),
             TextField(
               controller: _notesController,
@@ -76,12 +77,12 @@ class _ComponentStatusUpdateDialogState extends State<ComponentStatusUpdateDialo
     );
   }
 
-  Widget _buildStatusRadioListTile(String title, String value) {
-    return RadioListTile<String>(
+  Widget _buildStatusRadioListTile(String title, ComponentStatus value) {
+    return RadioListTile<ComponentStatus>(
       title: Text(title),
       value: value,
       groupValue: _selectedStatus,
-      onChanged: (String? newValue) {
+      onChanged: (ComponentStatus? newValue) {
         if (newValue != null) {
           setState(() {
             _selectedStatus = newValue;
@@ -90,6 +91,7 @@ class _ComponentStatusUpdateDialogState extends State<ComponentStatusUpdateDialo
       },
     );
   }
+
 
   void _showConfirmationSnackBar(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(

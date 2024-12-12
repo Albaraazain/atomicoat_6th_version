@@ -1,13 +1,11 @@
 // lib/providers/auth_provider.dart
 
 import 'package:flutter/foundation.dart';
-import '../repositories/machine_serial.dart';
 import '../services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../enums/user_role.dart';
 
 class AuthProvider with ChangeNotifier {
-  final AuthService _authService = AuthService();
   User? _user;
   UserRole? _userRole;
   String? _userStatus;
@@ -25,8 +23,9 @@ class AuthProvider with ChangeNotifier {
     return _userStatus == 'approved' || _userStatus == 'active';
   }
 
-  AuthProvider() {
-    // Initialize the provider. this is important because it will allow us to listen to the auth state changes and update the user and userRole properties
+  final AuthService _authService;
+
+  AuthProvider(this._authService) {
     _init();
   }
 
@@ -100,7 +99,7 @@ class AuthProvider with ChangeNotifier {
       if (user != null) {
         await _updateUserInfo();
         print('After sign in - User role: $_userRole, User status: $_userStatus'); // Debug log
-        if (_userRole == UserRole.admin || _userStatus == 'approved') {
+        if (_userRole == UserRole.admin || _userStatus == 'active') {
           _isLoading = false;
           notifyListeners();
           return true;

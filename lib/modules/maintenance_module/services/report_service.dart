@@ -2,9 +2,9 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
+import '../../system_operation_also_main_module/models/system_component.dart';
 import '../models/maintenance_task.dart';
 import '../models/calibration_record.dart';
-import '../models/component.dart';
 import 'package:intl/intl.dart';
 
 class ReportService {
@@ -72,37 +72,40 @@ class ReportService {
     return _savePdfFile(pdf, 'calibration_report.pdf');
   }
 
-  Future<File> generateComponentStatusReport(List<Component> components) async {
-    final pdf = pw.Document();
+  Future<File> generateComponentStatusReport(Map<String, SystemComponent> componentMap) async {
+  final pdf = pw.Document();
 
-    pdf.addPage(
-      pw.Page(
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Header(level: 0, child: pw.Text('Component Status Report')),
-              pw.SizedBox(height: 20),
-              pw.Table.fromTextArray(
-                context: context,
-                data: <List<String>>[
-                  <String>['Component', 'Type', 'Status', 'Last Maintenance'],
-                  ...components.map((component) => [
-                    component.name,
-                    component.type,
-                    component.status,
-                    DateFormat('yyyy-MM-dd').format(component.lastMaintenanceDate),
-                  ]),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-    );
+  // Convert the map to a list of SystemComponent
+  final components = componentMap.values.toList();
 
-    return _savePdfFile(pdf, 'component_status_report.pdf');
-  }
+  pdf.addPage(
+    pw.Page(
+      build: (pw.Context context) {
+        return pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Header(level: 0, child: pw.Text('Component Status Report')),
+            pw.SizedBox(height: 20),
+            pw.Table.fromTextArray(
+              context: context,
+              data: <List<String>>[
+                <String>['Component', 'Type', 'Status', 'Last Maintenance'],
+                ...components.map((component) => [
+                  component.name,
+                  component.type,
+                  component.status.toString(),
+                  DateFormat('yyyy-MM-dd').format(component.lastMaintenanceDate),
+                ]),
+              ],
+            ),
+          ],
+        );
+      },
+    ),
+  );
+
+  return _savePdfFile(pdf, 'component_status_report.pdf');
+}
 
   Future<File> _savePdfFile(pw.Document pdf, String fileName) async {
     final output = await getTemporaryDirectory();

@@ -63,3 +63,44 @@ enum AlarmSeverity {
   warning,
   critical
 }
+
+/*
+dart
+Copy
+enum AlarmSeverity { info, warning, critical }
+
+class Alarm {
+    /// Unique identifier for the alarm
+    final String id;
+    /// Alarm message describing the issue
+    final String message;
+    /// Severity level of the alarm
+    final AlarmSeverity severity;
+    /// Timestamp when alarm was created
+    final DateTime timestamp;
+    /// Whether the alarm has been acknowledged
+    bool acknowledged;
+    /// Whether this is a safety-related alarm
+    final bool isSafetyAlert;
+
+    /// Constructor for creating a new alarm
+    Alarm({
+        required this.id,
+        required this.message,
+        required this.severity,
+        required this.timestamp,
+        this.acknowledged = false,
+        this.isSafetyAlert = false,
+    });
+
+    /// Creates a copy of the alarm with optional parameter updates
+    Alarm copyWith({
+        String? id,
+        String? message,
+        AlarmSeverity? severity,
+        DateTime? timestamp,
+        bool? acknowledged,
+        bool? isSafetyAlert,
+    });
+}
+*/

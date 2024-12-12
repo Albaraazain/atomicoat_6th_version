@@ -1,41 +1,25 @@
 // lib/providers/system_state_provider.dart
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:experiment_planner/modules/system_operation_also_main_module/providers/system_copmonent_provider.dart';
 import 'package:flutter/foundation.dart';
 import '../../../repositories/system_state_repository.dart';
 import '../../../services/auth_service.dart';
 import '../models/data_point.dart';
-import '../models/safety_error.dart';
-import '../models/system_component.dart';
 import '../models/recipe.dart';
 import '../models/alarm.dart';
+import '../models/system_component.dart';
 import '../models/system_log_entry.dart';
+import '../models/safety_error.dart';
 import '../services/ald_system_simulation_service.dart';
 import 'recipe_provider.dart';
 import 'alarm_provider.dart';
-
-enum NotificationSeverity { info, warning, error }
-
-class Notification {
-  final String id;
-  final String message;
-  final NotificationSeverity severity;
-  final DateTime timestamp;
-
-
-  Notification({
-    required this.id,
-    required this.message,
-    required this.severity,
-    required this.timestamp,
-  });
-}
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SystemStateProvider with ChangeNotifier {
   final SystemStateRepository _systemStateRepository;
   final AuthService _authService;
-  final Map<String, SystemComponent> _components = {};
+  final SystemComponentProvider _componentProvider;
   Recipe? _activeRecipe;
   int _currentRecipeStepIndex = 0;
   Recipe? _selectedRecipe;
@@ -45,51 +29,40 @@ class SystemStateProvider with ChangeNotifier {
   late RecipeProvider _recipeProvider;
   late AlarmProvider _alarmProvider;
   Timer? _stateUpdateTimer;
-  double _systemHealth = 1.0;
-  List<Notification> _notifications = [];
-  List<String> _dashboardWidgetOrder = [];
 
-  final Map<String, double> _precursorLevels = {
-    'Precursor A': 100.0,
-    'Precursor B': 100.0,
-  };
+  // Add a constant for the maximum number of log entries to keep
+  static const int MAX_LOG_ENTRIES = 1000;
 
-  final Map<String, Map<String, double>> _vacuumSystemStatus = {
-    'Roughing Pump': {'speed': 0.0, 'pressure': 760.0},
-    'Turbo Pump': {'speed': 0.0, 'pressure': 1e-3},
-    'Chamber': {'pressure': 1e-3},
-  };
+  // Add a constant for the maximum number of data points per parameter
+  static const int MAX_DATA_POINTS_PER_PARAMETER = 1000;
 
   SystemStateProvider(
-      this._recipeProvider,
-      this._alarmProvider,
-      this._systemStateRepository,
-      this._authService,
-      ) {
+    this._componentProvider,
+    this._recipeProvider,
+    this._alarmProvider,
+    this._systemStateRepository,
+    this._authService,
+  ) {
     _initializeComponents();
     _loadSystemLog();
     _simulationService = AldSystemSimulationService(systemStateProvider: this);
   }
 
   // Getters
-  Map<String, SystemComponent> get components => _components;
   Recipe? get activeRecipe => _activeRecipe;
   int get currentRecipeStepIndex => _currentRecipeStepIndex;
   Recipe? get selectedRecipe => _selectedRecipe;
   bool get isSystemRunning => _isSystemRunning;
-  List<SystemLogEntry> get systemLog => _systemLog;
+  List<SystemLogEntry> get systemLog => List.unmodifiable(_systemLog);
   List<Alarm> get activeAlarms => _alarmProvider.activeAlarms;
-  double get systemHealth => _systemHealth;
-  List<Notification> get notifications => _notifications;
-  List<String> get dashboardWidgetOrder => _dashboardWidgetOrder;
-  Map<String, double> get precursorLevels => _precursorLevels;
-  Map<String, Map<String, double>> get vacuumSystemStatus => _vacuumSystemStatus;
 
+  get components => _componentProvider.components;
 
   // Initialize all system components with their parameters
   void _initializeComponents() {
-    _components['Nitrogen Generator'] = SystemComponent(
+    _componentProvider.addComponent(SystemComponent(
       name: 'Nitrogen Generator',
+      description: 'Generates nitrogen gas for the system',
       isActivated: true,
       currentValues: {
         'flow_rate': 0.0,
@@ -98,10 +71,20 @@ class SystemStateProvider with ChangeNotifier {
       setValues: {
         'flow_rate': 50.0, // Default setpoint
         'purity': 99.9,
-      }, description: 'Generates nitrogen gas for the system',
-    );
-    _components['MFC'] = SystemComponent(
+      },
+      lastCheckDate: DateTime.now().subtract(Duration(days: 30)),
+      minValues: {
+        'flow_rate': 10.0,
+        'purity': 90.0,
+      },
+      maxValues: {
+        'flow_rate': 100.0,
+        'purity': 100.0,
+      },
+    ));
+    _componentProvider.addComponent(SystemComponent(
       name: 'MFC',
+      description: 'Mass Flow Controller for precursor gas',
       isActivated: true,
       currentValues: {
         'flow_rate': 50.0,
@@ -112,10 +95,22 @@ class SystemStateProvider with ChangeNotifier {
         'flow_rate': 50.0,
         'pressure': 1.0,
         'percent_correction': 0.0,
-      }, description: 'Mass Flow Controller for precursor gas',
-    );
-    _components['Reaction Chamber'] = SystemComponent(
+      },
+      lastCheckDate: DateTime.now().subtract(Duration(days: 45)),
+      minValues: {
+        'flow_rate': 0.0,
+        'pressure': 0.5,
+        'percent_correction': -10.0,
+      },
+      maxValues: {
+        'flow_rate': 100.0,
+        'pressure': 2.0,
+        'percent_correction': 10.0,
+      },
+    ));
+    _componentProvider.addComponent(SystemComponent(
       name: 'Reaction Chamber',
+      description: 'Main chamber for chemical reactions',
       isActivated: true,
       currentValues: {
         'temperature': 150.0,
@@ -124,40 +119,66 @@ class SystemStateProvider with ChangeNotifier {
       setValues: {
         'temperature': 150.0,
         'pressure': 1.0,
-      }, description: 'Main chamber for chemical reactions',
-    );
-    _components['Valve 1'] = SystemComponent(
+      },
+      lastCheckDate: DateTime.now().subtract(Duration(days: 60)),
+      minValues: {
+        'temperature': 100.0,
+        'pressure': 0.8,
+      },
+      maxValues: {
+        'temperature': 200.0,
+        'pressure': 1.2,
+      },
+    ));
+    _componentProvider.addComponent(SystemComponent(
       name: 'Valve 1',
+      description: 'Valve for precursor gas',
       isActivated: false,
       currentValues: {
         'status': 0.0, // 0: Closed, 1: Open
       },
       setValues: {
         'status': 1.0,
-      }, description: 'Valve for precursor gas',
-    );
-    _components['Valve 2'] = SystemComponent(
+      },
+      lastCheckDate: DateTime.now().subtract(Duration(days: 20)),
+      minValues: {},
+      maxValues: {},
+    ));
+    _componentProvider.addComponent(SystemComponent(
       name: 'Valve 2',
+      description: 'Valve for nitrogen gas',
       isActivated: false,
       currentValues: {
         'status': 0.0,
       },
       setValues: {
         'status': 1.0,
-      }, description: 'Valve for nitrogen gas',
-    );
-    _components['Pressure Control System'] = SystemComponent(
+      },
+      lastCheckDate: DateTime.now().subtract(Duration(days: 25)),
+      minValues: {},
+      maxValues: {},
+    ));
+    _componentProvider.addComponent(SystemComponent(
       name: 'Pressure Control System',
+      description: 'Controls the pressure in the reaction chamber',
       isActivated: true,
       currentValues: {
         'pressure': 1.0,
       },
       setValues: {
         'pressure': 1.0,
-      }, description: 'Controls the pressure in the reaction chamber',
-    );
-    _components['Vacuum Pump'] = SystemComponent(
+      },
+      lastCheckDate: DateTime.now().subtract(Duration(days: 35)),
+      minValues: {
+        'pressure': 0.5,
+      },
+      maxValues: {
+        'pressure': 1.5,
+      },
+    ));
+    _componentProvider.addComponent(SystemComponent(
       name: 'Vacuum Pump',
+      description: 'Pumps out gas from the reaction chamber',
       isActivated: true,
       currentValues: {
         'flow_rate': 0.0,
@@ -166,293 +187,267 @@ class SystemStateProvider with ChangeNotifier {
       setValues: {
         'flow_rate': 0.0,
         'power': 50.0,
-      }, description: 'Pumps out gas from the reaction chamber',
-    );
-    _components['Precursor Heater 1'] = SystemComponent(
+      },
+      lastCheckDate: DateTime.now().subtract(Duration(days: 40)),
+      minValues: {
+        'flow_rate': 0.0,
+        'power': 30.0,
+      },
+      maxValues: {
+        'flow_rate': 100.0,
+        'power': 100.0,
+      },
+    ));
+    _componentProvider.addComponent(SystemComponent(
       name: 'Precursor Heater 1',
+      description: 'Heats precursor gas before entering the chamber',
       isActivated: true,
       currentValues: {
         'temperature': 150.0,
       },
       setValues: {
         'temperature': 150.0,
-      }, description: 'Heats precursor gas before entering the chamber',
-    );
-    _components['Precursor Heater 2'] = SystemComponent(
+      },
+      lastCheckDate: DateTime.now().subtract(Duration(days: 15)),
+      minValues: {
+        'temperature': 100.0,
+      },
+      maxValues: {
+        'temperature': 200.0,
+      },
+    ));
+    _componentProvider.addComponent(SystemComponent(
       name: 'Precursor Heater 2',
+      description: 'Heats precursor gas before entering the chamber',
       isActivated: true,
       currentValues: {
         'temperature': 150.0,
       },
       setValues: {
         'temperature': 150.0,
-      }, description: 'Heats precursor gas before entering the chamber',
-    );
-    _components['Frontline Heater'] = SystemComponent(
+      },
+      lastCheckDate: DateTime.now().subtract(Duration(days: 18)),
+      minValues: {
+        'temperature': 100.0,
+      },
+      maxValues: {
+        'temperature': 200.0,
+      },
+    ));
+    _componentProvider.addComponent(SystemComponent(
       name: 'Frontline Heater',
+      description: 'Heats the front of the chamber',
       isActivated: true,
       currentValues: {
         'temperature': 150.0,
       },
       setValues: {
         'temperature': 150.0,
-      }, description: 'Heats the front of the chamber',
-    );
-    _components['Backline Heater'] = SystemComponent(
+      },
+      lastCheckDate: DateTime.now().subtract(Duration(days: 22)),
+      minValues: {
+        'temperature': 100.0,
+      },
+      maxValues: {
+        'temperature': 200.0,
+      },
+    ));
+    _componentProvider.addComponent(SystemComponent(
       name: 'Backline Heater',
+      description: 'Heats the back of the chamber',
       isActivated: true,
       currentValues: {
         'temperature': 150.0,
       },
       setValues: {
         'temperature': 150.0,
-      }, description: 'Heats the back of the chamber',
-    );
+      },
+      lastCheckDate: DateTime.now().subtract(Duration(days: 28)),
+      minValues: {
+        'temperature': 100.0,
+      },
+      maxValues: {
+        'temperature': 200.0,
+      },
+    ));
   }
-
-  void updateVacuumSystemStatus(String component, String parameter, double value) {
-    if (_vacuumSystemStatus.containsKey(component) &&
-        _vacuumSystemStatus[component]!.containsKey(parameter)) {
-      _vacuumSystemStatus[component]![parameter] = value;
-      notifyListeners();
-    }
-  }
-
-  // Add this method to simulate vacuum system changes
-  void simulateVacuumSystem() {
-    // Simulate roughing pump
-    double roughingPumpSpeed = _vacuumSystemStatus['Roughing Pump']!['speed']!;
-    double roughingPumpPressure = _vacuumSystemStatus['Roughing Pump']!['pressure']!;
-    if (roughingPumpSpeed < 100.0) {
-      roughingPumpSpeed += 1.0;
-      updateVacuumSystemStatus('Roughing Pump', 'speed', roughingPumpSpeed);
-    }
-    if (roughingPumpPressure > 1e-3) {
-      roughingPumpPressure *= 0.9;
-      updateVacuumSystemStatus('Roughing Pump', 'pressure', roughingPumpPressure);
-    }
-
-    // Simulate turbo pump
-    double turboPumpSpeed = _vacuumSystemStatus['Turbo Pump']!['speed']!;
-    double turboPumpPressure = _vacuumSystemStatus['Turbo Pump']!['pressure']!;
-    if (roughingPumpPressure < 1.0 && turboPumpSpeed < 1000.0) {
-      turboPumpSpeed += 10.0;
-      updateVacuumSystemStatus('Turbo Pump', 'speed', turboPumpSpeed);
-    }
-    if (turboPumpSpeed > 500.0 && turboPumpPressure > 1e-8) {
-      turboPumpPressure *= 0.9;
-      updateVacuumSystemStatus('Turbo Pump', 'pressure', turboPumpPressure);
-    }
-
-    // Update chamber pressure
-    double chamberPressure = _vacuumSystemStatus['Chamber']!['pressure']!;
-    if (turboPumpSpeed > 900.0 && chamberPressure > 1e-7) {
-      chamberPressure *= 0.95;
-      updateVacuumSystemStatus('Chamber', 'pressure', chamberPressure);
-    }
-  }
-
-  void updatePrecursorLevel(String precursor, double level) {
-    if (_precursorLevels.containsKey(precursor)) {
-      _precursorLevels[precursor] = level;
-      if (level < 20.0) {
-        addNotification('$precursor level is low (${level.toStringAsFixed(1)}%)', NotificationSeverity.warning);
-      }
-      notifyListeners();
-    }
-  }
-
-  // Add this method to simulate precursor consumption
-  void simulatePrecursorConsumption() {
-    _precursorLevels.forEach((precursor, level) {
-      double newLevel = level - 0.1;
-      if (newLevel < 0) newLevel = 0;
-      updatePrecursorLevel(precursor, newLevel);
-    });
-  }
-
-  // System Health methods
-  void _calculateSystemHealth() {
-    double totalHealth = 0;
-    int componentCount = 0;
-
-    _components.forEach((_, component) {
-      if (component.isActivated) {
-        totalHealth += _getComponentHealth(component);
-        componentCount++;
-      }
-    });
-
-    _systemHealth = componentCount > 0 ? totalHealth / componentCount : 1.0;
-    notifyListeners();
-  }
-
-  double _getComponentHealth(SystemComponent component) {
-    // Implement component-specific health calculation logic here
-    // This is a simplified example
-    if (!component.isActivated) return 0.0;
-
-    double health = 1.0;
-    component.currentValues.forEach((parameter, value) {
-      double setPoint = component.setValues[parameter] ?? value;
-      double deviation = (value - setPoint).abs() / setPoint;
-      health *= (1 - deviation);
-    });
-
-    return health;
-  }
-
-  // Customizable Dashboard methods
-  void updateDashboardWidgetOrder(List<String> newOrder) {
-    _dashboardWidgetOrder = newOrder;
-    _systemStateRepository.saveDashboardWidgetOrder(_authService.currentUserId!, newOrder);
-    notifyListeners();
-  }
-
-  Future<void> loadDashboardWidgetOrder() async {
-    String? userId = _authService.currentUserId;
-    if (userId != null) {
-      _dashboardWidgetOrder = await _systemStateRepository.getDashboardWidgetOrder(userId);
-      notifyListeners();
-    }
-  }
-
-  // Quick Actions methods
-  void runDiagnostic(String componentName) async {
-    addNotification('Running diagnostic for $componentName', NotificationSeverity.info);
-
-    // Simulate a diagnostic run
-    await Future.delayed(Duration(seconds: 2));
-
-    bool diagnosticPassed = true; // Replace with actual diagnostic logic
-
-    if (diagnosticPassed) {
-      addNotification('Diagnostic for $componentName completed successfully', NotificationSeverity.info);
-    } else {
-      addNotification('Diagnostic for $componentName failed', NotificationSeverity.warning);
-    }
-  }
-
-  // Notification methods
-  void addNotification(String message, NotificationSeverity severity) {
-    Notification notification = Notification(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      message: message,
-      severity: severity,
-      timestamp: DateTime.now(),
-    );
-    _notifications.add(notification);
-    _systemStateRepository.saveNotification(_authService.currentUserId!, notification);
-    notifyListeners();
-  }
-
-  void dismissNotification(String id) {
-    _notifications.removeWhere((notification) => notification.id == id);
-    _systemStateRepository.removeNotification(_authService.currentUserId!, id);
-    notifyListeners();
-  }
-
-  Future<void> loadNotifications() async {
-    String? userId = _authService.currentUserId;
-    if (userId != null) {
-      _notifications = await _systemStateRepository.getNotifications(userId);
-      notifyListeners();
-    }
-  }
-
 
   // Load system log from repository
   Future<void> _loadSystemLog() async {
     String? userId = _authService.currentUser?.uid;
     if (userId != null) {
-      _systemLog.addAll(await _systemStateRepository.getSystemLog(userId));
-    }
-  }
-
-  // Update component state with new values
-  void updateComponentState(String componentName, Map<String, double> newState) {
-    String? userId = _authService.currentUserId;
-    if (userId != null) {
-      print("Updating component state: $componentName, New state: $newState");
-
-      if (_components.containsKey(componentName)) {
-        var component = _components[componentName]!;
-
-        // Update the current values
-        component.currentValues.addAll(newState);
-
-        // For each updated parameter, add the new value to its history
-        newState.forEach((parameter, value) {
-          if (!component.parameterHistory.containsKey(parameter)) {
-            component.parameterHistory[parameter] = [];
-          }
-
-          // Add the new data point to the history
-          component.parameterHistory[parameter]!.add(
-            DataPoint(
-              timestamp: DateTime.now(),
-              value: value,
-            ),
-          );
-
-          // Keep the history limited to the last 100 entries
-          if (component.parameterHistory[parameter]!.length > 1000) {
-            component.parameterHistory[parameter]!.removeAt(0);
-          }
-
-          print("Added data point to $componentName for $parameter: $value");
-        });
-
-        // Save the updated state to the repository
-        _systemStateRepository.saveComponentState(userId, component);
-
-        // Add a log entry
-        addLogEntry(
-            'Updated $componentName: $newState', ComponentStatus.normal);
-
-        _calculateSystemHealth();
-
-        // Notify listeners to update the UI
-        notifyListeners();
+      final logs = await _systemStateRepository.getSystemLog(userId);
+      _systemLog.addAll(logs.take(MAX_LOG_ENTRIES));
+      if (_systemLog.length > MAX_LOG_ENTRIES) {
+        _systemLog.removeRange(0, _systemLog.length - MAX_LOG_ENTRIES);
       }
-    }
-  }
-
-  // Activate a component
-  void activateComponent(String componentName) {
-    String? userId = _authService.currentUser?.uid;
-    if (userId == null) return;
-
-    if (_components.containsKey(componentName)) {
-      _components[componentName]!.isActivated = true;
-      _systemStateRepository.saveComponent(userId, _components[componentName]!);
-      addLogEntry('Activated $componentName', ComponentStatus.normal);
       notifyListeners();
     }
   }
 
-  // Deactivate a component
-  void deactivateComponent(String componentName) {
-    if (_components.containsKey(componentName)) {
-      _components[componentName]!.isActivated = false;
-      addLogEntry('Deactivated $componentName', ComponentStatus.normal);
-      notifyListeners();
-    }
-  }
+  List<String> getSystemIssues() {
+    List<String> issues = [];
 
-  // Set a component's set value
-  void setComponentSetValue(String componentName, String parameterName, double value) {
-    String? userId = _authService.currentUserId;
-    if (userId != null) {
-      if (_components.containsKey(componentName)) {
-        _components[componentName]!.setValues[parameterName] = value;
-        _systemStateRepository.saveComponent(userId, _components[componentName]!);
-        addLogEntry('Set $parameterName of $componentName to $value', ComponentStatus.normal);
-        notifyListeners();
+    // Check Nitrogen Flow
+    final nitrogenGenerator = getComponentByName('Nitrogen Generator');
+    if (nitrogenGenerator != null) {
+      if (!nitrogenGenerator.isActivated) {
+        issues.add('Nitrogen Generator is not activated');
+      } else if (nitrogenGenerator.currentValues['flow_rate']! < 10.0) {
+        issues.add(
+            'Nitrogen flow rate is too low (current: ${nitrogenGenerator.currentValues['flow_rate']!.toStringAsFixed(1)}, required: ≥10.0)');
       }
     }
+
+    // Check MFC
+    final mfc = getComponentByName('MFC');
+    if (mfc != null) {
+      if (!mfc.isActivated) {
+        issues.add('MFC is not activated');
+      } else if (mfc.currentValues['flow_rate']! != 20.0) {
+        issues.add(
+            'MFC flow rate needs adjustment (current: ${mfc.currentValues['flow_rate']!.toStringAsFixed(1)}, required: 20.0)');
+      }
+    }
+
+    // Check Pressure
+    final pressureControlSystem = getComponentByName('Pressure Control System');
+    if (pressureControlSystem != null) {
+      if (!pressureControlSystem.isActivated) {
+        issues.add('Pressure Control System is not activated');
+      } else if (pressureControlSystem.currentValues['pressure']! >= 760.0) {
+        issues.add(
+            'Pressure is too high (current: ${pressureControlSystem.currentValues['pressure']!.toStringAsFixed(1)}, must be <760.0)');
+      }
+    }
+
+    // Check Pump
+    final pump = getComponentByName('Vacuum Pump');
+    if (pump != null) {
+      if (!pump.isActivated) {
+        issues.add('Vacuum Pump is not activated');
+      }
+    }
+
+    // Check Heaters
+    final heaters = [
+      'Precursor Heater 1',
+      'Precursor Heater 2',
+      'Frontline Heater',
+      'Backline Heater'
+    ];
+    for (var heaterName in heaters) {
+      final heater = getComponentByName(heaterName);
+      if (heater != null && !heater.isActivated) {
+        issues.add('$heaterName is not activated');
+      }
+    }
+
+    // Check value mismatches
+    for (var component in _componentProvider.components.values) {
+      for (var entry in component.currentValues.entries) {
+        final setValue = component.setValues[entry.key] ?? 0.0;
+        if (setValue != entry.value) {
+          issues.add(
+              '${component.name}: ${entry.key} mismatch (current: ${entry.value.toStringAsFixed(1)}, set: ${setValue.toStringAsFixed(1)})');
+        }
+      }
+    }
+
+    return issues;
   }
 
+  void batchUpdateComponentValues(Map<String, Map<String, double>> updates) {
+    updates.forEach((componentName, newStates) {
+      final component = _componentProvider.getComponent(componentName);
+      if (component != null) {
+        component.updateCurrentValues(newStates);
+      }
+    });
+    notifyListeners();
+  }
+
+  bool checkSystemReadiness() {
+    bool isReady = true;
+    List<String> issues = [];
+
+    // Check Nitrogen Flow
+    final nitrogenGenerator = getComponentByName('Nitrogen Generator');
+    if (nitrogenGenerator != null) {
+      if (!nitrogenGenerator.isActivated) {
+        isReady = false;
+        issues.add('Nitrogen Generator is not activated');
+      } else if (nitrogenGenerator.currentValues['flow_rate']! < 10.0) {
+        isReady = false;
+        issues.add('Nitrogen flow rate is too low');
+      }
+    }
+
+    // Check MFC
+    final mfc = getComponentByName('MFC');
+    if (mfc != null) {
+      if (!mfc.isActivated) {
+        isReady = false;
+        issues.add('MFC is not activated');
+      } else if (mfc.currentValues['flow_rate']! < 15.0 ||
+          mfc.currentValues['flow_rate']! > 25.0) {
+        isReady = false;
+        issues.add('MFC flow rate is outside acceptable range (15-25 SCCM)');
+      }
+    }
+
+    // Check Pressure
+    final pressureControlSystem = getComponentByName('Pressure Control System');
+    if (pressureControlSystem != null) {
+      if (!pressureControlSystem.isActivated) {
+        isReady = false;
+        issues.add('Pressure Control System is not activated');
+      } else if (pressureControlSystem.currentValues['pressure']! > 10.0) {
+        // Changed to more reasonable value
+        isReady = false;
+        issues.add('Pressure is too high (must be below 10 Torr)');
+      }
+    }
+
+    // Check Pump
+    final pump = getComponentByName('Vacuum Pump');
+    if (pump != null) {
+      if (!pump.isActivated) {
+        isReady = false;
+        issues.add('Vacuum Pump is not activated');
+      }
+    } else {
+      isReady = false;
+      issues.add('Vacuum Pump not found');
+    }
+
+    // Check Heaters
+    final heaters = [
+      'Precursor Heater 1',
+      'Precursor Heater 2',
+      'Frontline Heater',
+      'Backline Heater'
+    ];
+    for (var heaterName in heaters) {
+      final heater = getComponentByName(heaterName);
+      if (heater != null) {
+        if (!heater.isActivated) {
+          isReady = false;
+          issues.add('$heaterName is not activated');
+        }
+      } else {
+        isReady = false;
+        issues.add('$heaterName not found');
+      }
+    }
+
+    // Log issues if any
+    if (!isReady) {
+      issues.forEach((issue) => addLogEntry(issue, ComponentStatus.warning));
+    }
+
+    return isReady;
+  }
 
   // Add a log entry
   void addLogEntry(String message, ComponentStatus status) {
@@ -465,14 +460,16 @@ class SystemStateProvider with ChangeNotifier {
       severity: status,
     );
     _systemLog.add(logEntry);
+    if (_systemLog.length > MAX_LOG_ENTRIES) {
+      _systemLog.removeAt(0);
+    }
     _systemStateRepository.addLogEntry(userId, logEntry);
     notifyListeners();
   }
 
-
   // Retrieve a component by name
   SystemComponent? getComponentByName(String componentName) {
-    return _components[componentName];
+    return _componentProvider.getComponent(componentName);
   }
 
   // Start the simulation
@@ -505,7 +502,7 @@ class SystemStateProvider with ChangeNotifier {
   }
 
   /// Fetch historical data for a specific component and update the `parameterHistory`
-  Future<void> _fetchComponentHistory(String componentName) async {
+  Future<void> fetchComponentHistory(String componentName) async {
     String? userId = _authService.currentUser?.uid;
     if (userId == null) return;
 
@@ -513,30 +510,29 @@ class SystemStateProvider with ChangeNotifier {
     final start = now.subtract(Duration(hours: 24));
 
     try {
-      List<Map<String, dynamic>> historyData = await _systemStateRepository.getComponentHistory(
+      List<Map<String, dynamic>> historyData =
+          await _systemStateRepository.getComponentHistory(
         userId,
         componentName,
         start,
         now,
       );
 
-
-      final component = _components[componentName];
+      final component = _componentProvider.getComponent(componentName);
       if (component != null) {
         // Parse historical data and populate the parameterHistory
-        for (var data in historyData) {
+        for (var data in historyData.take(MAX_DATA_POINTS_PER_PARAMETER)) {
           final timestamp = (data['timestamp'] as Timestamp).toDate();
           final currentValues = Map<String, double>.from(data['currentValues']);
 
           currentValues.forEach((parameter, value) {
-            if (!component.parameterHistory.containsKey(parameter)) {
-              component.parameterHistory[parameter] = [];
-            }
-            // Add historical data point
-            component.parameterHistory[parameter]!.add(DataPoint(
-              timestamp: timestamp,
-              value: value,
-            ));
+            component.updateCurrentValues({parameter: value});
+            _componentProvider.addParameterDataPoint(
+              componentName,
+              parameter,
+              DataPoint(timestamp: timestamp, value: value),
+              maxDataPoints: MAX_DATA_POINTS_PER_PARAMETER,
+            );
           });
         }
       }
@@ -545,26 +541,59 @@ class SystemStateProvider with ChangeNotifier {
     }
   }
 
+  // Start the system
   void startSystem() {
-    if (!_isSystemRunning && isSystemReadyForRecipe()) {
+    if (!_isSystemRunning && checkSystemReadiness()) {
       _isSystemRunning = true;
       _simulationService.startSimulation();
       _startContinuousStateLogging();
       addLogEntry('System started', ComponentStatus.normal);
-      addNotification('System started', NotificationSeverity.info);
-      _calculateSystemHealth();
       notifyListeners();
     } else {
       _alarmProvider.addAlarm(Alarm(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        message: 'System not ready to start',
+        message: 'System not ready to start. Check system readiness.',
         severity: AlarmSeverity.warning,
         timestamp: DateTime.now(),
       ));
     }
-
   }
 
+  bool validateSetVsMonitoredValues() {
+    bool isValid = true;
+    final tolerance = 0.1; // 10% tolerance
+
+    for (var component in _componentProvider.components.values) {
+      for (var entry in component.currentValues.entries) {
+        final setValue = component.setValues[entry.key] ?? 0.0;
+        final currentValue = entry.value;
+
+        // Skip validation for certain parameters
+        if (entry.key == 'status') continue;
+
+        // Check if the current value is within tolerance of set value
+        if (setValue == 0.0) {
+          if (currentValue > tolerance) {
+            isValid = false;
+            addLogEntry(
+                'Mismatch in ${component.name}: ${entry.key} should be near zero',
+                ComponentStatus.warning);
+          }
+        } else {
+          final percentDiff = (currentValue - setValue).abs() / setValue;
+          if (percentDiff > tolerance) {
+            isValid = false;
+            addLogEntry(
+                'Mismatch in ${component.name}: ${entry.key} is outside tolerance range',
+                ComponentStatus.warning);
+          }
+        }
+      }
+    }
+    return isValid;
+  }
+
+  // Stop the system
   void stopSystem() {
     _isSystemRunning = false;
     _activeRecipe = null;
@@ -573,27 +602,28 @@ class SystemStateProvider with ChangeNotifier {
     _stopContinuousStateLogging();
     _deactivateAllValves();
     addLogEntry('System stopped', ComponentStatus.normal);
-    addNotification('System stopped', NotificationSeverity.info);
-    _calculateSystemHealth();
     notifyListeners();
   }
 
+  // Start continuous state logging
   void _startContinuousStateLogging() {
     _stateUpdateTimer = Timer.periodic(Duration(seconds: 5), (_) {
       _saveCurrentState();
     });
   }
 
+  // Stop continuous state logging
   void _stopContinuousStateLogging() {
     _stateUpdateTimer?.cancel();
     _stateUpdateTimer = null;
   }
 
+  // Save current state to repository
   void _saveCurrentState() {
     String? userId = _authService.currentUser?.uid;
     if (userId == null) return;
 
-    for (var component in _components.values) {
+    for (var component in _componentProvider.components.values) {
       _systemStateRepository.saveComponentState(userId, component);
     }
     _systemStateRepository.saveSystemState(userId, {
@@ -603,21 +633,28 @@ class SystemStateProvider with ChangeNotifier {
     });
   }
 
-
+  // Log a parameter value
   void logParameterValue(String componentName, String parameter, double value) {
-    _systemStateRepository.saveComponentState(
-      _authService.currentUserId!,
-      SystemComponent(
-        name: componentName,
-        isActivated: true,
-        currentValues: {parameter: value},
-        setValues: {parameter: value},
-        description: '',
-      ),
-    );
+    _componentProvider.addParameterDataPoint(componentName, parameter,
+        DataPoint.reducedPrecision(timestamp: DateTime.now(), value: value));
   }
 
+  // Run diagnostic on a component
+  void runDiagnostic(String componentName) {
+    final component = _componentProvider.getComponent(componentName);
+    if (component != null) {
+      addLogEntry(
+          'Running diagnostic for ${component.name}', ComponentStatus.normal);
+      Future.delayed(const Duration(seconds: 2), () {
+        addLogEntry(
+            '${component.name} diagnostic completed: All systems nominal',
+            ComponentStatus.normal);
+        notifyListeners();
+      });
+    }
+  }
 
+  // Update providers if needed
   void updateProviders(
       RecipeProvider recipeProvider, AlarmProvider alarmProvider) {
     if (_recipeProvider != recipeProvider) {
@@ -629,12 +666,12 @@ class SystemStateProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Check if system is ready for a recipe
   bool isSystemReadyForRecipe() {
-    return _components.values.every((component) =>
-    component.isActivated ||
-        component.name.toLowerCase().contains('valve'));
+    return checkSystemReadiness() && validateSetVsMonitoredValues();
   }
 
+  // Execute a recipe
   Future<void> executeRecipe(Recipe recipe) async {
     print("Executing recipe: ${recipe.name}");
     if (isSystemReadyForRecipe()) {
@@ -656,7 +693,7 @@ class SystemStateProvider with ChangeNotifier {
     }
   }
 
-
+  // Select a recipe
   void selectRecipe(String id) {
     _selectedRecipe = _recipeProvider.getRecipeById(id);
     if (_selectedRecipe != null) {
@@ -673,12 +710,15 @@ class SystemStateProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Emergency stop
   void emergencyStop() {
     stopSystem();
-    for (var component in _components.values) {
-      component.isActivated = false;
-      _systemStateRepository.saveComponentState(
-          _authService.currentUser!.uid, component);
+    for (var component in _componentProvider.components.values) {
+      if (component.isActivated) {
+        _componentProvider.deactivateComponent(component.name);
+        _systemStateRepository.saveComponentState(
+            _authService.currentUser!.uid, component);
+      }
     }
     _alarmProvider.addAlarm(Alarm(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -690,20 +730,27 @@ class SystemStateProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Check reactor pressure
   bool isReactorPressureNormal() {
-    final pressure =
-        _components['Reaction Chamber']?.currentValues['pressure'] ?? 0.0;
+    final pressure = _componentProvider
+            .getComponent('Reaction Chamber')
+            ?.currentValues['pressure'] ??
+        0.0;
     return pressure >= 0.9 && pressure <= 1.1;
   }
 
+  // Check reactor temperature
   bool isReactorTemperatureNormal() {
-    final temperature =
-        _components['Reaction Chamber']?.currentValues['temperature'] ?? 0.0;
+    final temperature = _componentProvider
+            .getComponent('Reaction Chamber')
+            ?.currentValues['temperature'] ??
+        0.0;
     return temperature >= 145 && temperature <= 155;
   }
 
+  // Check precursor temperature
   bool isPrecursorTemperatureNormal(String precursor) {
-    final component = _components[precursor];
+    final component = _componentProvider.getComponent(precursor);
     if (component != null) {
       final temperature = component.currentValues['temperature'] ?? 0.0;
       return temperature >= 28 && temperature <= 32;
@@ -711,6 +758,7 @@ class SystemStateProvider with ChangeNotifier {
     return false;
   }
 
+  // Increment recipe step index
   void incrementRecipeStepIndex() {
     if (_activeRecipe != null &&
         _currentRecipeStepIndex < _activeRecipe!.steps.length - 1) {
@@ -719,6 +767,7 @@ class SystemStateProvider with ChangeNotifier {
     }
   }
 
+  // Complete the recipe
   void completeRecipe() {
     addLogEntry(
         'Recipe completed: ${_activeRecipe?.name}', ComponentStatus.normal);
@@ -729,6 +778,7 @@ class SystemStateProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Trigger safety alert
   void triggerSafetyAlert(SafetyError error) {
     _alarmProvider.addAlarm(Alarm(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -740,6 +790,7 @@ class SystemStateProvider with ChangeNotifier {
         _mapSeverityToComponentStatus(error.severity));
   }
 
+  // Map safety severity to alarm severity
   AlarmSeverity _mapSeverityToAlarmSeverity(SafetyErrorSeverity severity) {
     switch (severity) {
       case SafetyErrorSeverity.warning:
@@ -751,6 +802,7 @@ class SystemStateProvider with ChangeNotifier {
     }
   }
 
+  // Map safety severity to component status
   ComponentStatus _mapSeverityToComponentStatus(SafetyErrorSeverity severity) {
     switch (severity) {
       case SafetyErrorSeverity.warning:
@@ -762,17 +814,18 @@ class SystemStateProvider with ChangeNotifier {
     }
   }
 
-
+  // Get all recipes
   List<Recipe> getAllRecipes() {
     return _recipeProvider.recipes;
   }
 
+  // Refresh recipes
   void refreshRecipes() {
     _recipeProvider.loadRecipes();
     notifyListeners();
   }
 
-
+  // Execute multiple steps
   Future<void> _executeSteps(List<RecipeStep> steps,
       {double? inheritedTemperature, double? inheritedPressure}) async {
     for (var step in steps) {
@@ -784,6 +837,7 @@ class SystemStateProvider with ChangeNotifier {
     }
   }
 
+  // Execute a single step
   Future<void> _executeStep(RecipeStep step,
       {double? inheritedTemperature, double? inheritedPressure}) async {
     addLogEntry(
@@ -804,28 +858,23 @@ class SystemStateProvider with ChangeNotifier {
     }
   }
 
+  // Deactivate all valves
   void _deactivateAllValves() {
-    _deactivateComponent('Valve 1');
-    _deactivateComponent('Valve 2');
+    _componentProvider.components.keys
+        .where((name) => name.toLowerCase().contains('valve'))
+        .forEach((valveName) {
+      _componentProvider.deactivateComponent(valveName);
+      addLogEntry('$valveName deactivated', ComponentStatus.normal);
+    });
   }
 
-  void _deactivateComponent(String componentName) {
-    if (_components.containsKey(componentName)) {
-      _components[componentName]!.isActivated = false;
-      addLogEntry('$componentName deactivated', ComponentStatus.normal);
-      notifyListeners();
-    }
-  }
-
+  // Activate a component
   void _activateComponent(String componentName) {
-    if (_components.containsKey(componentName)) {
-      _components[componentName]!.isActivated = true;
-      addLogEntry('$componentName activated', ComponentStatus.normal);
-      notifyListeners();
-    }
+    _componentProvider.activateComponent(componentName);
+    addLogEntry('$componentName activated', ComponentStatus.normal);
   }
 
-
+  // Get step description
   String _getStepDescription(RecipeStep step) {
     switch (step.type) {
       case StepType.valve:
@@ -841,50 +890,65 @@ class SystemStateProvider with ChangeNotifier {
     }
   }
 
+  // Execute a valve step
   Future<void> _executeValveStep(RecipeStep step) async {
     ValveType valveType = step.parameters['valveType'] as ValveType;
     int duration = step.parameters['duration'] as int;
     String valveName = valveType == ValveType.valveA ? 'Valve 1' : 'Valve 2';
 
-    updateComponentState(valveName, {'status': 1.0});
+    _componentProvider.addParameterDataPoint(
+        valveName, 'status', DataPoint(timestamp: DateTime.now(), value: 1.0));
     addLogEntry(
         '$valveName opened for $duration seconds', ComponentStatus.normal);
 
     await Future.delayed(Duration(seconds: duration));
 
-    updateComponentState(valveName, {'status': 0.0});
+    _componentProvider.addParameterDataPoint(
+        valveName, 'status', DataPoint(timestamp: DateTime.now(), value: 0.0));
     addLogEntry(
         '$valveName closed after $duration seconds', ComponentStatus.normal);
   }
 
+  // Execute a purge step
   Future<void> _executePurgeStep(RecipeStep step) async {
     int duration = step.parameters['duration'] as int;
 
-    updateComponentState('Valve 1', {'status': 0.0});
-    updateComponentState('Valve 2', {'status': 0.0});
-    updateComponentState(
+    _componentProvider.updateComponentCurrentValues('Valve 1', {'status': 0.0});
+    _componentProvider.updateComponentCurrentValues('Valve 2', {'status': 0.0});
+    _componentProvider.updateComponentCurrentValues(
         'MFC', {'flow_rate': 100.0}); // Assume max flow rate for purge
     addLogEntry('Purge started for $duration seconds', ComponentStatus.normal);
 
     await Future.delayed(Duration(seconds: duration));
 
-    updateComponentState('MFC', {'flow_rate': 0.0});
+    _componentProvider.updateComponentCurrentValues('MFC', {'flow_rate': 0.0});
     addLogEntry(
         'Purge completed after $duration seconds', ComponentStatus.normal);
   }
 
+  // Execute a loop step
   Future<void> _executeLoopStep(RecipeStep step, double? parentTemperature,
       double? parentPressure) async {
     int iterations = step.parameters['iterations'] as int;
-    double? loopTemperature = step.parameters['temperature'] as double?;
-    double? loopPressure = step.parameters['pressure'] as double?;
+
+    // Fix the type casting by safely converting to double
+    double? loopTemperature = step.parameters['temperature'] != null
+        ? (step.parameters['temperature'] as num).toDouble()
+        : null;
+
+    double? loopPressure = step.parameters['pressure'] != null
+        ? (step.parameters['pressure'] as num).toDouble()
+        : null;
 
     double effectiveTemperature = loopTemperature ??
-        parentTemperature ??
-        _components['Reaction Chamber']!.currentValues['temperature']!;
+        _componentProvider
+            .getComponent('Reaction Chamber')!
+            .currentValues['temperature']!;
+
     double effectivePressure = loopPressure ??
-        parentPressure ??
-        _components['Reaction Chamber']!.currentValues['pressure']!;
+        _componentProvider
+            .getComponent('Reaction Chamber')!
+            .currentValues['pressure']!;
 
     for (int i = 0; i < iterations; i++) {
       if (!_isSystemRunning) break;
@@ -900,14 +964,15 @@ class SystemStateProvider with ChangeNotifier {
     }
   }
 
-
+  // Execute a set parameter step
   Future<void> _executeSetParameterStep(RecipeStep step) async {
     String componentName = step.parameters['component'] as String;
     String parameterName = step.parameters['parameter'] as String;
     double value = step.parameters['value'] as double;
 
-    if (_components.containsKey(componentName)) {
-      setComponentSetValue(componentName, parameterName, value);
+    if (_componentProvider.getComponent(componentName) != null) {
+      _componentProvider
+          .updateComponentSetValues(componentName, {parameterName: value});
       addLogEntry('Set $parameterName of $componentName to $value',
           ComponentStatus.normal);
       await Future.delayed(const Duration(milliseconds: 500));
@@ -916,22 +981,28 @@ class SystemStateProvider with ChangeNotifier {
     }
   }
 
+  // Set reaction chamber parameters
   Future<void> _setReactionChamberParameters(
       double temperature, double pressure) async {
-    _components['Reaction Chamber']!.setValues['temperature'] = temperature;
-    _components['Reaction Chamber']!.setValues['pressure'] = pressure;
+    _componentProvider.updateComponentSetValues('Reaction Chamber', {
+      'temperature': temperature,
+      'pressure': pressure,
+    });
     addLogEntry(
         'Setting chamber temperature to $temperature°C and pressure to $pressure atm',
         ComponentStatus.normal);
 
     await Future.delayed(const Duration(seconds: 5));
 
-    _components['Reaction Chamber']!.currentValues['temperature'] = temperature;
-    _components['Reaction Chamber']!.currentValues['pressure'] = pressure;
+    _componentProvider.updateComponentCurrentValues('Reaction Chamber', {
+      'temperature': temperature,
+      'pressure': pressure,
+    });
     addLogEntry('Chamber reached target temperature and pressure',
         ComponentStatus.normal);
   }
 
+  // Add an alarm
   void addAlarm(String message, AlarmSeverity severity) async {
     final newAlarm = Alarm(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -948,6 +1019,7 @@ class SystemStateProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Acknowledge an alarm
   void acknowledgeAlarm(String alarmId) async {
     await _alarmProvider.acknowledgeAlarm(alarmId);
 
@@ -957,6 +1029,7 @@ class SystemStateProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Clear an alarm
   void clearAlarm(String alarmId) async {
     await _alarmProvider.clearAlarm(alarmId);
 
@@ -966,7 +1039,7 @@ class SystemStateProvider with ChangeNotifier {
     notifyListeners();
   }
 
-// You might also want to add this method to clear all acknowledged alarms
+  // Clear all acknowledged alarms
   void clearAllAcknowledgedAlarms() async {
     await _alarmProvider.clearAllAcknowledgedAlarms();
 
@@ -976,10 +1049,16 @@ class SystemStateProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Dispose resources
   @override
   void dispose() {
     _stopContinuousStateLogging();
     _simulationService.stopSimulation();
     super.dispose();
+  }
+
+  void updateComponentCurrentValues(
+      String componentName, Map<String, double> newStates) {
+    _componentProvider.updateComponentCurrentValues(componentName, newStates);
   }
 }

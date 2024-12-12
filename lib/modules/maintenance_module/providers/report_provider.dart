@@ -26,4 +26,10 @@ class ReportProvider with ChangeNotifier {
     final components = _maintenanceProvider.components;
     return await _reportService.generateComponentStatusReport(components);
   }
+
+  updateProviders(MaintenanceProvider maintenance, CalibrationProvider calibration) {
+    _maintenanceProvider.update(maintenance);
+    _calibrationProvider.update(calibration);
+    notifyListeners();
+  }
 }

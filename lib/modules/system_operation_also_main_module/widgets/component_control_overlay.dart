@@ -97,7 +97,7 @@ class _ComponentControlOverlayState extends State<ComponentControlOverlay> {
     print("Building [component_control_overlay]");
     return Consumer<SystemStateProvider>(
       builder: (context, systemProvider, child) {
-        print("Number of components in [component_control_overlay]: ${systemProvider.components.length}");
+        //print("Number of components in [component_control_overlay]: ${systemProvider.components.length}");
 
         return Container(
           key: _overlayKey,

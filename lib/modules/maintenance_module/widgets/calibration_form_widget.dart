@@ -1,13 +1,13 @@
 // lib/widgets/calibration_form_widget.dart
+import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/component.dart';
 import '../models/calibration_record.dart';
 import '../providers/calibration_provider.dart';
 import 'package:intl/intl.dart';
 
 class CalibrationFormWidget extends StatefulWidget {
-  final Component component;
+  final SystemComponent component;
 
   CalibrationFormWidget({required this.component});
 

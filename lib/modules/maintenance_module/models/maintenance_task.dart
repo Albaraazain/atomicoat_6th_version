@@ -51,6 +51,10 @@ class MaintenanceTask {
     );
   }
 
+  String componentName(String componentId) {
+    return id.toString();
+  }
+
   @override
   String toString() {
     return 'MaintenanceTask(id: $id, componentId: $componentId, description: $description, dueDate: $dueDate, isCompleted: $isCompleted)';

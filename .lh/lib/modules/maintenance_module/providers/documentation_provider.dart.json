@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/modules/maintenance_module/providers/documentation_provider.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734027908214,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734027908214,
+            "name": "Commit-0",
+            "content": "// lib/providers/documentation_provider.dart\r\nimport 'package:flutter/foundation.dart';\r\nimport '../models/documentation.dart';\r\nimport '../services/documentation_service.dart';\r\n\r\nclass DocumentationProvider with ChangeNotifier {\r\n  final DocumentationService _service = DocumentationService();\r\n  List<Documentation> _documents = [];\r\n  bool _isLoading = false;\r\n  String? _error;\r\n\r\n  List<Documentation> get documents => [..._documents];\r\n  bool get isLoading => _isLoading;\r\n  String? get error => _error;\r\n\r\n  Future<void> fetchDocuments() async {\r\n    _isLoading = true;\r\n    _error = null;\r\n    notifyListeners();\r\n\r\n    try {\r\n      final loadedDocuments = await _service.loadDocuments();\r\n      _documents = loadedDocuments;\r\n    } catch (error) {\r\n      _error = 'Failed to fetch documents. Please try again later.';\r\n    } finally {\r\n      _isLoading = false;\r\n      notifyListeners();\r\n    }\r\n  }\r\n\r\n  Future<void> addDocument(Documentation document) async {\r\n    _isLoading = true;\r\n    _error = null;\r\n    notifyListeners();\r\n\r\n    try {\r\n      await _service.saveDocument(document);\r\n      _documents.add(document);\r\n    } catch (error) {\r\n      _error = 'Failed to add document. Please try again.';\r\n    } finally {\r\n      _isLoading = false;\r\n      notifyListeners();\r\n    }\r\n  }\r\n\r\n  Future<void> updateDocument(Documentation document) async {\r\n    _isLoading = true;\r\n    _error = null;\r\n    notifyListeners();\r\n\r\n    try {\r\n      await _service.updateDocument(document);\r\n      final index = _documents.indexWhere((doc) => doc.id == document.id);\r\n      if (index != -1) {\r\n        _documents[index] = document;\r\n      }\r\n    } catch (error) {\r\n      _error = 'Failed to update document. Please try again.';\r\n    } finally {\r\n      _isLoading = false;\r\n      notifyListeners();\r\n    }\r\n  }\r\n\r\n  Future<void> deleteDocument(String id) async {\r\n    _isLoading = true;\r\n    _error = null;\r\n    notifyListeners();\r\n\r\n    try {\r\n      await _service.deleteDocument(id);\r\n      _documents.removeWhere((doc) => doc.id == id);\r\n    } catch (error) {\r\n      _error = 'Failed to delete document. Please try again.';\r\n    } finally {\r\n      _isLoading = false;\r\n      notifyListeners();\r\n    }\r\n  }\r\n\r\n  void clearError() {\r\n    _error = null;\r\n    notifyListeners();\r\n  }\r\n}"
+        }
+    ]
+}

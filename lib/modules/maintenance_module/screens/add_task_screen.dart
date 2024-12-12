@@ -39,8 +39,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               DropdownButtonFormField<String>(
                 value: _componentId.isEmpty ? null : _componentId,
                 hint: Text('Select Component'),
-                items: maintenanceProvider.components.map((component) {
-                  return DropdownMenuItem(
+                items: maintenanceProvider.components.values.map((component) {
+                  return DropdownMenuItem<String>( // Explicitly type as String
                     value: component.id,
                     child: Text(component.name),
                   );

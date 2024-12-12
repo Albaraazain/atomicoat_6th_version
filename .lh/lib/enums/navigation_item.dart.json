@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/enums/navigation_item.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734027909454,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734027909454,
+            "name": "Commit-0",
+            "content": "enum NavigationItem {\r\n  mainDashboard,\r\n  adminDashboard,\r\n  recipeManagement,\r\n  calibration,\r\n  reporting,\r\n  troubleshooting,\r\n  spareParts,\r\n  documentation,\r\n  remoteAssistance,\r\n  safetyProcedures,\r\n  overview,\r\n}"
+        }
+    ]
+}

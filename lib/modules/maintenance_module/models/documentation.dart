@@ -34,3 +34,34 @@ class Documentation {
     };
   }
 }
+
+/*
+
+class Documentation {
+    /// Unique identifier for the document
+    final String id;
+    /// Document title
+    final String title;
+    /// Document content
+    final String content;
+    /// Document category/type
+    final String category;
+    /// Last update timestamp
+    final DateTime lastUpdated;
+
+    /// Constructor for creating a new documentation entry
+    /// @param id: Unique identifier
+    /// @param title: Document title
+    /// @param content: Document content
+    /// @param category: Document category
+    /// @param lastUpdated: Last modification timestamp
+    Documentation({
+        required this.id,
+        required this.title,
+        required this.content,
+        required this.category,
+        required this.lastUpdated,
+    });
+}
+
+ */

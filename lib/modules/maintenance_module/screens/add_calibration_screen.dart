@@ -1,10 +1,6 @@
 // lib/screens/add_calibration_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../enums/navigation_item.dart';
-import '../../../utils/navigation_helper.dart';
-import '../../../widgets/app_drawer.dart';
-import '../../../widgets/custom_app_bar.dart';
 import '../providers/calibration_provider.dart';
 import '../providers/maintenance_provider.dart';
 import '../models/calibration_record.dart';
@@ -45,8 +41,8 @@ class _AddCalibrationScreenState extends State<AddCalibrationScreen> {
               DropdownButtonFormField<String>(
                 value: _componentId.isEmpty ? null : _componentId,
                 hint: Text('Select Component'),
-                items: maintenanceProvider.components.map((component) {
-                  return DropdownMenuItem(
+                items: maintenanceProvider.components.values.map((component) {
+                  return DropdownMenuItem<String>( // Explicitly type as String
                     value: component.id,
                     child: Text(component.name),
                   );
@@ -161,3 +157,4 @@ class _AddCalibrationScreenState extends State<AddCalibrationScreen> {
     }
   }
 }
+
