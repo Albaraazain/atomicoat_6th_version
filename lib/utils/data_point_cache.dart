@@ -1,38 +1,25 @@
-/*
 // lib/utils/data_point_cache.dart
 
-import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../modules/system_operation_also_main_module/models/data_point.dart';
 
 class DataPointCache {
-  final int maxSize;
   final Map<String, Map<String, List<DataPoint>>> _cache = {};
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  Timer? _updateTimer;
+  static const int DEFAULT_MAX_POINTS = 1000;
 
-  DataPointCache({this.maxSize = 1000}) {
-    _updateTimer = Timer.periodic(Duration(minutes: 5), (_) => _updateFirestore());
-  }
+  void addDataPoint(
+    String componentId,
+    String parameter,
+    DataPoint dataPoint, {
+    int maxPoints = DEFAULT_MAX_POINTS,
+  }) {
+    _cache.putIfAbsent(componentId, () => {});
+    _cache[componentId]!.putIfAbsent(parameter, () => []);
 
-  void addDataPoint(String componentId, String parameter, DataPoint dataPoint) {
-    if (!_cache.containsKey(componentId)) {
-      _cache[componentId] = {};
-    }
-    if (!_cache[componentId]!.containsKey(parameter)) {
-      _cache[componentId]![parameter] = [];
-    }
+    final points = _cache[componentId]![parameter]!;
+    points.add(dataPoint);
 
-    // Use reduced precision when adding to cache
-    DataPoint reducedDataPoint = DataPoint.reducedPrecision(
-        timestamp: dataPoint.timestamp,
-        value: dataPoint.value
-    );
-
-    _cache[componentId]![parameter]!.add(reducedDataPoint);
-
-    if (_cache[componentId]![parameter]!.length > maxSize) {
-      _cache[componentId]![parameter]!.removeAt(0);
+    if (points.length > maxPoints) {
+      points.removeAt(0);
     }
   }
 
@@ -40,50 +27,36 @@ class DataPointCache {
     return _cache[componentId]?[parameter] ?? [];
   }
 
-  void clear() {
+  void clearComponentData(String componentId) {
+    _cache.remove(componentId);
+  }
+
+  void clearParameterData(String componentId, String parameter) {
+    _cache[componentId]?.remove(parameter);
+  }
+
+  void clearAll() {
     _cache.clear();
   }
 
-  Future<void> _updateFirestore() async {
-    try {
-      WriteBatch batch = _firestore.batch();
-      int operationCount = 0;
-
-      for (var componentId in _cache.keys) {
-        for (var parameter in _cache[componentId]!.keys) {
-          List<DataPoint> dataPoints = _cache[componentId]![parameter]!;
-          if (dataPoints.isEmpty) continue;
-
-          DocumentReference docRef = _firestore
-              .collection('components')
-              .doc(componentId)
-              .collection('parameters')
-              .doc(parameter);
-
-          DataPoint latestDataPoint = dataPoints.last;
-          batch.set(docRef, latestDataPoint.toJson(), SetOptions(merge: true));
-
-          operationCount++;
-
-          if (operationCount >= 500) {
-            await batch.commit();
-            batch = _firestore.batch();
-            operationCount = 0;
-          }
-        }
-      }
-
-      if (operationCount > 0) {
-        await batch.commit();
-      }
-
-      print('Firestore update completed successfully');
-    } catch (e) {
-      print('Error updating Firestore: $e');
-    }
+  bool hasData(String componentId, String parameter) {
+    return _cache[componentId]?[parameter]?.isNotEmpty ?? false;
   }
 
-  void dispose() {
-    _updateTimer?.cancel();
+  DataPoint? getLatestDataPoint(String componentId, String parameter) {
+    final points = _cache[componentId]?[parameter];
+    return points?.isNotEmpty == true ? points!.last : null;
   }
-}*/
+
+  List<DataPoint> getDataPointsInRange(
+    String componentId,
+    String parameter,
+    DateTime start,
+    DateTime end,
+  ) {
+    final points = _cache[componentId]?[parameter] ?? [];
+    return points.where((point) {
+      return point.timestamp.isAfter(start) && point.timestamp.isBefore(end);
+    }).toList();
+  }
+}

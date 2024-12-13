@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/blocs/component/bloc/component_list_event.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734044846207,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734044846207,
+            "name": "Commit-0",
+            "content": "// lib/blocs/component/bloc/component_list_event.dart\r\n\r\nimport 'package:equatable/equatable.dart';\r\nimport '../../../modules/system_operation_also_main_module/models/system_component.dart';\r\n\r\nabstract class ComponentListEvent extends Equatable {\r\n  const ComponentListEvent();\r\n\r\n  @override\r\n  List<Object> get props => [];\r\n}\r\n\r\nclass LoadComponents extends ComponentListEvent {\r\n  final String? userId;\r\n  const LoadComponents({this.userId});\r\n\r\n  @override\r\n  List<Object> get props => [userId ?? ''];\r\n}\r\n\r\nclass ClearAllComponents extends ComponentListEvent {\r\n  final String? userId;\r\n  const ClearAllComponents({this.userId});\r\n\r\n  @override\r\n  List<Object> get props => [userId ?? ''];\r\n}\r\n\r\nclass ActivateComponents extends ComponentListEvent {\r\n  final List<String> componentIds;\r\n  final String? userId;\r\n\r\n  const ActivateComponents(this.componentIds, {this.userId});\r\n\r\n  @override\r\n  List<Object> get props => [componentIds, userId ?? ''];\r\n}\r\n\r\nclass CheckSystemReadiness extends ComponentListEvent {}\r\n\r\nclass GetSystemIssues extends ComponentListEvent {}\r\n\r\nclass UpdateComponent extends ComponentListEvent {\r\n  final SystemComponent component;\r\n\r\n  const UpdateComponent(this.component);\r\n\r\n  @override\r\n  List<Object> get props => [component];\r\n}\r\n\r\nclass RemoveComponent extends ComponentListEvent {\r\n  final String componentId;\r\n  final String? userId;\r\n\r\n  const RemoveComponent(this.componentId, {this.userId});\r\n\r\n  @override\r\n  List<Object> get props => [componentId, userId ?? ''];\r\n}"
+        }
+    ]
+}

@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/blocs/alarm/bloc/alarm_state.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734047708891,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734047734505,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -8,9 +8,9 @@\n   final List<Alarm> acknowledgedAlarms;\r\n   final bool isSubscribed;\r\n   final DateTime? lastUpdate;\r\n \r\n-  const AlarmState({\r\n+  AlarmState({\r\n     this.activeAlarms = const [],\r\n     this.acknowledgedAlarms = const [],\r\n     this.isSubscribed = false,\r\n     this.lastUpdate,\r\n"
+                }
+            ],
+            "date": 1734047708891,
+            "name": "Commit-0",
+            "content": "// lib/blocs/alarm/bloc/alarm_state.dart\r\n\r\nimport '../../../modules/system_operation_also_main_module/models/alarm.dart';\r\nimport '../../base/base_bloc_state.dart';\r\n\r\nclass AlarmState extends BaseBlocState {\r\n  final List<Alarm> activeAlarms;\r\n  final List<Alarm> acknowledgedAlarms;\r\n  final bool isSubscribed;\r\n  final DateTime? lastUpdate;\r\n\r\n  const AlarmState({\r\n    this.activeAlarms = const [],\r\n    this.acknowledgedAlarms = const [],\r\n    this.isSubscribed = false,\r\n    this.lastUpdate,\r\n    super.isLoading = false,\r\n    super.error,\r\n  });\r\n\r\n  AlarmState copyWith({\r\n    List<Alarm>? activeAlarms,\r\n    List<Alarm>? acknowledgedAlarms,\r\n    bool? isSubscribed,\r\n    DateTime? lastUpdate,\r\n    bool? isLoading,\r\n    String? error,\r\n  }) {\r\n    return AlarmState(\r\n      activeAlarms: activeAlarms ?? this.activeAlarms,\r\n      acknowledgedAlarms: acknowledgedAlarms ?? this.acknowledgedAlarms,\r\n      isSubscribed: isSubscribed ?? this.isSubscribed,\r\n      lastUpdate: lastUpdate ?? this.lastUpdate,\r\n      isLoading: isLoading ?? this.isLoading,\r\n      error: error,\r\n    );\r\n  }\r\n\r\n  @override\r\n  List<Object?> get props => [\r\n        ...super.props,\r\n        activeAlarms,\r\n        acknowledgedAlarms,\r\n        isSubscribed,\r\n        lastUpdate,\r\n      ];\r\n\r\n  bool get hasActiveAlarms => activeAlarms.isNotEmpty;\r\n  bool get hasAcknowledgedAlarms => acknowledgedAlarms.isNotEmpty;\r\n\r\n  List<Alarm> get criticalAlarms => activeAlarms\r\n      .where((alarm) => alarm.severity == AlarmSeverity.critical)\r\n      .toList();\r\n\r\n  List<Alarm> get warningAlarms => activeAlarms\r\n      .where((alarm) => alarm.severity == AlarmSeverity.warning)\r\n      .toList();\r\n\r\n  List<Alarm> get infoAlarms => activeAlarms\r\n      .where((alarm) => alarm.severity == AlarmSeverity.info)\r\n      .toList();\r\n\r\n  bool get hasCriticalAlarms => criticalAlarms.isNotEmpty;\r\n}"
+        }
+    ]
+}

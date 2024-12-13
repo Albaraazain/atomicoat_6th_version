@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/blocs/recipe/models/recipe_validation_result.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734052018568,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734052018568,
+            "name": "Commit-0",
+            "content": "// lib/blocs/recipe/models/recipe_validation_result.dart\r\nclass RecipeValidationResult {\r\n  final bool isValid;\r\n  final List<String> errors;\r\n\r\n  const RecipeValidationResult({\r\n    required this.isValid,\r\n    required this.errors,\r\n  });\r\n}"
+        }
+    ]
+}

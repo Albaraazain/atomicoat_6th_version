@@ -1,0 +1,30 @@
+{
+    "sourceFile": "lib/blocs/log/bloc/system_log_event.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 3,
+            "patches": [
+                {
+                    "date": 1734050398056,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734050403682,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,7 @@\n // lib/blocs/log/bloc/system_log_event.dart\r\n-import '../../../base/base_bloc_event.dart';\r\n+import 'package:experiment_planner/blocs/base/base_bloc_event.dart';\r\n+\r\n import '../../../../modules/system_operation_also_main_module/models/system_component.dart';\r\n \r\n sealed class SystemLogEvent extends BaseBlocEvent {\r\n   SystemLogEvent() : super();\r\n"
+                },
+                {
+                    "date": 1734050632766,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,11 +1,12 @@\n // lib/blocs/log/bloc/system_log_event.dart\r\n import 'package:experiment_planner/blocs/base/base_bloc_event.dart';\r\n+import 'package:equatable/equatable.dart';\r\n+import '../../../modules/system_operation_also_main_module/models/system_component.dart';\r\n \r\n-import '../../../../modules/system_operation_also_main_module/models/system_component.dart';\r\n-\r\n-sealed class SystemLogEvent extends BaseBlocEvent {\r\n-  SystemLogEvent() : super();\r\n+abstract class SystemLogEvent extends Equatable {\r\n+  @override\r\n+  List<Object?> get props => [];\r\n }\r\n \r\n class LogEntryAdded extends SystemLogEvent {\r\n   final String message;\r\n@@ -14,13 +15,20 @@\n   LogEntryAdded({\r\n     required this.message,\r\n     required this.severity,\r\n   });\r\n+\r\n+  @override\r\n+  List<Object> get props => [message, severity];\r\n }\r\n \r\n class LogEntriesLoaded extends SystemLogEvent {\r\n   final int limit;\r\n-  LogEntriesLoaded({this.limit = 1000});\r\n+\r\n+  LogEntriesLoaded({this.limit = 50});\r\n+\r\n+  @override\r\n+  List<Object> get props => [limit];\r\n }\r\n \r\n class LogEntriesFiltered extends SystemLogEvent {\r\n   final DateTime startDate;\r\n@@ -31,8 +39,11 @@\n     required this.startDate,\r\n     required this.endDate,\r\n     this.severityFilter,\r\n   });\r\n+\r\n+  @override\r\n+  List<Object?> get props => [startDate, endDate, severityFilter];\r\n }\r\n \r\n class LogStreamStarted extends SystemLogEvent {}\r\n \r\n"
+                },
+                {
+                    "date": 1734050741497,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,6 @@\n-// lib/blocs/log/bloc/system_log_event.dart\r\n-import 'package:experiment_planner/blocs/base/base_bloc_event.dart';\r\n import 'package:equatable/equatable.dart';\r\n-import '../../../modules/system_operation_also_main_module/models/system_component.dart';\r\n+import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';\r\n \r\n abstract class SystemLogEvent extends Equatable {\r\n   @override\r\n   List<Object?> get props => [];\r\n"
+                }
+            ],
+            "date": 1734050398056,
+            "name": "Commit-0",
+            "content": "// lib/blocs/log/bloc/system_log_event.dart\r\nimport '../../../base/base_bloc_event.dart';\r\nimport '../../../../modules/system_operation_also_main_module/models/system_component.dart';\r\n\r\nsealed class SystemLogEvent extends BaseBlocEvent {\r\n  SystemLogEvent() : super();\r\n}\r\n\r\nclass LogEntryAdded extends SystemLogEvent {\r\n  final String message;\r\n  final ComponentStatus severity;\r\n\r\n  LogEntryAdded({\r\n    required this.message,\r\n    required this.severity,\r\n  });\r\n}\r\n\r\nclass LogEntriesLoaded extends SystemLogEvent {\r\n  final int limit;\r\n  LogEntriesLoaded({this.limit = 1000});\r\n}\r\n\r\nclass LogEntriesFiltered extends SystemLogEvent {\r\n  final DateTime startDate;\r\n  final DateTime endDate;\r\n  final ComponentStatus? severityFilter;\r\n\r\n  LogEntriesFiltered({\r\n    required this.startDate,\r\n    required this.endDate,\r\n    this.severityFilter,\r\n  });\r\n}\r\n\r\nclass LogStreamStarted extends SystemLogEvent {}\r\n\r\nclass LogStreamStopped extends SystemLogEvent {}"
+        }
+    ]
+}

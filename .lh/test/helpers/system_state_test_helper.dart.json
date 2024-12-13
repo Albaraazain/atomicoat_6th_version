@@ -1,0 +1,22 @@
+{
+    "sourceFile": "test/helpers/system_state_test_helper.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734047281427,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734047289915,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,9 @@\n // test/helpers/system_state_test_helper.dart\r\n \r\n-import 'package:your_app_name/blocs/system_state/models/system_state_data.dart';\r\n \r\n+import 'package:experiment_planner/blocs/system_state/models/system_state_data.dart';\r\n+\r\n class SystemStateTestHelper {\r\n   static SystemStateData createTestState({\r\n     String id = 'test-id',\r\n     Map<String, dynamic>? data,\r\n"
+                }
+            ],
+            "date": 1734047281427,
+            "name": "Commit-0",
+            "content": "// test/helpers/system_state_test_helper.dart\r\n\r\nimport 'package:your_app_name/blocs/system_state/models/system_state_data.dart';\r\n\r\nclass SystemStateTestHelper {\r\n  static SystemStateData createTestState({\r\n    String id = 'test-id',\r\n    Map<String, dynamic>? data,\r\n    DateTime? timestamp,\r\n  }) {\r\n    return SystemStateData(\r\n      id: id,\r\n      data: data ?? {\r\n        'components': {\r\n          'component1': {\r\n            'isActivated': true,\r\n            'currentValues': {'temperature': 25.0},\r\n            'setValues': {'temperature': 25.0},\r\n            'minValues': {'temperature': 20.0},\r\n            'maxValues': {'temperature': 30.0},\r\n          },\r\n          'component2': {\r\n            'isActivated': true,\r\n            'currentValues': {'pressure': 1.0},\r\n            'setValues': {'pressure': 1.0},\r\n            'minValues': {'pressure': 0.5},\r\n            'maxValues': {'pressure': 1.5},\r\n          },\r\n        },\r\n        'isRunning': false,\r\n        'lastUpdate': DateTime.now().toIso8601String(),\r\n      },\r\n      timestamp: timestamp ?? DateTime.now(),\r\n    );\r\n  }\r\n\r\n  static Map<String, dynamic> createComponentData({\r\n    bool isActivated = true,\r\n    Map<String, double> currentValues = const {'value': 0.0},\r\n    Map<String, double> setValues = const {'value': 0.0},\r\n    Map<String, double> minValues = const {'value': -10.0},\r\n    Map<String, double> maxValues = const {'value': 10.0},\r\n  }) {\r\n    return {\r\n      'isActivated': isActivated,\r\n      'currentValues': currentValues,\r\n      'setValues': setValues,\r\n      'minValues': minValues,\r\n      'maxValues': maxValues,\r\n    };\r\n  }\r\n\r\n  static List<String> validateTestState(Map<String, dynamic> state) {\r\n    final issues = <String>[];\r\n    final components = state['components'] as Map<String, dynamic>?;\r\n\r\n    if (components == null) {\r\n      issues.add('No components found');\r\n      return issues;\r\n    }\r\n\r\n    components.forEach((name, data) {\r\n      final component = data as Map<String, dynamic>;\r\n      if (!component['isActivated']) {\r\n        issues.add('$name is not activated');\r\n      }\r\n    });\r\n\r\n    return issues;\r\n  }\r\n}"
+        }
+    ]
+}

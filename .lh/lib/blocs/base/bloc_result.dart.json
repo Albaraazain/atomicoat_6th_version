@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/blocs/base/bloc_result.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734046449553,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734046449553,
+            "name": "Commit-0",
+            "content": "// lib/blocs/base/bloc_result.dart\r\n\r\n/// Represents the result of a bloc operation\r\nclass BlocResult<T> {\r\n  final bool success;\r\n  final T? data;\r\n  final String? error;\r\n\r\n  const BlocResult.success([this.data])\r\n      : success = true,\r\n        error = null;\r\n\r\n  const BlocResult.failure(this.error)\r\n      : success = false,\r\n        data = null;\r\n\r\n  bool get isSuccess => success;\r\n  bool get isFailure => !success;\r\n}"
+        }
+    ]
+}

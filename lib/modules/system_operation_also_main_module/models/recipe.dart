@@ -48,6 +48,28 @@ class Recipe {
     'version': version,
     'lastModified': Timestamp.fromDate(lastModified),
   };
+
+  Recipe copyWith({
+    String? id,
+    String? name,
+    List<RecipeStep>? steps,
+    String? substrate,
+    double? chamberTemperatureSetPoint,
+    double? pressureSetPoint,
+    int? version,
+    DateTime? lastModified,
+  }) {
+    return Recipe(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      steps: steps ?? this.steps,
+      substrate: substrate ?? this.substrate,
+      chamberTemperatureSetPoint: chamberTemperatureSetPoint ?? this.chamberTemperatureSetPoint,
+      pressureSetPoint: pressureSetPoint ?? this.pressureSetPoint,
+      version: version ?? this.version,
+      lastModified: lastModified ?? this.lastModified,
+    );
+  }
 }
 
 class RecipeStep {

@@ -1,0 +1,30 @@
+{
+    "sourceFile": "lib/blocs/log/bloc/system_log_state.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 3,
+            "patches": [
+                {
+                    "date": 1734050423233,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734050431927,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,7 @@\n // lib/blocs/log/bloc/system_log_state.dart\r\n-import '../../../base/base_bloc_state.dart';\r\n+import 'package:experiment_planner/blocs/base/base_bloc_state.dart';\r\n+\r\n import '../../../../modules/system_operation_also_main_module/models/system_log_entry.dart';\r\n \r\n class SystemLogState extends BaseBlocState {\r\n   final List<SystemLogEntry> entries;\r\n"
+                },
+                {
+                    "date": 1734050629287,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,53 +1,56 @@\n-// lib/blocs/log/bloc/system_log_state.dart\r\n-import 'package:experiment_planner/blocs/base/base_bloc_state.dart';\r\n+import 'package:equatable/equatable.dart';\r\n+import '../../../modules/system_operation_also_main_module/models/system_log_entry.dart';\r\n \r\n-import '../../../../modules/system_operation_also_main_module/models/system_log_entry.dart';\r\n-\r\n-class SystemLogState extends BaseBlocState {\r\n+class SystemLogState extends Equatable {\r\n+  final bool isLoading;\r\n   final List<SystemLogEntry> entries;\r\n-  final bool isStreaming;\r\n+  final String? error;\r\n+  final bool hasMoreEntries;\r\n   final DateTime? startDate;\r\n   final DateTime? endDate;\r\n-  final bool hasMoreEntries;\r\n \r\n-  SystemLogState({\r\n-    required super.isLoading,\r\n-    super.error,\r\n-    super.lastUpdated,\r\n+  const SystemLogState({\r\n+    required this.isLoading,\r\n     required this.entries,\r\n-    required this.isStreaming,\r\n+    this.error,\r\n+    required this.hasMoreEntries,\r\n     this.startDate,\r\n     this.endDate,\r\n-    this.hasMoreEntries = false,\r\n   });\r\n \r\n   factory SystemLogState.initial() {\r\n-    return SystemLogState(\r\n+    return const SystemLogState(\r\n       isLoading: false,\r\n-      entries: const [],\r\n-      isStreaming: false,\r\n+      entries: [],\r\n+      hasMoreEntries: false,\r\n     );\r\n   }\r\n \r\n+  @override\r\n+  List<Object?> get props => [\r\n+        isLoading,\r\n+        entries,\r\n+        error,\r\n+        hasMoreEntries,\r\n+        startDate,\r\n+        endDate,\r\n+      ];\r\n+\r\n   SystemLogState copyWith({\r\n     bool? isLoading,\r\n+    List<SystemLogEntry>? entries,\r\n     String? error,\r\n-    DateTime? lastUpdated,\r\n-    List<SystemLogEntry>? entries,\r\n-    bool? isStreaming,\r\n+    bool? hasMoreEntries,\r\n     DateTime? startDate,\r\n     DateTime? endDate,\r\n-    bool? hasMoreEntries,\r\n   }) {\r\n     return SystemLogState(\r\n       isLoading: isLoading ?? this.isLoading,\r\n+      entries: entries ?? this.entries,\r\n       error: error ?? this.error,\r\n-      lastUpdated: lastUpdated ?? this.lastUpdated,\r\n-      entries: entries ?? this.entries,\r\n-      isStreaming: isStreaming ?? this.isStreaming,\r\n+      hasMoreEntries: hasMoreEntries ?? this.hasMoreEntries,\r\n       startDate: startDate ?? this.startDate,\r\n       endDate: endDate ?? this.endDate,\r\n-      hasMoreEntries: hasMoreEntries ?? this.hasMoreEntries,\r\n     );\r\n   }\r\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1734050739699,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,6 @@\n import 'package:equatable/equatable.dart';\r\n-import '../../../modules/system_operation_also_main_module/models/system_log_entry.dart';\r\n+import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_log_entry.dart';\r\n \r\n class SystemLogState extends Equatable {\r\n   final bool isLoading;\r\n   final List<SystemLogEntry> entries;\r\n"
+                }
+            ],
+            "date": 1734050423233,
+            "name": "Commit-0",
+            "content": "// lib/blocs/log/bloc/system_log_state.dart\r\nimport '../../../base/base_bloc_state.dart';\r\nimport '../../../../modules/system_operation_also_main_module/models/system_log_entry.dart';\r\n\r\nclass SystemLogState extends BaseBlocState {\r\n  final List<SystemLogEntry> entries;\r\n  final bool isStreaming;\r\n  final DateTime? startDate;\r\n  final DateTime? endDate;\r\n  final bool hasMoreEntries;\r\n\r\n  SystemLogState({\r\n    required super.isLoading,\r\n    super.error,\r\n    super.lastUpdated,\r\n    required this.entries,\r\n    required this.isStreaming,\r\n    this.startDate,\r\n    this.endDate,\r\n    this.hasMoreEntries = false,\r\n  });\r\n\r\n  factory SystemLogState.initial() {\r\n    return SystemLogState(\r\n      isLoading: false,\r\n      entries: const [],\r\n      isStreaming: false,\r\n    );\r\n  }\r\n\r\n  SystemLogState copyWith({\r\n    bool? isLoading,\r\n    String? error,\r\n    DateTime? lastUpdated,\r\n    List<SystemLogEntry>? entries,\r\n    bool? isStreaming,\r\n    DateTime? startDate,\r\n    DateTime? endDate,\r\n    bool? hasMoreEntries,\r\n  }) {\r\n    return SystemLogState(\r\n      isLoading: isLoading ?? this.isLoading,\r\n      error: error ?? this.error,\r\n      lastUpdated: lastUpdated ?? this.lastUpdated,\r\n      entries: entries ?? this.entries,\r\n      isStreaming: isStreaming ?? this.isStreaming,\r\n      startDate: startDate ?? this.startDate,\r\n      endDate: endDate ?? this.endDate,\r\n      hasMoreEntries: hasMoreEntries ?? this.hasMoreEntries,\r\n    );\r\n  }\r\n}"
+        }
+    ]
+}

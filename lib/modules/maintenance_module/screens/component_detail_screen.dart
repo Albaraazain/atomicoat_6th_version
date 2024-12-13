@@ -1,276 +1,282 @@
-// lib/screens/component_detail_screen.dart
+// lib/modules/maintenance_module/screens/component_detail_screen.dart
+
+import 'package:experiment_planner/modules/maintenance_module/screens/calibration_screen.dart';
 import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';
-import 'package:experiment_planner/modules/system_operation_also_main_module/providers/system_copmonent_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../blocs/component/bloc/component_bloc.dart';
+import '../../../blocs/calibration/bloc/calibration_bloc.dart';
+import '../../../blocs/component/bloc/component_event.dart';
+import '../../../blocs/component/bloc/component_state.dart';
+import '../../../blocs/calibration/bloc/calibration_event.dart';
+import '../../../blocs/calibration/bloc/calibration_state.dart';
 import '../models/calibration_record.dart';
-import '../providers/maintenance_provider.dart';
-import '../providers/calibration_provider.dart';
 import '../widgets/maintenance_task_list.dart';
 import '../widgets/calibration_history_widget.dart';
 import '../widgets/component_status_update_dialog.dart';
 import 'maintenance_procedures_list_screen.dart';
+import 'package:intl/intl.dart';
 
-class ComponentDetailScreen extends StatelessWidget {
-  final SystemComponent component;
+class ComponentDetailScreen extends StatefulWidget {
+  final String componentName;
 
-  ComponentDetailScreen({required this.component});
+  const ComponentDetailScreen({
+    Key? key,
+    required this.componentName,
+  }) : super(key: key);
+
+  @override
+  State<ComponentDetailScreen> createState() => _ComponentDetailScreenState();
+}
+
+class _ComponentDetailScreenState extends State<ComponentDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize both blocs
+    context.read<ComponentBloc>().add(ComponentInitialized(widget.componentName));
+    context.read<CalibrationBloc>().add(LoadCalibrationRecords());
+  }
 
   @override
   Widget build(BuildContext context) {
-    final maintenanceProvider = Provider.of<MaintenanceProvider>(context);
-    final calibrationProvider = Provider.of<CalibrationProvider>(context);
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: () {
-            Scaffold.of(context).openDrawer();
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ComponentBloc, ComponentState>(
+          listener: (context, state) {
+            if (state.error != null) {
+              _showErrorSnackBar(context, state.error!);
+            }
           },
         ),
-        title: Text(component.name),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () => _showStatusUpdateDialog(context),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildComponentInfo(),
-              SizedBox(height: 24),
-              _buildMaintenanceTasks(maintenanceProvider),
-              SizedBox(height: 24),
-              _buildCalibrationHistory(context, calibrationProvider),
-              SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => MaintenanceProceduresListScreen(
-                        componentId: component.id,
-                        componentName: component.name,
-                      ),
-                    ),
-                  );
-                },
-                child: Text('View Maintenance Procedures'),
-              ),
-            ],
-          ),
+        BlocListener<CalibrationBloc, CalibrationState>(
+          listener: (context, state) {
+            if (state.error != null) {
+              _showErrorSnackBar(context, state.error!);
+            }
+          },
         ),
-      ),
-    );
-  }
+      ],
+      child: BlocBuilder<ComponentBloc, ComponentState>(
+        builder: (context, componentState) {
+          if (componentState.isLoading) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
 
-  Widget _buildComponentInfo() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Component Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            Text('Type: ${component.type}'),
-            Text('Status: ${component.status}'),
-            Text('Last Maintenance: ${component.lastMaintenanceDate.toString()}'),
-          ],
-        ),
-      ),
-    );
-  }
+          final component = componentState.component;
+          if (component == null) {
+            return const Scaffold(
+              body: Center(child: Text('Component not found')),
+            );
+          }
 
-  Widget _buildMaintenanceTasks(MaintenanceProvider provider) {
-    final tasks = provider.getTasksForComponent(component.id);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Maintenance Tasks', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            MaintenanceTaskList(tasks: tasks),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCalibrationHistory(BuildContext context, CalibrationProvider provider) {
-    final calibrationRecords = provider.getCalibrationRecordsForComponent(component.id);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Calibration History', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            CalibrationHistoryWidget(
-              calibrationRecords: calibrationRecords,
-              componentId: component.id,
-              getComponentName: (id) => provider.getComponentName(id),
-              showEditDialog: (context, record, onSave) {
-                _showEditCalibrationDialog(context, record, onSave);
-              },
-              showDeleteConfirmationDialog: (context, record, onDelete) {
-                _showDeleteConfirmationDialog(context, record, onDelete);
-              },
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(component.name),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () => _showStatusUpdateDialog(context, component),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showStatusUpdateDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => ComponentStatusUpdateDialog(
-        component: component,
-        onUpdate: (newStatus, notes) {
-          Provider.of<SystemComponentProvider>(context, listen: false).updateComponentStatus(component.id, newStatus);
+            body: RefreshIndicator(
+              onRefresh: () async {
+                context.read<ComponentBloc>()
+                    .add(ComponentInitialized(widget.componentName));
+                context.read<CalibrationBloc>().add(LoadCalibrationRecords());
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildComponentInfo(component),
+                      const SizedBox(height: 24),
+                      _buildMaintenanceTasks(component),
+                      const SizedBox(height: 24),
+                      _buildCalibrationHistory(component),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () => _navigateToMaintenanceProcedures(
+                          context,
+                          component,
+                        ),
+                        child: const Text('View Maintenance Procedures'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
         },
       ),
     );
   }
 
-  void _showEditCalibrationDialog(BuildContext context, CalibrationRecord record, Function(CalibrationRecord) onSave) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CalibrationEditDialog(
-          calibrationRecord: record,
-          onSave: onSave,
-        );
-      },
-    );
-  }
-
-  void _showDeleteConfirmationDialog(BuildContext context, CalibrationRecord record, Function() onDelete) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Delete Calibration Record'),
-          content: Text('Are you sure you want to delete this calibration record?'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('Delete'),
-              onPressed: () {
-                onDelete();
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class CalibrationEditDialog extends StatefulWidget {
-  final CalibrationRecord calibrationRecord;
-  final Function(CalibrationRecord) onSave;
-
-  CalibrationEditDialog({required this.calibrationRecord, required this.onSave});
-
-  @override
-  _CalibrationEditDialogState createState() => _CalibrationEditDialogState();
-}
-
-class _CalibrationEditDialogState extends State<CalibrationEditDialog> {
-  late TextEditingController _performedByController;
-  late TextEditingController _notesController;
-  late DateTime _calibrationDate;
-
-  @override
-  void initState() {
-    super.initState();
-    _performedByController = TextEditingController(text: widget.calibrationRecord.performedBy);
-    _notesController = TextEditingController(text: widget.calibrationRecord.notes);
-    _calibrationDate = widget.calibrationRecord.calibrationDate;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.calibrationRecord.id.isEmpty ? 'Add Calibration Record' : 'Edit Calibration Record'),
-      content: SingleChildScrollView(
+  Widget _buildComponentInfo(SystemComponent component) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            TextField(
-              controller: _performedByController,
-              decoration: InputDecoration(labelText: 'Performed By'),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Component Details',
+              style: Theme.of(context).textTheme.titleLarge,
             ),
-            ListTile(
-              title: Text('Calibration Date'),
-              subtitle: Text(DateFormat('yyyy-MM-dd').format(_calibrationDate)),
-              trailing: Icon(Icons.calendar_today),
-              onTap: () async {
-                final DateTime? picked = await showDatePicker(
-                  context: context,
-                  initialDate: _calibrationDate,
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime.now(),
-                );
-                if (picked != null && picked != _calibrationDate) {
-                  setState(() {
-                    _calibrationDate = picked;
-                  });
-                }
-              },
+            const SizedBox(height: 8),
+            Text('Type: ${component.type}'),
+            Text('Status: ${component.status.toString().split('.').last}'),
+            Text(
+              'Last Maintenance: ${DateFormat('yyyy-MM-dd').format(component.lastMaintenanceDate)}',
             ),
-            TextField(
-              controller: _notesController,
-              decoration: InputDecoration(labelText: 'Notes'),
-              maxLines: 3,
+            const SizedBox(height: 16),
+            Text(
+              'Current Values:',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            ...component.currentValues.entries.map(
+              (entry) => Padding(
+                padding: const EdgeInsets.only(left: 16.0, top: 4.0),
+                child: Text(
+                  '${entry.key}: ${entry.value.toStringAsFixed(2)}',
+                ),
+              ),
             ),
           ],
         ),
       ),
-      actions: <Widget>[
-        TextButton(
-          child: Text('Cancel'),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        TextButton(
-          child: Text('Save'),
-          onPressed: () {
-            final updatedRecord = widget.calibrationRecord.copyWith(
-              performedBy: _performedByController.text,
-              calibrationDate: _calibrationDate,
-              notes: _notesController.text,
-            );
-            widget.onSave(updatedRecord);
-            Navigator.of(context).pop();
-          },
-        ),
-      ],
     );
   }
 
-  @override
-  void dispose() {
-    _performedByController.dispose();
-    _notesController.dispose();
-    super.dispose();
+  Widget _buildMaintenanceTasks(SystemComponent component) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Maintenance Tasks',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            MaintenanceTaskList(
+              tasks: component.maintenanceTasks ?? [], // Assuming component has maintenanceTasks property
+              showComponentName: true,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCalibrationHistory(SystemComponent component) {
+    return BlocBuilder<CalibrationBloc, CalibrationState>(
+      builder: (context, calibrationState) {
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Calibration History',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: () => _showAddCalibrationDialog(
+                        context,
+                        component,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (calibrationState.isLoading)
+                  const Center(child: CircularProgressIndicator())
+                else
+                  CalibrationHistoryWidget(
+                    componentId: component.id,
+                    getComponentName: (id) => component.name, // Use component name directly or implement proper lookup
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showStatusUpdateDialog(
+    BuildContext context,
+    SystemComponent component,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => ComponentStatusUpdateDialog(
+        component: component,
+        onUpdate: (newStatus, notes) {
+          context.read<ComponentBloc>().add(
+                ComponentStatusUpdated(component.name, newStatus),
+              );
+        },
+      ),
+    );
+  }
+
+  void _showAddCalibrationDialog(
+    BuildContext context,
+    SystemComponent component,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => CalibrationEditDialog(
+        calibrationRecord: CalibrationRecord(
+          id: '',
+          componentId: component.id,
+          calibrationDate: DateTime.now(),
+          performedBy: '',
+          calibrationData: {}, // Initialize with empty map
+          notes: '',
+        ),
+        onSave: (record) {
+          context.read<CalibrationBloc>().add(AddCalibrationRecord(record));
+        },
+      ),
+    );
+  }
+
+  void _navigateToMaintenanceProcedures(
+    BuildContext context,
+    SystemComponent component,
+  ) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => MaintenanceProceduresListScreen(
+          componentId: component.id,
+          componentName: component.name,
+        ),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 }

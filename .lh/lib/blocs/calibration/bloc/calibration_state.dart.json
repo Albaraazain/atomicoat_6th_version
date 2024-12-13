@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/blocs/calibration/bloc/calibration_state.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734045335466,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734045335466,
+            "name": "Commit-0",
+            "content": "//lib/blocs/calibration/bloc/calibration_state.dart\r\n\r\nimport 'package:equatable/equatable.dart';\r\nimport '../../../modules/maintenance_module/models/calibration_record.dart';\r\nimport '../../../modules/maintenance_module/models/calibration_procedure.dart';\r\n\r\nclass CalibrationState extends Equatable {\r\n  final List<CalibrationRecord> calibrationRecords;\r\n  final List<CalibrationProcedure> calibrationProcedures;\r\n  final bool isLoading;\r\n  final String? error;\r\n\r\n  const CalibrationState({\r\n    this.calibrationRecords = const [],\r\n    this.calibrationProcedures = const [],\r\n    this.isLoading = false,\r\n    this.error,\r\n  });\r\n\r\n  CalibrationState copyWith({\r\n    List<CalibrationRecord>? calibrationRecords,\r\n    List<CalibrationProcedure>? calibrationProcedures,\r\n    bool? isLoading,\r\n    String? error,\r\n  }) {\r\n    return CalibrationState(\r\n      calibrationRecords: calibrationRecords ?? this.calibrationRecords,\r\n      calibrationProcedures: calibrationProcedures ?? this.calibrationProcedures,\r\n      isLoading: isLoading ?? this.isLoading,\r\n      error: error ?? this.error,\r\n    );\r\n  }\r\n\r\n  @override\r\n  List<Object?> get props => [\r\n        calibrationRecords,\r\n        calibrationProcedures,\r\n        isLoading,\r\n        error,\r\n      ];\r\n\r\n  CalibrationRecord? getLatestCalibrationForComponent(String componentName) {\r\n    final componentRecords = calibrationRecords\r\n        .where((record) => record.componentName == componentName)\r\n        .toList();\r\n    if (componentRecords.isEmpty) return null;\r\n    return componentRecords.reduce(\r\n        (a, b) => a.calibrationDate.isAfter(b.calibrationDate) ? a : b);\r\n  }\r\n\r\n  bool isCalibrationDue(String componentName, Duration calibrationInterval) {\r\n    final latestCalibration = getLatestCalibrationForComponent(componentName);\r\n    if (latestCalibration == null) return true;\r\n    return DateTime.now().difference(latestCalibration.calibrationDate) >=\r\n        calibrationInterval;\r\n  }\r\n\r\n  List<CalibrationRecord> getCalibrationRecordsForComponent(String componentId) {\r\n    return calibrationRecords\r\n        .where((record) => record.componentId == componentId)\r\n        .toList();\r\n  }\r\n}"
+        }
+    ]
+}

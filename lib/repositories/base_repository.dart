@@ -1,3 +1,5 @@
+// path: lib/repositories/base_repository.dart
+
 // This file contains the base repository class that will be used to create repositories for different models.
 import 'package:cloud_firestore/cloud_firestore.dart';
 

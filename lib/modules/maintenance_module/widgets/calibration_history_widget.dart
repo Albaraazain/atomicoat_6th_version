@@ -1,42 +1,52 @@
-// lib/widgets/calibration_history_widget.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../blocs/calibration/bloc/calibration_bloc.dart';
+import '../../../blocs/calibration/bloc/calibration_event.dart';
+import '../../../blocs/calibration/bloc/calibration_state.dart';
 import '../models/calibration_record.dart';
 import 'package:intl/intl.dart';
 
 class CalibrationHistoryWidget extends StatelessWidget {
-  final List<CalibrationRecord> calibrationRecords;
   final String? componentId;
   final Function(String) getComponentName;
-  final Function(BuildContext, CalibrationRecord, Function(CalibrationRecord)) showEditDialog;
-  final Function(BuildContext, CalibrationRecord, Function()) showDeleteConfirmationDialog;
 
+  // Keep existing parameters and add new ones
   const CalibrationHistoryWidget({
     Key? key,
-    required this.calibrationRecords,
     this.componentId,
     required this.getComponentName,
-    required this.showEditDialog,
-    required this.showDeleteConfirmationDialog,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    List<CalibrationRecord> records = componentId != null
-        ? calibrationRecords.where((record) => record.componentId == componentId).toList()
-        : calibrationRecords;
+    return BlocBuilder<CalibrationBloc, CalibrationState>(
+      builder: (context, state) {
+        if (state.isLoading) {
+          return Center(child: CircularProgressIndicator());
+        }
 
-    records.sort((a, b) => b.calibrationDate.compareTo(a.calibrationDate));
+        if (state.error != null) {
+          return Center(child: Text('Error: ${state.error}'));
+        }
 
-    if (records.isEmpty) {
-      return Center(child: Text('No calibration records found.'));
-    }
+        List<CalibrationRecord> records = componentId != null
+            ? state.calibrationRecords.where((record) => record.componentId == componentId).toList()
+            : state.calibrationRecords;
 
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: records.length,
-      itemBuilder: (context, index) {
-        return _buildCalibrationRecordItem(context, records[index]);
+        records.sort((a, b) => b.calibrationDate.compareTo(a.calibrationDate));
+
+        if (records.isEmpty) {
+          return Center(child: Text('No calibration records found.'));
+        }
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: records.length,
+          itemBuilder: (context, index) {
+            return _buildCalibrationRecordItem(context, records[index]);
+          },
+        );
       },
     );
   }
@@ -70,31 +80,25 @@ class CalibrationHistoryWidget extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
-                      onPressed: () => showDeleteConfirmationDialog(
-                        context,
-                        record,
-                            () {
-                          // Callback to be executed after successful deletion
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Calibration record deleted')),
-                          );
-                        },
-                      ),
+                      onPressed: () {
+                        BlocProvider.of<CalibrationBloc>(context)
+                            .add(DeleteCalibrationRecord(record.id));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Calibration record deleted')),
+                        );
+                      },
                       child: Text('Delete'),
                       style: TextButton.styleFrom(foregroundColor: Colors.red),
                     ),
                     SizedBox(width: 16),
                     ElevatedButton(
-                      onPressed: () => showEditDialog(
-                        context,
-                        record,
-                            (updatedRecord) {
-                          // Callback to be executed after successful edit
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Calibration record updated')),
-                          );
-                        },
-                      ),
+                      onPressed: () {
+                        BlocProvider.of<CalibrationBloc>(context)
+                            .add(UpdateCalibrationRecord(record));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Calibration record updated')),
+                        );
+                      },
                       child: Text('Edit'),
                     ),
                   ],

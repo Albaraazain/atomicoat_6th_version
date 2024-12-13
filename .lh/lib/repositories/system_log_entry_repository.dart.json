@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/repositories/system_log_entry_repository.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734050634330,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734050634330,
+            "name": "Commit-0",
+            "content": "// lib/repositories/system_log_entry_repository.dart\r\n\r\nimport 'package:cloud_firestore/cloud_firestore.dart';\r\nimport '../modules/system_operation_also_main_module/models/system_log_entry.dart';\r\nimport '../modules/system_operation_also_main_module/models/system_component.dart';\r\n\r\nclass SystemLogEntryRepository {\r\n  final FirebaseFirestore _firestore;\r\n\r\n  SystemLogEntryRepository({FirebaseFirestore? firestore})\r\n      : _firestore = firestore ?? FirebaseFirestore.instance;\r\n\r\n  Future<void> add(String message, ComponentStatus severity, {required String userId}) async {\r\n    await _firestore.collection('users/$userId/logs').add({\r\n      'timestamp': FieldValue.serverTimestamp(),\r\n      'message': message,\r\n      'severity': severity.toString().split('.').last,\r\n    });\r\n  }\r\n\r\n  Future<List<SystemLogEntry>> getRecentEntries(String userId, {int limit = 50}) async {\r\n    final snapshot = await _firestore\r\n        .collection('users/$userId/logs')\r\n        .orderBy('timestamp', descending: true)\r\n        .limit(limit)\r\n        .get();\r\n\r\n    return snapshot.docs.map((doc) => SystemLogEntry.fromJson(doc.data())).toList();\r\n  }\r\n\r\n  Future<List<SystemLogEntry>> getEntriesByDateRange(\r\n    String userId,\r\n    DateTime startDate,\r\n    DateTime endDate,\r\n  ) async {\r\n    final snapshot = await _firestore\r\n        .collection('users/$userId/logs')\r\n        .where('timestamp', isGreaterThanOrEqualTo: startDate)\r\n        .where('timestamp', isLessThanOrEqualTo: endDate)\r\n        .orderBy('timestamp', descending: true)\r\n        .get();\r\n\r\n    return snapshot.docs.map((doc) => SystemLogEntry.fromJson(doc.data())).toList();\r\n  }\r\n}"
+        }
+    ]
+}

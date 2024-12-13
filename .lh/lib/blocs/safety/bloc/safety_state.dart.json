@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/blocs/safety/bloc/safety_state.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734048615266,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734048615266,
+            "name": "Commit-0",
+            "content": "// lib/blocs/safety/bloc/safety_state.dart\r\nimport '../../base/base_bloc_state.dart';\r\nimport '../../../modules/system_operation_also_main_module/models/safety_error.dart';\r\n\r\nclass SafetyState extends BaseBlocState {\r\n  final bool isMonitoringActive;\r\n  final List<SafetyError> activeErrors;\r\n  final Map<String, Map<String, SafetyThreshold>> thresholds;\r\n\r\n  SafetyState({\r\n    required super.isLoading,\r\n    super.error,\r\n    super.lastUpdated,\r\n    required this.isMonitoringActive,\r\n    required this.activeErrors,\r\n    required this.thresholds,\r\n  });\r\n\r\n  factory SafetyState.initial() {\r\n    return SafetyState(\r\n      isLoading: false,\r\n      isMonitoringActive: false,\r\n      activeErrors: const [],\r\n      thresholds: const {},\r\n    );\r\n  }\r\n\r\n  SafetyState copyWith({\r\n    bool? isLoading,\r\n    String? error,\r\n    DateTime? lastUpdated,\r\n    bool? isMonitoringActive,\r\n    List<SafetyError>? activeErrors,\r\n    Map<String, Map<String, SafetyThreshold>>? thresholds,\r\n  }) {\r\n    return SafetyState(\r\n      isLoading: isLoading ?? this.isLoading,\r\n      error: error ?? this.error,\r\n      lastUpdated: lastUpdated ?? this.lastUpdated,\r\n      isMonitoringActive: isMonitoringActive ?? this.isMonitoringActive,\r\n      activeErrors: activeErrors ?? this.activeErrors,\r\n      thresholds: thresholds ?? this.thresholds,\r\n    );\r\n  }\r\n}\r\n\r\nclass SafetyThreshold {\r\n  final double min;\r\n  final double max;\r\n\r\n  const SafetyThreshold({required this.min, required this.max});\r\n}"
+        }
+    ]
+}

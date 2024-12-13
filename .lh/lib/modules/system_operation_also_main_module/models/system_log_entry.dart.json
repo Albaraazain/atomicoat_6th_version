@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/modules/system_operation_also_main_module/models/system_log_entry.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734050335062,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734050335062,
+            "name": "Commit-0",
+            "content": "// path: lib/modules/system_operation_also_main_module/models/system_log_entry.dart\r\nimport 'package:cloud_firestore/cloud_firestore.dart';\r\nimport 'system_component.dart';\r\n\r\nclass SystemLogEntry {\r\n  final DateTime timestamp;\r\n  final String message;\r\n  final ComponentStatus severity;\r\n\r\n  SystemLogEntry({\r\n    required this.timestamp,\r\n    required this.message,\r\n    required this.severity,\r\n  });\r\n\r\n  factory SystemLogEntry.fromJson(Map<String, dynamic> json) {\r\n    return SystemLogEntry(\r\n      timestamp: (json['timestamp'] as Timestamp).toDate(),\r\n      message: json['message'] as String,\r\n      severity: ComponentStatus.values.firstWhere((e) => e.toString() == 'ComponentStatus.${json['severity']}'),\r\n    );\r\n  }\r\n\r\n  Map<String, dynamic> toJson() => {\r\n    'timestamp': Timestamp.fromDate(timestamp),\r\n    'message': message,\r\n    'severity': severity.toString().split('.').last,\r\n  };\r\n}\r\n\r\n"
+        }
+    ]
+}

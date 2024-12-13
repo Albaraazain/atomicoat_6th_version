@@ -1,0 +1,22 @@
+{
+    "sourceFile": "test/helpers/bloc_test_helper.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734046491683,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734046519684,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,7 @@\n // test/helpers/bloc_test_helper.dart\r\n \r\n+import 'package:bloc/bloc.dart';\r\n import 'package:bloc_test/bloc_test.dart';\r\n import 'package:mocktail/mocktail.dart';\r\n import 'package:cloud_firestore/cloud_firestore.dart';\r\n import '../../lib/blocs/base/base_repository.dart';\r\n@@ -25,12 +26,12 @@\n }\r\n \r\n /// Extension to help with bloc testing\r\n extension BlocTestHelper on dynamic {\r\n-  void expectStateChanges<B extends StateStreamable<S>, S>({\r\n+  void expectStateChanges<B extends BlocBase<S>, S>({\r\n     required B Function() build,\r\n     required List<S> expectedStates,\r\n-    Function()? act,\r\n+    Function(B)? act,\r\n   }) {\r\n     blocTest<B, S>(\r\n       'emits $expectedStates',\r\n       build: build,\r\n"
+                }
+            ],
+            "date": 1734046491683,
+            "name": "Commit-0",
+            "content": "// test/helpers/bloc_test_helper.dart\r\n\r\nimport 'package:bloc_test/bloc_test.dart';\r\nimport 'package:mocktail/mocktail.dart';\r\nimport 'package:cloud_firestore/cloud_firestore.dart';\r\nimport '../../lib/blocs/base/base_repository.dart';\r\n\r\n/// Mock Firestore for testing\r\nclass MockFirebaseFirestore extends Mock implements FirebaseFirestore {}\r\n\r\n/// Mock CollectionReference for testing\r\nclass MockCollectionReference extends Mock implements CollectionReference {}\r\n\r\n/// Mock DocumentReference for testing\r\nclass MockDocumentReference extends Mock implements DocumentReference {}\r\n\r\n/// Base class for repository mocks\r\nclass MockBlocRepository<T> extends Mock implements BlocRepository<T> {}\r\n\r\n/// Helper to create a mock repository\r\nMockBlocRepository<T> createMockRepository<T>() {\r\n  final repository = MockBlocRepository<T>();\r\n  when(() => repository.collectionName).thenReturn('test_collection');\r\n  return repository;\r\n}\r\n\r\n/// Extension to help with bloc testing\r\nextension BlocTestHelper on dynamic {\r\n  void expectStateChanges<B extends StateStreamable<S>, S>({\r\n    required B Function() build,\r\n    required List<S> expectedStates,\r\n    Function()? act,\r\n  }) {\r\n    blocTest<B, S>(\r\n      'emits $expectedStates',\r\n      build: build,\r\n      act: act,\r\n      expect: () => expectedStates,\r\n    );\r\n  }\r\n}"
+        }
+    ]
+}

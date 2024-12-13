@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/blocs/alarm/repository/alarm_repository.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734047778372,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734047778372,
+            "name": "Commit-0",
+            "content": "// lib/blocs/alarm/repository/alarm_repository.dart\r\n\r\nimport 'package:cloud_firestore/cloud_firestore.dart';\r\nimport '../../../modules/system_operation_also_main_module/models/alarm.dart';\r\nimport '../../base/base_repository.dart';\r\nimport '../../utils/bloc_exception.dart';\r\n\r\nclass AlarmRepository extends BlocRepository<Alarm> {\r\n  AlarmRepository({\r\n    FirebaseFirestore? firestore,\r\n    String? userId,\r\n  }) : super(\r\n          collectionName: 'alarms',\r\n          firestore: firestore,\r\n          userId: userId,\r\n        );\r\n\r\n  @override\r\n  Alarm fromJson(Map<String, dynamic> json) => Alarm.fromJson(json);\r\n\r\n  @override\r\n  Map<String, dynamic> toJson(Alarm alarm) => alarm.toJson();\r\n\r\n  Future<List<Alarm>> getActiveAlarms() async {\r\n    try {\r\n      final snapshot = await userCollection\r\n          .where('acknowledged', isEqualTo: false)\r\n          .orderBy('timestamp', descending: true)\r\n          .get();\r\n\r\n      return snapshot.docs\r\n          .map((doc) => fromJson(doc.data() as Map<String, dynamic>))\r\n          .toList();\r\n    } catch (e) {\r\n      throw BlocException('Failed to get active alarms: $e');\r\n    }\r\n  }\r\n\r\n  Future<List<Alarm>> getAcknowledgedAlarms() async {\r\n    try {\r\n      final snapshot = await userCollection\r\n          .where('acknowledged', isEqualTo: true)\r\n          .orderBy('timestamp', descending: true)\r\n          .get();\r\n\r\n      return snapshot.docs\r\n          .map((doc) => fromJson(doc.data() as Map<String, dynamic>))\r\n          .toList();\r\n    } catch (e) {\r\n      throw BlocException('Failed to get acknowledged alarms: $e');\r\n    }\r\n  }\r\n\r\n  Future<void> addAlarm(Alarm alarm) async {\r\n    try {\r\n      await save(alarm.id, toJson(alarm));\r\n    } catch (e) {\r\n      throw BlocException('Failed to add alarm: $e');\r\n    }\r\n  }\r\n\r\n  Future<void> acknowledgeAlarm(String alarmId) async {\r\n    try {\r\n      await userCollection.doc(alarmId).update({'acknowledged': true});\r\n    } catch (e) {\r\n      throw BlocException('Failed to acknowledge alarm: $e');\r\n    }\r\n  }\r\n\r\n  Future<void> clearAlarm(String alarmId) async {\r\n    try {\r\n      await userCollection.doc(alarmId).delete();\r\n    } catch (e) {\r\n      throw BlocException('Failed to clear alarm: $e');\r\n    }\r\n  }\r\n\r\n  Future<void> clearAllAcknowledgedAlarms() async {\r\n    try {\r\n      final batch = userCollection.firestore.batch();\r\n      final snapshots = await userCollection\r\n          .where('acknowledged', isEqualTo: true)\r\n          .get();\r\n\r\n      for (var doc in snapshots.docs) {\r\n        batch.delete(doc.reference);\r\n      }\r\n\r\n      await batch.commit();\r\n    } catch (e) {\r\n      throw BlocException('Failed to clear acknowledged alarms: $e');\r\n    }\r\n  }\r\n\r\n  Stream<List<Alarm>> watchAlarms() {\r\n    return userCollection\r\n        .orderBy('timestamp', descending: true)\r\n        .snapshots()\r\n        .map((snapshot) => snapshot.docs\r\n            .map((doc) => fromJson(doc.data() as Map<String, dynamic>))\r\n            .toList());\r\n  }\r\n}"
+        }
+    ]
+}

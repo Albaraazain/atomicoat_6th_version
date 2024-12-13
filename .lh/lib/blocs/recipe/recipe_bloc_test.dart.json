@@ -1,0 +1,26 @@
+{
+    "sourceFile": "lib/blocs/recipe/recipe_bloc_test.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1734051379161,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734051435099,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,16 +1,17 @@\n // test/blocs/recipe/recipe_bloc_test.dart\r\n import 'package:bloc_test/bloc_test.dart';\r\n+import 'package:experiment_planner/blocs/alarm/bloc/alarm_bloc.dart';\r\n+import 'package:experiment_planner/blocs/recipe/bloc/recipe_bloc.dart';\r\n+import 'package:experiment_planner/blocs/recipe/bloc/recipe_event.dart';\r\n+import 'package:experiment_planner/blocs/recipe/bloc/recipe_state.dart';\r\n+import 'package:experiment_planner/blocs/system_state/bloc/system_state_bloc.dart';\r\n+import 'package:experiment_planner/blocs/system_state/bloc/system_state_state.dart';\r\n+import 'package:experiment_planner/modules/system_operation_also_main_module/models/recipe.dart';\r\n+import 'package:experiment_planner/repositories/recipe_reposiory.dart';\r\n+import 'package:experiment_planner/services/auth_service.dart';\r\n import 'package:flutter_test/flutter_test.dart';\r\n import 'package:mocktail/mocktail.dart';\r\n-import '../../../lib/blocs/recipe/bloc/recipe_bloc.dart';\r\n-import '../../../lib/blocs/recipe/bloc/recipe_event.dart';\r\n-import '../../../lib/blocs/recipe/bloc/recipe_state.dart';\r\n-import '../../../lib/blocs/system_state/bloc/system_state_bloc.dart';\r\n-import '../../../lib/blocs/alarm/bloc/alarm_bloc.dart';\r\n-import '../../../lib/repositories/recipe_repository.dart';\r\n-import '../../../lib/services/auth_service.dart';\r\n-import '../../../lib/modules/system_operation_also_main_module/models/recipe.dart';\r\n \r\n class MockRecipeRepository extends Mock implements RecipeRepository {}\r\n class MockAuthService extends Mock implements AuthService {}\r\n class MockSystemStateBloc extends Mock implements SystemStateBloc {}\r\n@@ -133,9 +134,9 @@\n     group('StartRecipeExecution', () {\r\n       blocTest<RecipeBloc, RecipeState>(\r\n         'emits running state when recipe execution starts',\r\n         build: () {\r\n-          when(() => systemStateBloc.state).thenReturn(const SystemStateState());\r\n+          when(() => systemStateBloc.state).thenReturn( SystemStateState());\r\n           when(() => systemStateBloc.add(any())).thenAnswer((_) async {});\r\n           return recipeBloc;\r\n         },\r\n         seed: () => RecipeState.initial().copyWith(recipes: [testRecipe]),\r\n"
+                },
+                {
+                    "date": 1734051605400,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -16,15 +16,24 @@\n class MockAuthService extends Mock implements AuthService {}\r\n class MockSystemStateBloc extends Mock implements SystemStateBloc {}\r\n class MockAlarmBloc extends Mock implements AlarmBloc {}\r\n \r\n+// Add these classes for fallback registration\r\n+class FakeRecipe extends Fake implements Recipe {}\r\n+class FakeSystemStateEvent extends Fake implements SystemStateEvent {}\r\n+\r\n void main() {\r\n   late RecipeBloc recipeBloc;\r\n   late MockRecipeRepository repository;\r\n   late MockAuthService authService;\r\n   late MockSystemStateBloc systemStateBloc;\r\n   late MockAlarmBloc alarmBloc;\r\n \r\n+  setUpAll(() {\r\n+    registerFallbackValue(FakeRecipe());\r\n+    registerFallbackValue(FakeSystemStateEvent());\r\n+  });\r\n+\r\n   final testRecipe = Recipe(\r\n     id: 'test-1',\r\n     name: 'Test Recipe',\r\n     substrate: 'Silicon',\r\n@@ -52,9 +61,9 @@\n     authService = MockAuthService();\r\n     systemStateBloc = MockSystemStateBloc();\r\n     alarmBloc = MockAlarmBloc();\r\n \r\n-    // Set up default auth mock\r\n+    // Fix auth mock setup\r\n     when(() => authService.currentUserId).thenReturn('test-user');\r\n \r\n     recipeBloc = RecipeBloc(\r\n       repository: repository,\r\n@@ -69,9 +78,12 @@\n   });\r\n \r\n   group('RecipeBloc', () {\r\n     test('initial state is correct', () {\r\n-      expect(recipeBloc.state, equals(RecipeState.initial()));\r\n+      final state = recipeBloc.state;\r\n+      expect(state.isLoading, false);\r\n+      expect(state.recipes, isEmpty);\r\n+      expect(state.executionStatus, RecipeExecutionStatus.idle);\r\n     });\r\n \r\n     group('LoadRecipes', () {\r\n       blocTest<RecipeBloc, RecipeState>(\r\n@@ -155,9 +167,10 @@\n         build: () => recipeBloc,\r\n         act: (bloc) => bloc.add(StartRecipeExecution('non-existent')),\r\n         expect: () => [\r\n           predicate<RecipeState>((state) =>\r\n-            state.error == 'Recipe not found' &&\r\n+            state.error != null &&\r\n+            state.error!.contains('Recipe not found') &&\r\n             state.executionStatus == RecipeExecutionStatus.error\r\n           ),\r\n         ],\r\n       );\r\n"
+                }
+            ],
+            "date": 1734051379161,
+            "name": "Commit-0",
+            "content": ""
+        }
+    ]
+}

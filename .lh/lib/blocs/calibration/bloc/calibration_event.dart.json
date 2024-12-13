@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/blocs/calibration/bloc/calibration_event.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734045321585,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734045321585,
+            "name": "Commit-0",
+            "content": "//lib/blocs/calibration/bloc/calibration_event.dart\r\n\r\nimport 'package:equatable/equatable.dart';\r\nimport '../../../modules/maintenance_module/models/calibration_record.dart';\r\nimport '../../../modules/maintenance_module/models/calibration_procedure.dart';\r\n\r\nabstract class CalibrationEvent extends Equatable {\r\n  const CalibrationEvent();\r\n\r\n  @override\r\n  List<Object?> get props => [];\r\n}\r\n\r\nclass LoadCalibrationRecords extends CalibrationEvent {}\r\n\r\nclass LoadCalibrationProcedures extends CalibrationEvent {}\r\n\r\nclass AddCalibrationRecord extends CalibrationEvent {\r\n  final CalibrationRecord record;\r\n\r\n  const AddCalibrationRecord(this.record);\r\n\r\n  @override\r\n  List<Object> get props => [record];\r\n}\r\n\r\nclass UpdateCalibrationRecord extends CalibrationEvent {\r\n  final CalibrationRecord record;\r\n\r\n  const UpdateCalibrationRecord(this.record);\r\n\r\n  @override\r\n  List<Object> get props => [record];\r\n}\r\n\r\nclass DeleteCalibrationRecord extends CalibrationEvent {\r\n  final String id;\r\n\r\n  const DeleteCalibrationRecord(this.id);\r\n\r\n  @override\r\n  List<Object> get props => [id];\r\n}\r\n\r\nclass CalibrateComponentParameter extends CalibrationEvent {\r\n  final String componentName;\r\n  final String parameter;\r\n  final double minValue;\r\n  final double maxValue;\r\n\r\n  const CalibrateComponentParameter({\r\n    required this.componentName,\r\n    required this.parameter,\r\n    required this.minValue,\r\n    required this.maxValue,\r\n  });\r\n\r\n  @override\r\n  List<Object> get props => [componentName, parameter, minValue, maxValue];\r\n}\r\n\r\nclass ClearCalibrationError extends CalibrationEvent {}"
+        }
+    ]
+}

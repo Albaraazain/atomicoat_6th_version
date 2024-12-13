@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/blocs/monitoring/parameter/bloc/parameter_monitoring_state.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734049498205,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734049498205,
+            "name": "Commit-0",
+            "content": "// lib/blocs/monitoring/parameter/bloc/parameter_monitoring_state.dart\r\nimport '../../../base/base_bloc_state.dart';\r\n\r\nclass ParameterMonitoringState extends BaseBlocState {\r\n  final Map<String, bool> monitoringStatus;\r\n  final Map<String, Map<String, double>> currentValues;\r\n  final Map<String, Map<String, Map<String, double>>> thresholds;\r\n  final Map<String, Map<String, bool>> violations;\r\n\r\n  ParameterMonitoringState({\r\n    required super.isLoading,\r\n    super.error,\r\n    super.lastUpdated,\r\n    required this.monitoringStatus,\r\n    required this.currentValues,\r\n    required this.thresholds,\r\n    required this.violations,\r\n  });\r\n\r\n  factory ParameterMonitoringState.initial() {\r\n    return ParameterMonitoringState(\r\n      isLoading: false,\r\n      monitoringStatus: const {},\r\n      currentValues: const {},\r\n      thresholds: const {},\r\n      violations: const {},\r\n    );\r\n  }\r\n\r\n  ParameterMonitoringState copyWith({\r\n    bool? isLoading,\r\n    String? error,\r\n    DateTime? lastUpdated,\r\n    Map<String, bool>? monitoringStatus,\r\n    Map<String, Map<String, double>>? currentValues,\r\n    Map<String, Map<String, Map<String, double>>>? thresholds,\r\n    Map<String, Map<String, bool>>? violations,\r\n  }) {\r\n    return ParameterMonitoringState(\r\n      isLoading: isLoading ?? this.isLoading,\r\n      error: error ?? this.error,\r\n      lastUpdated: lastUpdated ?? this.lastUpdated,\r\n      monitoringStatus: monitoringStatus ?? this.monitoringStatus,\r\n      currentValues: currentValues ?? this.currentValues,\r\n      thresholds: thresholds ?? this.thresholds,\r\n      violations: violations ?? this.violations,\r\n    );\r\n  }\r\n}"
+        }
+    ]
+}

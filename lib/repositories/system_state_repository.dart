@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../modules/system_operation_also_main_module/models/safety_error.dart';
 import '../modules/system_operation_also_main_module/models/system_component.dart';
 import '../modules/system_operation_also_main_module/models/system_log_entry.dart';
+import '../blocs/system_state/models/system_state_data.dart';
 
 class SystemStateRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -30,10 +31,78 @@ class SystemStateRepository {
     });
   }
 
-  Future<void> saveSystemState(String userId, Map<String, dynamic> systemState) async {
-    await _getUserCollection(userId, 'system_states').add({
-      ...systemState,
+  Future<void> saveSystemState(Map<String, dynamic> stateData) async {
+    String id = DateTime.now().millisecondsSinceEpoch.toString();
+    await _firestore.collection('system_states').doc(id).set({
+      ...stateData,
       'timestamp': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<SystemStateData?> getLatestState() async {
+    final snapshot = await _firestore
+        .collection('system_states')
+        .orderBy('timestamp', descending: true)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return null;
+
+    final doc = snapshot.docs.first;
+    return SystemStateData(
+      id: doc.id,
+      data: doc.data(),
+      timestamp: (doc.data()['timestamp'] as Timestamp).toDate(),
+    );
+  }
+
+  Stream<SystemStateData> watchSystemState() {
+    return _firestore
+        .collection('system_states')
+        .orderBy('timestamp', descending: true)
+        .limit(1)
+        .snapshots()
+        .map((snapshot) {
+      final doc = snapshot.docs.first;
+      return SystemStateData(
+        id: doc.id,
+        data: doc.data(),
+        timestamp: (doc.data()['timestamp'] as Timestamp).toDate(),
+      );
+    });
+  }
+
+  Future<SystemStateData?> getSystemState() async {
+    final snapshot = await _firestore
+        .collection('system_states')
+        .orderBy('timestamp', descending: true)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return null;
+
+    final doc = snapshot.docs.first;
+    return SystemStateData(
+      id: doc.id,
+      data: doc.data(),
+      timestamp: (doc.data()['timestamp'] as Timestamp).toDate(),
+    );
+  }
+
+  Stream<SystemStateData?> systemStateStream() {
+    return _firestore
+        .collection('system_states')
+        .orderBy('timestamp', descending: true)
+        .limit(1)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.docs.isEmpty) return null;
+      final doc = snapshot.docs.first;
+      return SystemStateData(
+        id: doc.id,
+        data: doc.data(),
+        timestamp: (doc.data()['timestamp'] as Timestamp).toDate(),
+      );
     });
   }
 

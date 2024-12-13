@@ -1,3 +1,4 @@
+// path: lib/modules/system_operation_also_main_module/models/system_log_entry.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'system_component.dart';
 

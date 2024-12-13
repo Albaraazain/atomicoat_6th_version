@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/blocs/recipe/bloc/recipe_event.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734050914596,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734050924941,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,7 @@\n // lib/blocs/recipe/bloc/recipe_event.dart\r\n-import '../../../base/base_bloc_event.dart';\r\n+import 'package:experiment_planner/blocs/base/base_bloc_event.dart';\r\n+\r\n import '../../../../modules/system_operation_also_main_module/models/recipe.dart';\r\n \r\n sealed class RecipeEvent extends BaseBlocEvent {\r\n   RecipeEvent() : super();\r\n"
+                }
+            ],
+            "date": 1734050914596,
+            "name": "Commit-0",
+            "content": "// lib/blocs/recipe/bloc/recipe_event.dart\r\nimport '../../../base/base_bloc_event.dart';\r\nimport '../../../../modules/system_operation_also_main_module/models/recipe.dart';\r\n\r\nsealed class RecipeEvent extends BaseBlocEvent {\r\n  RecipeEvent() : super();\r\n}\r\n\r\n// Management Events\r\nclass LoadRecipes extends RecipeEvent {}\r\n\r\nclass AddRecipe extends RecipeEvent {\r\n  final Recipe recipe;\r\n  AddRecipe(this.recipe);\r\n}\r\n\r\nclass UpdateRecipe extends RecipeEvent {\r\n  final Recipe recipe;\r\n  UpdateRecipe(this.recipe);\r\n}\r\n\r\nclass DeleteRecipe extends RecipeEvent {\r\n  final String recipeId;\r\n  DeleteRecipe(this.recipeId);\r\n}\r\n\r\n// Execution Events\r\nclass StartRecipeExecution extends RecipeEvent {\r\n  final String recipeId;\r\n  StartRecipeExecution(this.recipeId);\r\n}\r\n\r\nclass PauseRecipeExecution extends RecipeEvent {}\r\n\r\nclass ResumeRecipeExecution extends RecipeEvent {}\r\n\r\nclass StopRecipeExecution extends RecipeEvent {}\r\n\r\nclass RecipeStepCompleted extends RecipeEvent {\r\n  final int stepIndex;\r\n  RecipeStepCompleted(this.stepIndex);\r\n}\r\n\r\n// Version Control Events\r\nclass LoadRecipeVersions extends RecipeEvent {\r\n  final String recipeId;\r\n  LoadRecipeVersions(this.recipeId);\r\n}\r\n\r\nclass CompareRecipeVersions extends RecipeEvent {\r\n  final String recipeId;\r\n  final int versionA;\r\n  final int versionB;\r\n\r\n  CompareRecipeVersions({\r\n    required this.recipeId,\r\n    required this.versionA,\r\n    required this.versionB,\r\n  });\r\n}"
+        }
+    ]
+}

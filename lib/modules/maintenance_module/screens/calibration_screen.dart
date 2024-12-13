@@ -75,14 +75,8 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
                   ),
                   SizedBox(height: 16),
                   CalibrationHistoryWidget(
-                    calibrationRecords: calibrationProvider.calibrationRecords,
+                    componentId: null, // or pass specific component ID if needed
                     getComponentName: (id) => calibrationProvider.getComponentName(id),
-                    showEditDialog: (context, record, onSave) {
-                      _showEditCalibrationDialog(context, record, onSave);
-                    },
-                    showDeleteConfirmationDialog: (context, record, onDelete) {
-                      _showDeleteConfirmationDialog(context, record, onDelete);
-                    },
                   ),
                 ],
               ),

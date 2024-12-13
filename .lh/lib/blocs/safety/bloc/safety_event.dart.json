@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/blocs/safety/bloc/safety_event.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734048394238,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734048460949,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,38 +3,34 @@\n import '../../../modules/system_operation_also_main_module/models/safety_error.dart';\r\n import '../../base/base_bloc_event.dart';\r\n \r\n sealed class SafetyEvent extends BaseBlocEvent {\r\n-  const SafetyEvent();\r\n+  SafetyEvent() : super();\r\n }\r\n \r\n-final class SafetyStartMonitoring extends SafetyEvent {}\r\n+class SafetyMonitoringStarted extends SafetyEvent {}\r\n \r\n-final class SafetyStopMonitoring extends SafetyEvent {}\r\n+class SafetyMonitoringPaused extends SafetyEvent {}\r\n \r\n-final class SafetyErrorAdded extends SafetyEvent {\r\n+class SafetyErrorDetected extends SafetyEvent {\r\n   final SafetyError error;\r\n-\r\n-  const SafetyErrorAdded(this.error);\r\n+  SafetyErrorDetected(this.error);\r\n }\r\n \r\n-final class SafetyErrorResolved extends SafetyEvent {\r\n+class SafetyErrorCleared extends SafetyEvent {\r\n   final String errorId;\r\n-\r\n-  const SafetyErrorResolved(this.errorId);\r\n+  SafetyErrorCleared(this.errorId);\r\n }\r\n \r\n-final class SafetyErrorsLoaded extends SafetyEvent {}\r\n-\r\n-final class SafetyThresholdUpdated extends SafetyEvent {\r\n+class SafetyThresholdAdjusted extends SafetyEvent {\r\n   final String componentId;\r\n-  final String parameter;\r\n-  final double minValue;\r\n-  final double maxValue;\r\n+  final String parameterName;\r\n+  final double minThreshold;\r\n+  final double maxThreshold;\r\n \r\n-  const SafetyThresholdUpdated({\r\n+  SafetyThresholdAdjusted({\r\n     required this.componentId,\r\n-    required this.parameter,\r\n-    required this.minValue,\r\n-    required this.maxValue,\r\n+    required this.parameterName,\r\n+    required this.minThreshold,\r\n+    required this.maxThreshold,\r\n   });\r\n }\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1734048394238,
+            "name": "Commit-0",
+            "content": "// lib/blocs/safety/bloc/safety_event.dart\r\nimport 'package:equatable/equatable.dart';\r\nimport '../../../modules/system_operation_also_main_module/models/safety_error.dart';\r\nimport '../../base/base_bloc_event.dart';\r\n\r\nsealed class SafetyEvent extends BaseBlocEvent {\r\n  const SafetyEvent();\r\n}\r\n\r\nfinal class SafetyStartMonitoring extends SafetyEvent {}\r\n\r\nfinal class SafetyStopMonitoring extends SafetyEvent {}\r\n\r\nfinal class SafetyErrorAdded extends SafetyEvent {\r\n  final SafetyError error;\r\n\r\n  const SafetyErrorAdded(this.error);\r\n}\r\n\r\nfinal class SafetyErrorResolved extends SafetyEvent {\r\n  final String errorId;\r\n\r\n  const SafetyErrorResolved(this.errorId);\r\n}\r\n\r\nfinal class SafetyErrorsLoaded extends SafetyEvent {}\r\n\r\nfinal class SafetyThresholdUpdated extends SafetyEvent {\r\n  final String componentId;\r\n  final String parameter;\r\n  final double minValue;\r\n  final double maxValue;\r\n\r\n  const SafetyThresholdUpdated({\r\n    required this.componentId,\r\n    required this.parameter,\r\n    required this.minValue,\r\n    required this.maxValue,\r\n  });\r\n}"
+        }
+    ]
+}

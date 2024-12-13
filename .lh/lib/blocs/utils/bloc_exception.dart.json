@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/blocs/utils/bloc_exception.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734046462985,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734046462985,
+            "name": "Commit-0",
+            "content": "// lib/blocs/utils/bloc_exception.dart\r\n\r\n/// Custom exception class for bloc-related errors\r\nclass BlocException implements Exception {\r\n  final String message;\r\n  final String? code;\r\n  final dynamic details;\r\n\r\n  const BlocException(\r\n    this.message, {\r\n    this.code,\r\n    this.details,\r\n  });\r\n\r\n  @override\r\n  String toString() => 'BlocException: $message${code != null ? ' ($code)' : ''}';\r\n}"
+        }
+    ]
+}

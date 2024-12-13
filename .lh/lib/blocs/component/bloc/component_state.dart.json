@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/blocs/component/bloc/component_state.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734043303356,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734043303356,
+            "name": "Commit-0",
+            "content": "// lib/blocs/component/bloc/component_state.dart\r\n\r\nimport 'package:equatable/equatable.dart';\r\nimport '../../../modules/system_operation_also_main_module/models/system_component.dart';\r\n\r\nclass ComponentState extends Equatable {\r\n  final SystemComponent? component;\r\n  final bool isLoading;\r\n  final String? error;\r\n\r\n  const ComponentState({\r\n    this.component,\r\n    this.isLoading = false,\r\n    this.error,\r\n  });\r\n\r\n  factory ComponentState.initial() {\r\n    return const ComponentState(isLoading: false);\r\n  }\r\n\r\n  factory ComponentState.loading() {\r\n    return const ComponentState(isLoading: true);\r\n  }\r\n\r\n  factory ComponentState.loaded(SystemComponent component) {\r\n    return ComponentState(component: component, isLoading: false);\r\n  }\r\n\r\n  factory ComponentState.error(String error) {\r\n    return ComponentState(error: error, isLoading: false);\r\n  }\r\n\r\n  ComponentState copyWith({\r\n    SystemComponent? component,\r\n    bool? isLoading,\r\n    String? error,\r\n  }) {\r\n    return ComponentState(\r\n      component: component ?? this.component,\r\n      isLoading: isLoading ?? this.isLoading,\r\n      error: error ?? this.error,\r\n    );\r\n  }\r\n\r\n  @override\r\n  List<Object?> get props => [component, isLoading, error];\r\n\r\n  bool get isInitialized => component != null;\r\n}"
+        }
+    ]
+}

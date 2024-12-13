@@ -1,4 +1,4 @@
-// In data_point.dart
+// path: lib/modules/system_operation_also_main_module/models/data_point.dart
 
 class DataPoint {
   final DateTime timestamp;

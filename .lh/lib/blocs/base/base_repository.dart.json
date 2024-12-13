@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/blocs/base/base_repository.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734046437867,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734046437867,
+            "name": "Commit-0",
+            "content": "// lib/blocs/base/base_repository.dart\r\n\r\nimport 'dart:async';\r\nimport 'package:cloud_firestore/cloud_firestore.dart';\r\n\r\n/// Base repository class that provides common Firestore operations\r\nabstract class BlocRepository<T> {\r\n  final String collectionName;\r\n  final FirebaseFirestore _firestore;\r\n  final String? userId;\r\n\r\n  BlocRepository({\r\n    required this.collectionName,\r\n    FirebaseFirestore? firestore,\r\n    this.userId,\r\n  }) : _firestore = firestore ?? FirebaseFirestore.instance;\r\n\r\n  CollectionReference get userCollection =>\r\n    userId != null\r\n      ? _firestore.collection('users').doc(userId).collection(collectionName)\r\n      : _firestore.collection(collectionName);\r\n\r\n  /// Save an item to Firestore\r\n  Future<void> save(String id, Map<String, dynamic> data) async {\r\n    await userCollection.doc(id).set(\r\n      {\r\n        ...data,\r\n        'updatedAt': FieldValue.serverTimestamp(),\r\n      },\r\n      SetOptions(merge: true),\r\n    );\r\n  }\r\n\r\n  /// Get an item from Firestore\r\n  Future<Map<String, dynamic>?> get(String id) async {\r\n    final doc = await userCollection.doc(id).get();\r\n    return doc.exists ? doc.data() as Map<String, dynamic> : null;\r\n  }\r\n\r\n  /// Listen to real-time updates for an item\r\n  Stream<T?> watch(String id) {\r\n    return userCollection.doc(id).snapshots().map((doc) {\r\n      if (!doc.exists) return null;\r\n      return fromJson(doc.data() as Map<String, dynamic>);\r\n    });\r\n  }\r\n\r\n  /// Convert Firestore data to model object\r\n  T fromJson(Map<String, dynamic> json);\r\n\r\n  /// Convert model object to Firestore data\r\n  Map<String, dynamic> toJson(T item);\r\n}"
+        }
+    ]
+}

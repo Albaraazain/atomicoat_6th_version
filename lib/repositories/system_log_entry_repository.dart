@@ -2,41 +2,44 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../modules/system_operation_also_main_module/models/system_log_entry.dart';
-import 'base_repository.dart';
+import '../modules/system_operation_also_main_module/models/system_component.dart';
 
-class SystemLogEntryRepository extends BaseRepository<SystemLogEntry> {
-  SystemLogEntryRepository() : super('system_log_entries');
+class SystemLogEntryRepository {
+  final FirebaseFirestore _firestore;
 
-  @override
-  Future<List<SystemLogEntry>> getAll({String? userId}) async {
-    return await super.getAll(userId: userId);
+  SystemLogEntryRepository({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  Future<void> add(String message, ComponentStatus severity, {required String userId}) async {
+    await _firestore.collection('users/$userId/logs').add({
+      'timestamp': FieldValue.serverTimestamp(),
+      'message': message,
+      'severity': severity.toString().split('.').last,
+    });
   }
 
-  @override
-  Future<void> add(String id, SystemLogEntry item, {String? userId}) async {
-    if (userId == null) {
-      throw ArgumentError('userId is required for adding system log entries');
-    }
-    await getUserCollection(userId).add(item.toJson());
-  }
-
-  Future<List<SystemLogEntry>> getRecentEntries(String userId, {int limit = 1000}) async {
-    QuerySnapshot snapshot = await getUserCollection(userId)
+  Future<List<SystemLogEntry>> getRecentEntries(String userId, {int limit = 50}) async {
+    final snapshot = await _firestore
+        .collection('users/$userId/logs')
         .orderBy('timestamp', descending: true)
         .limit(limit)
         .get();
-    return snapshot.docs.map((doc) => fromJson(doc.data() as Map<String, dynamic>)).toList();
+
+    return snapshot.docs.map((doc) => SystemLogEntry.fromJson(doc.data())).toList();
   }
 
-  Future<List<SystemLogEntry>> getEntriesByDateRange(String userId, DateTime start, DateTime end) async {
-    QuerySnapshot snapshot = await getUserCollection(userId)
-        .where('timestamp', isGreaterThanOrEqualTo: start)
-        .where('timestamp', isLessThanOrEqualTo: end)
+  Future<List<SystemLogEntry>> getEntriesByDateRange(
+    String userId,
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    final snapshot = await _firestore
+        .collection('users/$userId/logs')
+        .where('timestamp', isGreaterThanOrEqualTo: startDate)
+        .where('timestamp', isLessThanOrEqualTo: endDate)
         .orderBy('timestamp', descending: true)
         .get();
-    return snapshot.docs.map((doc) => fromJson(doc.data() as Map<String, dynamic>)).toList();
-  }
 
-  @override
-  SystemLogEntry fromJson(Map<String, dynamic> json) => SystemLogEntry.fromJson(json);
+    return snapshot.docs.map((doc) => SystemLogEntry.fromJson(doc.data())).toList();
+  }
 }
