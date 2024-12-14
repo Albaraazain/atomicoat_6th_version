@@ -1,7 +1,13 @@
+// lib/modules/system_operation_also_main_module/widgets/recipe_control.dart
+
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/recipe_provider.dart';
-import '../providers/system_state_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../blocs/recipe/bloc/recipe_bloc.dart';
+import '../../../blocs/recipe/bloc/recipe_event.dart';
+import '../../../blocs/recipe/bloc/recipe_state.dart';
+import '../../../blocs/system_state/bloc/system_state_bloc.dart';
+import '../../../blocs/system_state/bloc/system_state_event.dart';
+import '../../../blocs/system_state/bloc/system_state_state.dart';
 import '../models/recipe.dart';
 
 class RecipeControl extends StatelessWidget {
@@ -9,34 +15,46 @@ class RecipeControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<RecipeProvider, SystemStateProvider>(
-      builder: (context, recipeProvider, systemStateProvider, child) {
-        return Opacity(
-          opacity: 0.7,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.black54,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildRecipeSelector(
-                    context, recipeProvider, systemStateProvider),
-                SizedBox(height: 4),
-                _buildRecipeControls(
-                    context, recipeProvider, systemStateProvider),
-              ],
-            ),
-          ),
+    return BlocBuilder<SystemStateBloc, SystemStateState>(
+      builder: (context, systemState) {
+        return BlocBuilder<RecipeBloc, RecipeState>(
+          builder: (context, recipeState) {
+            return Opacity(
+              opacity: 0.7,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildRecipeSelector(context, recipeState, systemState),
+                    SizedBox(height: 4),
+                    _buildRecipeControls(context, recipeState, systemState),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildRecipeControls(BuildContext context, RecipeProvider recipeProvider, SystemStateProvider systemStateProvider) {
+  Widget _buildRecipeControls(
+    BuildContext context,
+    RecipeState recipeState,
+    SystemStateState systemState,
+  ) {
+    final canStart = systemState.canStart &&
+                    recipeState.activeRecipe == null &&
+                    recipeState.isExecutionReady;
+    final canStop = systemState.canStop &&
+                   recipeState.executionStatus == RecipeExecutionStatus.running;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -44,18 +62,17 @@ class RecipeControl extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildControlButton(
-              onPressed: systemStateProvider.selectedRecipe != null && 
-                        systemStateProvider.activeRecipe == null
-                  ? () => _startRecipe(context, systemStateProvider)
-                  : null,
+              onPressed: canStart && recipeState.activeRecipe != null
+                ? () => _startRecipe(context, recipeState.activeRecipe!.id)
+                : null,
               child: Icon(Icons.play_arrow, color: Colors.white, size: 18),
               color: Colors.green,
             ),
             SizedBox(width: 8),
             _buildControlButton(
-              onPressed: systemStateProvider.activeRecipe != null
-                  ? () => systemStateProvider.stopSystem()
-                  : null,
+              onPressed: canStop
+                ? () => context.read<RecipeBloc>().add(StopRecipeExecution())
+                : null,
               child: Icon(Icons.stop, color: Colors.white, size: 18),
               color: Colors.red,
             ),
@@ -63,7 +80,7 @@ class RecipeControl extends StatelessWidget {
         ),
         SizedBox(height: 8),
         TextButton.icon(
-          onPressed: () => _checkSystemStatus(context, systemStateProvider),
+          onPressed: () => _checkSystemStatus(context, systemState),
           icon: Icon(Icons.check_circle_outline, size: 16),
           label: Text('Check System Status', style: TextStyle(fontSize: 12)),
         ),
@@ -71,9 +88,44 @@ class RecipeControl extends StatelessWidget {
     );
   }
 
-  void _checkSystemStatus(BuildContext context, SystemStateProvider systemStateProvider) {
-    final issues = systemStateProvider.getSystemIssues();
-    
+  Widget _buildRecipeSelector(
+    BuildContext context,
+    RecipeState recipeState,
+    SystemStateState systemState,
+  ) {
+    return Container(
+      width: 150,
+      child: DropdownButton<String>(
+        isExpanded: true,
+        value: recipeState.activeRecipe?.id,
+        hint: Text('Select recipe',
+            style: TextStyle(color: Colors.white70, fontSize: 12)),
+        style: TextStyle(color: Colors.white, fontSize: 12),
+        dropdownColor: Colors.black87,
+        underline: Container(
+          height: 1,
+          color: Colors.white70,
+        ),
+        onChanged: systemState.isSystemRunning
+            ? null
+            : (String? newValue) {
+                if (newValue != null) {
+                  context.read<RecipeBloc>().add(StartRecipeExecution(newValue));
+                }
+              },
+        items: recipeState.recipes.map<DropdownMenuItem<String>>((Recipe recipe) {
+          return DropdownMenuItem<String>(
+            value: recipe.id,
+            child: Text(recipe.name, overflow: TextOverflow.ellipsis),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  void _checkSystemStatus(BuildContext context, SystemStateState systemState) {
+    final issues = systemState.systemIssues;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -95,17 +147,16 @@ class RecipeControl extends StatelessWidget {
                           style: TextStyle(fontWeight: FontWeight.bold)),
                       SizedBox(height: 12),
                       ...issues.map((issue) => Padding(
-                            padding: EdgeInsets.symmetric(vertical: 4),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(Icons.warning,
-                                    color: Colors.orange, size: 20),
-                                SizedBox(width: 8),
-                                Expanded(child: Text(issue)),
-                              ],
-                            ),
-                          )),
+                        padding: EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.warning, color: Colors.orange, size: 20),
+                            SizedBox(width: 8),
+                            Expanded(child: Text(issue)),
+                          ],
+                        ),
+                      )),
                     ],
             ),
           ),
@@ -120,44 +171,11 @@ class RecipeControl extends StatelessWidget {
     );
   }
 
-
-
-  Widget _buildRecipeSelector(BuildContext context,
-      RecipeProvider recipeProvider, SystemStateProvider systemStateProvider) {
-    return Container(
-      width: 150,
-      child: DropdownButton<String>(
-        isExpanded: true,
-        value: systemStateProvider.selectedRecipe?.id,
-        hint: Text('Select recipe',
-            style: TextStyle(color: Colors.white70, fontSize: 12)),
-        style: TextStyle(color: Colors.white, fontSize: 12),
-        dropdownColor: Colors.black87,
-        underline: Container(
-          height: 1,
-          color: Colors.white70,
-        ),
-        onChanged: (String? newValue) {
-          if (newValue != null) {
-            systemStateProvider.selectRecipe(newValue);
-          }
-        },
-        items: recipeProvider.recipes
-            .map<DropdownMenuItem<String>>((Recipe recipe) {
-          return DropdownMenuItem<String>(
-            value: recipe.id,
-            child: Text(recipe.name, overflow: TextOverflow.ellipsis),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-
-  Widget _buildControlButton(
-      {required VoidCallback? onPressed,
-      required Widget child,
-      required Color color}) {
+  Widget _buildControlButton({
+    required VoidCallback? onPressed,
+    required Widget child,
+    required Color color,
+  }) {
     return SizedBox(
       width: 30,
       height: 30,
@@ -175,8 +193,10 @@ class RecipeControl extends StatelessWidget {
     );
   }
 
-  void _startRecipe(BuildContext context, SystemStateProvider systemProvider) {
-    if (!systemProvider.isSystemReadyForRecipe()) {
+  void _startRecipe(BuildContext context, String recipeId) {
+    final systemState = context.read<SystemStateBloc>().state;
+
+    if (!systemState.isReadinessCheckPassed) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -190,21 +210,17 @@ class RecipeControl extends StatelessWidget {
                   Text('The following issues need to be resolved:',
                       style: TextStyle(fontWeight: FontWeight.bold)),
                   SizedBox(height: 12),
-                  ...systemProvider
-                      .getSystemIssues()
-                      .map((issue) => Padding(
-                            padding: EdgeInsets.symmetric(vertical: 4),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(Icons.warning,
-                                    color: Colors.orange, size: 20),
-                                SizedBox(width: 8),
-                                Expanded(child: Text(issue)),
-                              ],
-                            ),
-                          ))
-                      .toList(),
+                  ...systemState.systemIssues.map((issue) => Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.warning, color: Colors.orange, size: 20),
+                        SizedBox(width: 8),
+                        Expanded(child: Text(issue)),
+                      ],
+                    ),
+                  )),
                 ],
               ),
             ),
@@ -218,7 +234,7 @@ class RecipeControl extends StatelessWidget {
         },
       );
     } else {
-      systemProvider.executeRecipe(systemProvider.selectedRecipe!);
+      context.read<RecipeBloc>().add(StartRecipeExecution(recipeId));
     }
   }
 }

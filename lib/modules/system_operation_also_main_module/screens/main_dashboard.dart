@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../providers/auth_provider.dart';
-import '../providers/system_state_provider.dart';
+import '../../../blocs/system_state/bloc/system_state_bloc.dart';
+import '../../../blocs/system_state/bloc/system_state_event.dart';
+import '../../../blocs/system_state/bloc/system_state_state.dart';
 import '../widgets/component_control_overlay.dart';
 import '../widgets/data_visualization.dart';
 import '../widgets/graph_overlay.dart';
@@ -35,6 +38,8 @@ class _MainDashboardState extends State<MainDashboard> {
   void initState() {
     super.initState();
     _currentOverlay = ComponentControlOverlay(overlayId: 'main_dashboard');
+    // Initialize system state
+    context.read<SystemStateBloc>().add(InitializeSystem());
   }
 
   @override
@@ -67,20 +72,45 @@ class _MainDashboardState extends State<MainDashboard> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTabBar(),
-            Expanded(
-              child: _buildTabContent(),
-            ),
-          ],
+      body: BlocListener<SystemStateBloc, SystemStateState>(
+        listener: (context, state) {
+          if (state.isError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.error ?? 'An error occurred'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          if (state.isEmergencyStopped) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Emergency Stop Activated!',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                backgroundColor: Color(0xFF8B0000),
+                duration: Duration(seconds: 5),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            );
+          }
+        },
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildTabBar(),
+              Expanded(
+                child: _buildTabContent(),
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: _buildSpeedDial(context),
     );
   }
-
 
   Widget _buildTabBar() {
     return Container(
@@ -184,63 +214,71 @@ class _MainDashboardState extends State<MainDashboard> {
   }
 
   Widget _buildOverviewTab(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isLargeScreen = constraints.maxWidth > 600;
-        return Column(
-          children: [
-            Expanded(
-              flex: isLargeScreen ? 2 : 1,
-              child: Card(
-                margin: EdgeInsets.all(12),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Stack(
-                    children: [
-                      SystemDiagramView(
-                        overlays: [_currentOverlay],
-                        zoomFactor: 1.0,
-                        enableOverlaySwiping: true,
+    return BlocBuilder<SystemStateBloc, SystemStateState>(
+      builder: (context, state) {
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final isLargeScreen = constraints.maxWidth > 600;
+            return Column(
+              children: [
+                Expanded(
+                  flex: isLargeScreen ? 2 : 1,
+                  child: Card(
+                    margin: EdgeInsets.all(12),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Stack(
+                        children: [
+                          SystemDiagramView(
+                            overlays: [_currentOverlay],
+                            zoomFactor: 1.0,
+                            enableOverlaySwiping: true,
+                          ),
+                          Positioned(
+                            top: 12,
+                            left: 12,
+                            child: _buildOverlaySelector(),
+                          ),
+                        ],
                       ),
-                      Positioned(
-                        top: 12,
-                        left: 12,
-                        child: _buildOverlaySelector(),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: Card(
-                margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: ParameterDisplay(),
+                Expanded(
+                  flex: 1,
+                  child: Card(
+                    margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: ParameterDisplay(),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: ElevatedButton.icon(
-                onPressed: () => Navigator.of(context).pushNamed('/system_overview'),
-                icon: Icon(Icons.fullscreen, size: 18),
-                label: Text('Full System Overview', style: TextStyle(fontSize: 14)),
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Color(0xFFFFFFFF),
-                  backgroundColor: Color(0xFF4A4A4A),
-                  minimumSize: Size(double.infinity, 48),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 0,
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                ),
-              ),
-            ),
-          ],
+                _buildSystemStatusButton(state),
+              ],
+            );
+          },
         );
       },
+    );
+  }
+
+  Widget _buildSystemStatusButton(SystemStateState state) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: ElevatedButton.icon(
+        onPressed: () => Navigator.of(context).pushNamed('/system_overview'),
+        icon: Icon(Icons.fullscreen, size: 18),
+        label: Text('Full System Overview', style: TextStyle(fontSize: 14)),
+        style: ElevatedButton.styleFrom(
+          foregroundColor: Color(0xFFFFFFFF),
+          backgroundColor: state.isError ? Color(0xFF8B0000) : Color(0xFF4A4A4A),
+          minimumSize: Size(double.infinity, 48),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
+          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        ),
+      ),
     );
   }
 
@@ -335,16 +373,7 @@ class _MainDashboardState extends State<MainDashboard> {
   }
 
   void _handleEmergencyStop(BuildContext context) {
-    Provider.of<SystemStateProvider>(context, listen: false).emergencyStop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Emergency Stop Activated!', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        backgroundColor: Color(0xFF8B0000),
-        duration: Duration(seconds: 5),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+    context.read<SystemStateBloc>().add(EmergencyStop());
   }
 }
 

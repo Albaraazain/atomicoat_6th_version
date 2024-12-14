@@ -1,93 +1,163 @@
+// lib/modules/system_operation_also_main_module/widgets/parameter_display.dart
+
+import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/system_state_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../blocs/component/bloc/component_bloc.dart';
+import '../../../blocs/component/bloc/component_event.dart';
+import '../../../blocs/component/bloc/component_state.dart';
 import 'parameter_card.dart';
 
-class ParameterDisplay extends StatelessWidget {
+class ParameterDisplay extends StatefulWidget {
+  @override
+  State<ParameterDisplay> createState() => _ParameterDisplayState();
+}
+
+class _ParameterDisplayState extends State<ParameterDisplay> {
+  final List<String> componentNames = [
+    'Reaction Chamber',
+    'MFC',
+    'Nitrogen Generator',
+    'Precursor Heater 1',
+    'Precursor Heater 2',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize component blocs
+    for (final componentName in componentNames) {
+      context.read<ComponentBloc>().add(ComponentInitialized(componentName));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<SystemStateProvider>(
-      builder: (context, systemStateProvider, child) {
-        final reactionChamber = systemStateProvider.getComponentByName('Reaction Chamber');
-        final mfc = systemStateProvider.getComponentByName('MFC');
-        final nitrogenGenerator = systemStateProvider.getComponentByName('Nitrogen Generator');
-        final precursorHeater1 = systemStateProvider.getComponentByName('Precursor Heater 1');
-        final precursorHeater2 = systemStateProvider.getComponentByName('Precursor Heater 2');
-
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final double maxWidth = constraints.maxWidth;
-            final int crossAxisCount = maxWidth > 600 ? 3 : (maxWidth > 400 ? 2 : 1);
-
-            return SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: GridView.extent(
-                  maxCrossAxisExtent: 200,
-                  childAspectRatio: 1.5,
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  children: [
-                    if (reactionChamber != null)
-                      ParameterCard(
-                        title: 'Chamber Pressure',
-                        value: '${reactionChamber.currentValues['pressure']?.toStringAsFixed(2) ?? 'N/A'} atm',
-                        normalRange: '0.9 - 1.1 atm',
-                        isNormal: systemStateProvider.isReactorPressureNormal(),
-                      ),
-                    if (reactionChamber != null)
-                      ParameterCard(
-                        title: 'Chamber Temperature',
-                        value: '${reactionChamber.currentValues['temperature']?.toStringAsFixed(1) ?? 'N/A'} °C',
-                        normalRange: '145 - 155 °C',
-                        isNormal: systemStateProvider.isReactorTemperatureNormal(),
-                      ),
-                    if (mfc != null)
-                      ParameterCard(
-                        title: 'MFC Flow Rate',
-                        value: '${mfc.currentValues['flow_rate']?.toStringAsFixed(2) ?? 'N/A'} sccm',
-                        normalRange: '0 - 100 sccm',
-                        isNormal: true,
-                      ),
-                    if (nitrogenGenerator != null)
-                      ParameterCard(
-                        title: 'Nitrogen Flow Rate',
-                        value: '${nitrogenGenerator.currentValues['flow_rate']?.toStringAsFixed(2) ?? 'N/A'} sccm',
-                        normalRange: '0 - 100 sccm',
-                        isNormal: true,
-                      ),
-                    if (precursorHeater1 != null)
-                      ParameterCard(
-                        title: 'Precursor Heater 1',
-                        value: '${precursorHeater1.currentValues['temperature']?.toStringAsFixed(1) ?? 'N/A'} °C',
-                        normalRange: '28 - 32 °C',
-                        isNormal: systemStateProvider.isPrecursorTemperatureNormal('Precursor Heater 1'),
-                      ),
-                    if (precursorHeater2 != null)
-                      ParameterCard(
-                        title: 'Precursor Heater 2',
-                        value: '${precursorHeater2.currentValues['temperature']?.toStringAsFixed(1) ?? 'N/A'} °C',
-                        normalRange: '28 - 32 °C',
-                        isNormal: systemStateProvider.isPrecursorTemperatureNormal('Precursor Heater 2'),
-                      ),
-                  ],
-                ),
-              ),
-            );
-          },
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GridView.extent(
+              maxCrossAxisExtent: 200,
+              childAspectRatio: 1.5,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              children: [
+                _buildReactorParameters(),
+                _buildMFCParameters(),
+                _buildNitrogenParameters(),
+                _buildPrecursorParameters('Precursor Heater 1'),
+                _buildPrecursorParameters('Precursor Heater 2'),
+              ],
+            ),
+          ),
         );
       },
     );
   }
 
-  Widget _buildParameterCard(String title, String value, String normalRange, bool isNormal) {
-    return ParameterCard(
-      title: title,
-      value: value,
-      normalRange: normalRange,
-      isNormal: isNormal,
+  Widget _buildReactorParameters() {
+    return BlocBuilder<ComponentBloc, ComponentState>(
+      builder: (context, state) {
+        if (state.component?.name != 'Reaction Chamber') return SizedBox.shrink();
+
+        final component = state.component;
+        if (component == null) return SizedBox.shrink();
+
+        return Column(
+          children: [
+            ParameterCard(
+              title: 'Chamber Pressure',
+              value: '${component.currentValues['pressure']?.toStringAsFixed(2) ?? 'N/A'} atm',
+              normalRange: '0.9 - 1.1 atm',
+              isNormal: _isPressureNormal(component),
+            ),
+            ParameterCard(
+              title: 'Chamber Temperature',
+              value: '${component.currentValues['temperature']?.toStringAsFixed(1) ?? 'N/A'} °C',
+              normalRange: '145 - 155 °C',
+              isNormal: _isTemperatureNormal(component),
+            ),
+          ],
+        );
+      },
     );
+  }
+
+  Widget _buildMFCParameters() {
+    return BlocBuilder<ComponentBloc, ComponentState>(
+      builder: (context, state) {
+        if (state.component?.name != 'MFC') return SizedBox.shrink();
+
+        final component = state.component;
+        if (component == null) return SizedBox.shrink();
+
+        return ParameterCard(
+          title: 'MFC Flow Rate',
+          value: '${component.currentValues['flow_rate']?.toStringAsFixed(2) ?? 'N/A'} sccm',
+          normalRange: '0 - 100 sccm',
+          isNormal: _isFlowRateNormal(component),
+        );
+      },
+    );
+  }
+
+  Widget _buildNitrogenParameters() {
+    return BlocBuilder<ComponentBloc, ComponentState>(
+      builder: (context, state) {
+        if (state.component?.name != 'Nitrogen Generator') return SizedBox.shrink();
+
+        final component = state.component;
+        if (component == null) return SizedBox.shrink();
+
+        return ParameterCard(
+          title: 'Nitrogen Flow Rate',
+          value: '${component.currentValues['flow_rate']?.toStringAsFixed(2) ?? 'N/A'} sccm',
+          normalRange: '0 - 100 sccm',
+          isNormal: _isFlowRateNormal(component),
+        );
+      },
+    );
+  }
+
+  Widget _buildPrecursorParameters(String heaterName) {
+    return BlocBuilder<ComponentBloc, ComponentState>(
+      builder: (context, state) {
+        if (state.component?.name != heaterName) return SizedBox.shrink();
+
+        final component = state.component;
+        if (component == null) return SizedBox.shrink();
+
+        return ParameterCard(
+          title: heaterName,
+          value: '${component.currentValues['temperature']?.toStringAsFixed(1) ?? 'N/A'} °C',
+          normalRange: '28 - 32 °C',
+          isNormal: _isPrecursorTemperatureNormal(component),
+        );
+      },
+    );
+  }
+
+  bool _isPressureNormal(SystemComponent component) {
+    final pressure = component.currentValues['pressure'] as double?;
+    return pressure != null && pressure >= 0.9 && pressure <= 1.1;
+  }
+
+  bool _isTemperatureNormal(SystemComponent component) {
+    final temperature = component.currentValues['temperature'] as double?;
+    return temperature != null && temperature >= 145 && temperature <= 155;
+  }
+
+  bool _isFlowRateNormal(SystemComponent component) {
+    final flowRate = component.currentValues['flow_rate'] as double?;
+    return flowRate != null && flowRate >= 0 && flowRate <= 100;
+  }
+
+  bool _isPrecursorTemperatureNormal(SystemComponent component) {
+    final temperature = component.currentValues['temperature'] as double?;
+    return temperature != null && temperature >= 28 && temperature <= 32;
   }
 }

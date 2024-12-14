@@ -2,95 +2,11 @@
 
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
 import '../../../modules/system_operation_also_main_module/models/system_component.dart';
 import '../repository/component_repository.dart';
+import 'component_list_event.dart';
+import 'component_list_state.dart';
 
-// Events
-abstract class ComponentListEvent extends Equatable {
-  const ComponentListEvent();
-
-  @override
-  List<Object> get props => [];
-}
-
-class LoadComponents extends ComponentListEvent {
-  final String? userId;
-  const LoadComponents({this.userId});
-
-  @override
-  List<Object?> get props => [userId];
-}
-
-class ClearAllComponents extends ComponentListEvent {
-  final String? userId;
-  const ClearAllComponents({this.userId});
-
-  @override
-  List<Object?> get props => [userId];
-}
-
-class ActivateComponents extends ComponentListEvent {
-  final List<String> componentIds;
-  final String? userId;
-
-  const ActivateComponents(this.componentIds, {this.userId});
-
-  @override
-  List<Object?> get props => [componentIds, userId];
-}
-
-class CheckSystemReadiness extends ComponentListEvent {}
-
-class GetSystemIssues extends ComponentListEvent {}
-
-class UpdateComponent extends ComponentListEvent {
-  final SystemComponent component;
-
-  const UpdateComponent(this.component);
-
-  @override
-  List<Object> get props => [component];
-}
-
-class AddComponent extends ComponentListEvent {
-  final SystemComponent component;
-
-  const AddComponent(this.component);
-
-  @override
-  List<Object> get props => [component];
-}
-
-// State
-class ComponentListState extends Equatable {
-  final Map<String, SystemComponent> components;
-  final bool isLoading;
-  final String? error;
-
-  const ComponentListState({
-    this.components = const {},
-    this.isLoading = false,
-    this.error,
-  });
-
-  ComponentListState copyWith({
-    Map<String, SystemComponent>? components,
-    bool? isLoading,
-    String? error,
-  }) {
-    return ComponentListState(
-      components: components ?? this.components,
-      isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
-    );
-  }
-
-  @override
-  List<Object?> get props => [components, isLoading, error];
-}
-
-// Bloc
 class ComponentListBloc extends Bloc<ComponentListEvent, ComponentListState> {
   final ComponentRepository _repository;
   StreamSubscription? _componentsSubscription;
@@ -143,7 +59,7 @@ class ComponentListBloc extends Bloc<ComponentListEvent, ComponentListState> {
       emit(state.copyWith(components: updatedComponents));
 
       // Persist to repository
-      await _repository.saveComponent(event.component);
+      await _repository.saveComponentState(event.component);
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
     }
@@ -161,15 +77,10 @@ class ComponentListBloc extends Bloc<ComponentListEvent, ComponentListState> {
       emit(state.copyWith(components: updatedComponents));
 
       // Persist to repository
-      await _repository.saveComponent(event.component);
+      await _repository.saveComponentState(event.component);
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
     }
-  }
-
-  void _setupComponentsSubscription() {
-    // Implement real-time updates subscription if needed
-    // This would depend on your Firestore implementation
   }
 
   @override

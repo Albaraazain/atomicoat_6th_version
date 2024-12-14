@@ -1,8 +1,10 @@
 // lib/widgets/component_control_dialog.dart
 
-import 'package:experiment_planner/modules/system_operation_also_main_module/providers/system_copmonent_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../blocs/component/bloc/component_bloc.dart';
+import '../../../blocs/component/bloc/component_event.dart';
+import '../../../blocs/component/bloc/component_state.dart';
 import '../models/system_component.dart';
 import '../models/recipe.dart';
 
@@ -42,14 +44,15 @@ class _ComponentControlDialogState extends State<ComponentControlDialog> {
 
   void _updateSetValues(BuildContext context) {
     if (_formKey.currentState!.validate()) {
-      final systemProvider =
-          Provider.of<SystemComponentProvider>(context, listen: false);
+      final componentBloc = context.read<ComponentBloc>();
       _controllers.forEach((parameter, controller) {
         double? newValue = double.tryParse(controller.text);
         if (newValue != null) {
-          // Use the new method instead
-          systemProvider.updateComponentValue(
-              widget.component.name, parameter, newValue);
+          componentBloc.add(ComponentSetValueUpdated(
+            widget.component.name,
+            parameter,
+            newValue,
+          ));
         }
       });
       Navigator.of(context).pop();
@@ -58,26 +61,25 @@ class _ComponentControlDialogState extends State<ComponentControlDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.component.name),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                  'Status: ${widget.component.isActivated ? "Active" : "Inactive"}'),
-              SizedBox(height: 10),
-              Text('Current Values:',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              ...widget.component.currentValues.entries.map((entry) =>
-                  Text('  ${entry.key}: ${entry.value.toStringAsFixed(2)}')),
-              SizedBox(height: 10),
-              Text('Set Values:',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              ...widget.component.setValues.entries.map((entry) => Padding(
+    return BlocBuilder<ComponentBloc, ComponentState>(
+      builder: (context, state) {
+        return AlertDialog(
+          title: Text(widget.component.name),
+          content: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Status: ${widget.component.isActivated ? "Active" : "Inactive"}'),
+                  SizedBox(height: 10),
+                  Text('Current Values:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ...widget.component.currentValues.entries.map((entry) =>
+                      Text('  ${entry.key}: ${entry.value.toStringAsFixed(2)}')),
+                  SizedBox(height: 10),
+                  Text('Set Values:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ...widget.component.setValues.entries.map((entry) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: TextFormField(
                       controller: _controllers[entry.key],
@@ -85,8 +87,7 @@ class _ComponentControlDialogState extends State<ComponentControlDialog> {
                         labelText: entry.key,
                         border: OutlineInputBorder(),
                       ),
-                      keyboardType:
-                          TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a value';
@@ -98,46 +99,44 @@ class _ComponentControlDialogState extends State<ComponentControlDialog> {
                       },
                     ),
                   )),
-              SizedBox(height: 10),
-              Text(
-                  'Active in Current Step: ${widget.isActiveInCurrentStep ? "Yes" : "No"}'),
-              if (widget.currentRecipeStep != null) ...[
-                SizedBox(height: 10),
-                Text('Current Recipe Step:',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                Text('  Type: ${widget.currentRecipeStep!.type}'),
-                ...widget.currentRecipeStep!.parameters.entries
-                    .map((entry) => Text('  ${entry.key}: ${entry.value}')),
-              ],
-            ],
+                  SizedBox(height: 10),
+                  Text('Active in Current Step: ${widget.isActiveInCurrentStep ? "Yes" : "No"}'),
+                  if (widget.currentRecipeStep != null) ...[
+                    SizedBox(height: 10),
+                    Text('Current Recipe Step:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('  Type: ${widget.currentRecipeStep!.type}'),
+                    ...widget.currentRecipeStep!.parameters.entries
+                        .map((entry) => Text('  ${entry.key}: ${entry.value}')),
+                  ],
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text('Close'),
-        ),
-        TextButton(
-          onPressed: () => _updateSetValues(context),
-          child: Text('Update'),
-        ),
-        TextButton(
-          onPressed: () => _toggleComponentActivation(context),
-          child: Text(widget.component.isActivated ? 'Deactivate' : 'Activate'),
-        ),
-      ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Close'),
+            ),
+            TextButton(
+              onPressed: () => _updateSetValues(context),
+              child: Text('Update'),
+            ),
+            TextButton(
+              onPressed: () => _toggleComponentActivation(context),
+              child: Text(widget.component.isActivated ? 'Deactivate' : 'Activate'),
+            ),
+          ],
+        );
+      },
     );
   }
 
   void _toggleComponentActivation(BuildContext context) {
-    final systemProvider =
-        Provider.of<SystemComponentProvider>(context, listen: false);
-    if (widget.component.isActivated) {
-      systemProvider.deactivateComponent(widget.component.name);
-    } else {
-      systemProvider.activateComponent(widget.component.name);
-    }
+    final componentBloc = context.read<ComponentBloc>();
+    componentBloc.add(ComponentActivationToggled(
+      widget.component.name,
+      !widget.component.isActivated,
+    ));
     Navigator.of(context).pop();
   }
 }

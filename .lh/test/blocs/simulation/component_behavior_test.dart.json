@@ -1,0 +1,18 @@
+{
+    "sourceFile": "test/blocs/simulation/component_behavior_test.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734072951001,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734072951001,
+            "name": "Commit-0",
+            "content": "// test/blocs/simulation/component_behavior_test.dart\r\nimport 'package:flutter_test/flutter_test.dart';\r\nimport '../../../lib/blocs/simulation/models/component_simulation_behavior.dart';\r\n\r\nvoid main() {\r\n  group('ReactorChamberBehavior', () {\r\n    late ReactorChamberBehavior behavior;\r\n\r\n    setUp(() {\r\n      behavior = ReactorChamberBehavior();\r\n    });\r\n\r\n    test('generates valid temperature and pressure values', () {\r\n      final currentValues = {'temperature': 150.0, 'pressure': 1.0};\r\n      final newValues = behavior.generateValues(currentValues);\r\n\r\n      expect(newValues.keys, containsAll(['temperature', 'pressure']));\r\n      expect(newValues['temperature']!, inInclusiveRange(145.0, 155.0));\r\n      expect(newValues['pressure']!, inInclusiveRange(0.9, 1.1));\r\n    });\r\n\r\n    test('validates values within acceptable ranges', () {\r\n      expect(behavior.validateValues({\r\n        'temperature': 150.0,\r\n        'pressure': 1.0,\r\n      }), isTrue);\r\n\r\n      expect(behavior.validateValues({\r\n        'temperature': 350.0,  // Too high\r\n        'pressure': 1.0,\r\n      }), isFalse);\r\n\r\n      expect(behavior.validateValues({\r\n        'temperature': 150.0,\r\n        'pressure': 15.0,  // Too high\r\n      }), isFalse);\r\n    });\r\n  });\r\n\r\n  group('MFCBehavior', () {\r\n    late MFCBehavior behavior;\r\n\r\n    setUp(() {\r\n      behavior = MFCBehavior();\r\n    });\r\n\r\n    test('generates valid flow rate values', () {\r\n      final currentValues = {\r\n        'flow_rate': 50.0,\r\n        'pressure': 1.0,\r\n        'setpoint': 50.0,\r\n      };\r\n      final newValues = behavior.generateValues(currentValues);\r\n\r\n      expect(newValues.keys, containsAll(['flow_rate', 'pressure']));\r\n      expect(newValues['flow_rate']!, inInclusiveRange(45.0, 55.0));\r\n      expect(newValues['pressure']!, inInclusiveRange(0.95, 1.05));\r\n    });\r\n\r\n    test('moves flow rate towards setpoint', () {\r\n      final currentValues = {\r\n        'flow_rate': 40.0,\r\n        'pressure': 1.0,\r\n        'setpoint': 50.0,\r\n      };\r\n      final newValues = behavior.generateValues(currentValues);\r\n\r\n      expect(newValues['flow_rate']!, greaterThan(40.0));\r\n    });\r\n  });\r\n\r\n  group('ValveBehavior', () {\r\n    late ValveBehavior behavior;\r\n\r\n    setUp(() {\r\n      behavior = ValveBehavior();\r\n    });\r\n\r\n    test('maintains binary valve state', () {\r\n      expect(\r\n        behavior.generateValues({'status': 0.0})['status'],\r\n        equals(0.0),\r\n      );\r\n      expect(\r\n        behavior.generateValues({'status': 1.0})['status'],\r\n        equals(1.0),\r\n      );\r\n    });\r\n\r\n    test('validates only binary values', () {\r\n      expect(behavior.validateValues({'status': 0.0}), isTrue);\r\n      expect(behavior.validateValues({'status': 1.0}), isTrue);\r\n      expect(behavior.validateValues({'status': 0.5}), isFalse);\r\n    });\r\n  });\r\n}"
+        }
+    ]
+}

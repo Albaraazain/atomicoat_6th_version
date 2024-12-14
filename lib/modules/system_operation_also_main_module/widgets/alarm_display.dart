@@ -1,54 +1,98 @@
 // lib/modules/system_operation_also_main_module/widgets/alarm_display.dart
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../blocs/alarm/bloc/alarm_bloc.dart';
+import '../../../blocs/alarm/bloc/alarm_event.dart';
+import '../../../blocs/alarm/bloc/alarm_state.dart';
 import '../models/alarm.dart';
-import '../providers/system_state_provider.dart';
 
-class AlarmDisplay extends StatelessWidget {
+class AlarmDisplay extends StatefulWidget {
+  @override
+  State<AlarmDisplay> createState() => _AlarmDisplayState();
+}
+
+class _AlarmDisplayState extends State<AlarmDisplay> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<AlarmBloc>().add(LoadAlarms());
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<SystemStateProvider>(
-      builder: (context, systemStateProvider, child) {
+    return BlocBuilder<AlarmBloc, AlarmState>(
+      builder: (context, state) {
+        if (state.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
         return Column(
           children: [
             Padding(
               padding: EdgeInsets.all(16),
-              child: Text(
-                'Active Alarms',
-                style: Theme.of(context).textTheme.titleLarge,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Active Alarms',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  if (state.activeAlarms.isNotEmpty)
+                    TextButton(
+                      onPressed: () => context.read<AlarmBloc>().add(
+                            ClearAllAcknowledgedAlarms(),
+                          ),
+                      child: Text('Acknowledge All'),
+                    ),
+                ],
               ),
             ),
             Expanded(
-              child: systemStateProvider.activeAlarms.isEmpty
+              child: state.activeAlarms.isEmpty
                   ? Center(child: Text('No active alarms'))
                   : ListView.builder(
-                itemCount: systemStateProvider.activeAlarms.length,
-                itemBuilder: (context, index) {
-                  final alarm = systemStateProvider.activeAlarms[index];
-                  return Card(
-                    child: ListTile(
-                      leading: _getAlarmIcon(alarm.severity),
-                      title: Text(alarm.message),
-                      subtitle: Text(
-                        '${alarm.timestamp.toString().split('.')[0]}',
-                      ),
-                      trailing: alarm.acknowledged
-                          ? Icon(Icons.check, color: Colors.green)
-                          : TextButton(
-                        child: Text('Acknowledge'),
-                        onPressed: () {
-                          systemStateProvider.acknowledgeAlarm(alarm.id);
-                        },
-                      ),
+                      itemCount: state.activeAlarms.length,
+                      itemBuilder: (context, index) {
+                        final alarm = state.activeAlarms[index];
+                        return _buildAlarmTile(context, alarm);
+                      },
                     ),
-                  );
-                },
-              ),
             ),
+            if (state.error != null)
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  state.error!,
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildAlarmTile(BuildContext context, Alarm alarm) {
+    return Card(
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: ListTile(
+        leading: _getAlarmIcon(alarm.severity),
+        title: Text(alarm.message),
+        subtitle: Text(
+          '${alarm.timestamp.toString().split('.')[0]}',
+        ),
+        trailing: alarm.acknowledged
+            ? Icon(Icons.check, color: Colors.green)
+            : TextButton(
+                child: Text('Acknowledge'),
+                onPressed: () {
+                  context.read<AlarmBloc>().add(
+                        AcknowledgeAlarm(alarm.id),
+                      );
+                },
+              ),
+      ),
     );
   }
 

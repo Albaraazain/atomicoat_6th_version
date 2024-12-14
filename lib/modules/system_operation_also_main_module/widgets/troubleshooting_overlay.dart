@@ -1,12 +1,16 @@
+// lib/modules/system_operation_also_main_module/widgets/troubleshooting_overlay.dart
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../blocs/component/bloc/component_list_bloc.dart';
+import '../../../blocs/component/bloc/component_list_state.dart';
+import '../../../blocs/component/bloc/component_list_event.dart';
 import '../models/system_component.dart';
-import '../providers/system_state_provider.dart';
 
 class TroubleshootingOverlay extends StatefulWidget {
-  final String overlayId; // Added to distinguish between instances
+  final String overlayId;
 
   TroubleshootingOverlay({required this.overlayId});
 
@@ -33,7 +37,6 @@ class _TroubleshootingOverlayState extends State<TroubleshootingOverlay> {
       setState(() {
         _diagramSize = renderBox.size;
       });
-      // Initialize default positions after diagram size is known
       if (_componentPositions.isEmpty) {
         _initializeDefaultPositions();
       }
@@ -44,11 +47,11 @@ class _TroubleshootingOverlayState extends State<TroubleshootingOverlay> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('component_positions_troubleshooting_overlay_${widget.overlayId}');
     _initializeDefaultPositions();
-    setState(() {}); // Refresh the UI
+    setState(() {});
   }
 
   void _initializeDefaultPositions() {
-    if (_diagramSize == Size.zero) return; // Diagram size not yet available
+    if (_diagramSize == Size.zero) return;
 
     setState(() {
       _componentPositions = {
@@ -65,6 +68,7 @@ class _TroubleshootingOverlayState extends State<TroubleshootingOverlay> {
         'Vacuum Pump': Offset(_diagramSize.width * 0.85, _diagramSize.height * 0.85),
       };
     });
+    _saveComponentPositions();
   }
 
   Future<void> _loadComponentPositions() async {
@@ -80,7 +84,6 @@ class _TroubleshootingOverlayState extends State<TroubleshootingOverlay> {
         });
       });
     } else {
-      // Initialize default positions if no saved positions are found
       _initializeDefaultPositions();
     }
   }
@@ -95,31 +98,23 @@ class _TroubleshootingOverlayState extends State<TroubleshootingOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    print("creating troubleshooting overlay");
-    return Consumer<SystemStateProvider>(
-      builder: (context, systemStateProvider, child) {
-        //print("Number of components: ${systemStateProvider.components.length}");
+    return BlocBuilder<ComponentListBloc, ComponentListState>(
+      builder: (context, state) {
         return Stack(
           children: _componentPositions.entries.map((entry) {
             final componentName = entry.key;
-            final componentPosition = entry.value;
+            final component = state.components[componentName];
+            final position = entry.value;
 
-            // Get the component by name from the provider
-            final component = systemStateProvider.getComponentByName(componentName);
-if (component == null) return SizedBox.shrink();
+            if (component == null) return SizedBox.shrink();
 
-            // Only display components that have warnings or errors
             if (component.status == ComponentStatus.normal) {
               return SizedBox.shrink();
             }
 
-            // Calculate absolute position based on componentPosition
-            final left = componentPosition.dx;
-            final top = componentPosition.dy;
-
             return Positioned(
-              left: left - 20, // Adjust to center the icon
-              top: top - 20,
+              left: position.dx - 20,
+              top: position.dy - 20,
               child: GestureDetector(
                 onPanUpdate: (details) {
                   setState(() {
@@ -129,9 +124,7 @@ if (component == null) return SizedBox.shrink();
                     );
                   });
                 },
-                onPanEnd: (_) {
-                  _saveComponentPositions();
-                },
+                onPanEnd: (_) => _saveComponentPositions(),
                 onTap: () => _showTroubleshootingDialog(context, component),
                 child: Icon(
                   Icons.warning,
@@ -153,11 +146,22 @@ if (component == null) return SizedBox.shrink();
         title: Text('Troubleshoot ${component.name}'),
         content: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Status: ${component.status.toString().split('.').last}'),
               SizedBox(height: 10),
               if (component.errorMessages.isNotEmpty)
-                ...component.errorMessages.map((message) => Text('- $message')).toList()
+                ...component.errorMessages.map((message) => Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.error_outline, size: 16, color: Colors.red),
+                      SizedBox(width: 8),
+                      Expanded(child: Text(message)),
+                    ],
+                  ),
+                ))
               else
                 Text('No error messages.'),
             ],
@@ -166,7 +170,10 @@ if (component == null) return SizedBox.shrink();
         actions: [
           TextButton(
             onPressed: () {
-              Provider.of<SystemStateProvider>(context, listen: false).runDiagnostic(component.name);
+              // Trigger diagnostic through BLoC
+              context.read<ComponentListBloc>().add(
+                CheckSystemReadiness(),
+              );
               Navigator.of(context).pop();
             },
             child: Text('Run Diagnostic'),
@@ -179,7 +186,6 @@ if (component == null) return SizedBox.shrink();
       ),
     );
   }
-
 
   Color _getStatusColor(ComponentStatus status) {
     switch (status) {

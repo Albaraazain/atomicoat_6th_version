@@ -4,10 +4,12 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../blocs/component/bloc/component_list_bloc.dart';
+import '../../../blocs/component/bloc/component_list_state.dart';
 import '../models/system_component.dart';
-import '../providers/system_state_provider.dart';
+import '../models/data_point.dart';
 
 class GraphOverlay extends StatefulWidget {
   final String overlayId;
@@ -151,104 +153,93 @@ class _GraphOverlayState extends State<GraphOverlay> {
 
     return Stack(
       children: [
-        Consumer<SystemStateProvider>(
-          builder: (context, systemStateProvider, child) {
-            //print("Consumer rebuilding. Components count: ${systemStateProvider.components.length}");
+        BlocBuilder<ComponentListBloc, ComponentListState>(
+          builder: (context, state) {
             return LayoutBuilder(
               builder: (context, constraints) {
-                //print("LayoutBuilder: ${constraints.maxWidth} x ${constraints.maxHeight}");
+                if (_diagramSize == Size.zero) {
+                  _diagramSize = Size(constraints.maxWidth, constraints.maxHeight);
+                  _initializeDefaultPositions();
+                }
 
                 return Stack(
-                  children: _componentPositions.entries.map((entry) {
-                    final componentName = entry.key;
-                    final componentPosition = entry.value;
+                  children: [
+                    ...state.components.entries.map((entry) {
+                      final componentName = entry.key;
+                      final component = entry.value;
+                      final position = _componentPositions[componentName];
 
-                    final component = systemStateProvider.getComponentByName(componentName);
-                    if (component == null) {
-                      print("Component not found: $componentName");
-                      return SizedBox.shrink();
-                    }
+                      if (position == null) return SizedBox.shrink();
 
-                    final parameterToPlot = _getParameterToPlot(component);
-                    if (parameterToPlot == null) {
-                      print("No parameter to plot for: $componentName");
-                      return SizedBox.shrink();
-                    }
+                      final parameterToPlot = _getParameterToPlot(component);
+                      if (parameterToPlot == null) {
+                        return SizedBox.shrink();
+                      }
 
-                    // Calculate absolute position based on componentPosition
-                    final left = componentPosition.dx - horizontalOffset;
-                    final top = componentPosition.dy - verticalOffset;
+                      final left = position.dx - horizontalOffset;
+                      final top = position.dy - verticalOffset;
 
-                    return Positioned(
-                      left: left,
-                      top: top,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onPanUpdate: _isEditMode
-                            ? (details) {
-                          setState(() {
-                            // Update position while dragging
-                            _componentPositions[componentName] = Offset(
-                              _componentPositions[componentName]!.dx + details.delta.dx,
-                              _componentPositions[componentName]!.dy + details.delta.dy,
-                            );
-                          });
-                        }
-                            : null,
-                        onPanEnd: _isEditMode
-                            ? (_) {
-                          // Save positions when dragging ends
-                          _saveComponentPositions();
-                        }
-                            : null,
-                        child: Container(
-                          width: graphWidth,
-                          height: graphHeight,
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: EdgeInsets.all(4),
-                          child: Column(
-                            children: [
-                              Text(
-                                '$componentName\n($parameterToPlot)',
-                                style: TextStyle(color: Colors.white, fontSize: fontSize),
-                                textAlign: TextAlign.center,
-                              ),
-                              SizedBox(height: 4),
-                              Expanded(
-                                child: _buildMinimalGraph(component, parameterToPlot),
-                              ),
-                            ],
+                      return Positioned(
+                        left: left,
+                        top: top,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onPanUpdate: _isEditMode
+                              ? (details) {
+                                  setState(() {
+                                    _componentPositions[componentName] = Offset(
+                                      position.dx + details.delta.dx,
+                                      position.dy + details.delta.dy,
+                                    );
+                                  });
+                                }
+                              : null,
+                          onPanEnd: _isEditMode
+                              ? (_) => _saveComponentPositions()
+                              : null,
+                          child: Container(
+                            width: graphWidth,
+                            height: graphHeight,
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: EdgeInsets.all(4),
+                            child: Column(
+                              children: [
+                                Text(
+                                  '$componentName\n($parameterToPlot)',
+                                  style: TextStyle(color: Colors.white, fontSize: fontSize),
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(height: 4),
+                                Expanded(
+                                  child: _buildMinimalGraph(component, parameterToPlot),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }).toList()
-                  // Add Reset Button
-                    ..add(
-                      Positioned(
-                        top: 40,
-                        right: widget.overlayId == 'main_dashboard' ? 8 : null,
-                        left: widget.overlayId != 'main_dashboard' ? 8 : null,
-                        child: GestureDetector(
-                          onTap: _resetToCenter,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.redAccent,
-                              shape: BoxShape.circle,
-                            ),
-                            padding: EdgeInsets.all(8),
-                            child: Icon(
-                              Icons.restore,
-                              color: Colors.white,
-                              size: 20,
-                            ),
+                      );
+                    }).toList(),
+                    // Reset button
+                    Positioned(
+                      top: 40,
+                      right: widget.overlayId == 'main_dashboard' ? 8 : null,
+                      left: widget.overlayId != 'main_dashboard' ? 8 : null,
+                      child: GestureDetector(
+                        onTap: _resetToCenter,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent,
+                            shape: BoxShape.circle,
                           ),
+                          padding: EdgeInsets.all(8),
+                          child: Icon(Icons.restore, color: Colors.white, size: 20),
                         ),
                       ),
                     ),
+                  ],
                 );
               },
             );
@@ -261,39 +252,6 @@ class _GraphOverlayState extends State<GraphOverlay> {
           left: widget.overlayId != 'main_dashboard' ? 8 : null,
           child: _buildEditModeToggle(),
         ),
-        // Legend Positioned at Bottom Right (Optional: Remove for Minimalistic Look)
-        // Positioned(
-        //   bottom: 16,
-        //   right: 16,
-        //   child: Container(
-        //     padding: EdgeInsets.all(8),
-        //     decoration: BoxDecoration(
-        //       color: Colors.black54,
-        //       borderRadius: BorderRadius.circular(8),
-        //     ),
-        //     child: Wrap(
-        //       spacing: 8,
-        //       runSpacing: 4,
-        //       children: componentColors.entries.map((entry) {
-        //         return Row(
-        //           mainAxisSize: MainAxisSize.min,
-        //           children: [
-        //             Container(
-        //               width: 12,
-        //               height: 12,
-        //               color: entry.value,
-        //             ),
-        //             SizedBox(width: 4),
-        //             Text(
-        //               entry.key,
-        //               style: TextStyle(color: Colors.white, fontSize: 10),
-        //             ),
-        //           ],
-        //         );
-        //       }).toList(),
-        //     ),
-        //   ),
-        // ),
       ],
     );
   }
@@ -414,8 +372,6 @@ class _GraphOverlayState extends State<GraphOverlay> {
         return null;
     }
   }
-
-
 
   double _calculateYRange(SystemComponent component, String parameter, double? setValue) {
     final dataPoints = component.parameterHistory[parameter];

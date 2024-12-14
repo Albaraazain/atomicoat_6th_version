@@ -3,11 +3,15 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 1,
             "patches": [
                 {
                     "date": 1734044846207,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734142322313,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -56,5 +56,14 @@\n   const RemoveComponent(this.componentId, {this.userId});\r\n \r\n   @override\r\n   List<Object> get props => [componentId, userId ?? ''];\r\n+}\r\n+\r\n+class AddComponent extends ComponentListEvent {\r\n+  final SystemComponent component;\r\n+\r\n+  const AddComponent(this.component);\r\n+\r\n+  @override\r\n+  List<Object> get props => [component];\r\n }\n\\ No newline at end of file\n"
                 }
             ],
             "date": 1734044846207,

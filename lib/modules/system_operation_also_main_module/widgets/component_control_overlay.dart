@@ -1,13 +1,16 @@
-// lib/widgets/component_control_overlay.dart
+// lib/modules/system_operation_also_main_module/widgets/component_control_overlay.dart
 
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../blocs/component/bloc/component_list_bloc.dart';
+import '../../../blocs/component/bloc/component_list_state.dart';
+import '../../../blocs/recipe/bloc/recipe_bloc.dart';
+import '../../../blocs/recipe/bloc/recipe_state.dart';
 import '../models/recipe.dart';
 import '../models/system_component.dart';
-import '../providers/system_state_provider.dart';
 import 'component_control_dialog.dart';
 
 class ComponentControlOverlay extends StatefulWidget {
@@ -66,7 +69,7 @@ class _ComponentControlOverlayState extends State<ComponentControlOverlay> {
     final prefs = await SharedPreferences.getInstance();
     final positionsJson = json.encode(
       _componentPositions.map(
-            (key, value) => MapEntry(key, {'dx': value.dx, 'dy': value.dy}),
+        (key, value) => MapEntry(key, {'dx': value.dx, 'dy': value.dy}),
       ),
     );
     await prefs.setString('component_positions_${widget.overlayId}', positionsJson);
@@ -94,44 +97,53 @@ class _ComponentControlOverlayState extends State<ComponentControlOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    print("Building [component_control_overlay]");
-    return Consumer<SystemStateProvider>(
-      builder: (context, systemProvider, child) {
-        //print("Number of components in [component_control_overlay]: ${systemProvider.components.length}");
-
-        return Container(
-          key: _overlayKey,
-          child: Stack(
-            children: [
-              ...systemProvider.components.entries.map((entry) {
-                final componentName = entry.key;
-                final component = entry.value;
-                return _buildDraggableComponent(componentName, component, systemProvider);
-              }).toList(),
-              Positioned(
-                right: 16,
-                bottom: 16,
-                child: FloatingActionButton(
-                  mini: true,
-                  child: Icon(Icons.refresh, size: 20),
-                  onPressed: _resetPositions,
-                  tooltip: 'Reset component positions',
-                ),
+    return BlocBuilder<ComponentListBloc, ComponentListState>(
+      builder: (context, componentListState) {
+        return BlocBuilder<RecipeBloc, RecipeState>(
+          builder: (context, recipeState) {
+            return Container(
+              key: _overlayKey,
+              child: Stack(
+                children: [
+                  ...componentListState.components.entries.map((entry) {
+                    final componentName = entry.key;
+                    final component = entry.value;
+                    return _buildDraggableComponent(
+                      componentName,
+                      component,
+                      recipeState,
+                    );
+                  }).toList(),
+                  Positioned(
+                    right: 16,
+                    bottom: 16,
+                    child: FloatingActionButton(
+                      mini: true,
+                      child: Icon(Icons.refresh, size: 20),
+                      onPressed: _resetPositions,
+                      tooltip: 'Reset component positions',
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildDraggableComponent(String componentName, SystemComponent component, SystemStateProvider systemProvider) {
+  Widget _buildDraggableComponent(
+    String componentName,
+    SystemComponent component,
+    RecipeState recipeState,
+  ) {
     final position = _componentPositions[componentName] ?? Offset.zero;
     return Positioned(
       left: position.dx,
       top: position.dy,
       child: Draggable(
-        feedback: _buildComponentIndicator(component, systemProvider),
+        feedback: _buildComponentIndicator(component, recipeState),
         childWhenDragging: Container(),
         onDragEnd: (details) {
           final RenderBox? renderBox = _overlayKey.currentContext?.findRenderObject() as RenderBox?;
@@ -144,20 +156,22 @@ class _ComponentControlOverlayState extends State<ComponentControlOverlay> {
           }
         },
         child: GestureDetector(
-          onTap: () => _showComponentControlDialog(context, component, systemProvider),
-          child: _buildComponentIndicator(component, systemProvider),
+          onTap: () => _showComponentControlDialog(context, component, recipeState),
+          child: _buildComponentIndicator(component, recipeState),
         ),
       ),
     );
   }
 
-  Widget _buildComponentIndicator(SystemComponent component, SystemStateProvider systemProvider) {
-    final isActiveInCurrentStep = _isComponentActiveInCurrentStep(component, systemProvider);
+  Widget _buildComponentIndicator(
+    SystemComponent component,
+    RecipeState recipeState,
+  ) {
+    final isActiveInCurrentStep = _isComponentActiveInCurrentStep(component, recipeState);
     final color = component.isActivated
         ? (isActiveInCurrentStep ? Colors.green : Colors.blue)
         : Colors.red;
 
-    // Calculate the size based on the overlay size or use a default
     double indicatorSize = _overlaySize != null ? _overlaySize!.width * 0.06 : 30.0;
     indicatorSize = indicatorSize.clamp(20.0, 40.0);
 
@@ -192,12 +206,16 @@ class _ComponentControlOverlayState extends State<ComponentControlOverlay> {
     }
   }
 
-  bool _isComponentActiveInCurrentStep(SystemComponent component, SystemStateProvider systemProvider) {
-    if (systemProvider.activeRecipe == null || systemProvider.currentRecipeStepIndex >= systemProvider.activeRecipe!.steps.length) {
+  bool _isComponentActiveInCurrentStep(
+    SystemComponent component,
+    RecipeState recipeState,
+  ) {
+    if (recipeState.activeRecipe == null ||
+        recipeState.currentStepIndex >= recipeState.activeRecipe!.steps.length) {
       return false;
     }
 
-    final currentStep = systemProvider.activeRecipe!.steps[systemProvider.currentRecipeStepIndex];
+    final currentStep = recipeState.activeRecipe!.steps[recipeState.currentStepIndex];
     switch (currentStep.type) {
       case StepType.valve:
         final valveType = currentStep.parameters['valveType'] as ValveType;
@@ -212,13 +230,17 @@ class _ComponentControlOverlayState extends State<ComponentControlOverlay> {
     }
   }
 
-  void _showComponentControlDialog(BuildContext context, SystemComponent component, SystemStateProvider systemProvider) {
+  void _showComponentControlDialog(
+    BuildContext context,
+    SystemComponent component,
+    RecipeState recipeState,
+  ) {
     showDialog(
       context: context,
       builder: (context) => ComponentControlDialog(
         component: component,
-        isActiveInCurrentStep: _isComponentActiveInCurrentStep(component, systemProvider),
-        currentRecipeStep: systemProvider.activeRecipe?.steps[systemProvider.currentRecipeStepIndex],
+        isActiveInCurrentStep: _isComponentActiveInCurrentStep(component, recipeState),
+        currentRecipeStep: recipeState.activeRecipe?.steps[recipeState.currentStepIndex],
       ),
     );
   }

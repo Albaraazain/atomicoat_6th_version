@@ -1,46 +1,55 @@
+// lib/modules/system_operation_also_main_module/widgets/system_status_indicator.dart
+
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/system_state_provider.dart';
-import '../providers/alarm_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../blocs/alarm/bloc/alarm_bloc.dart';
+import '../../../blocs/alarm/bloc/alarm_state.dart';
+import '../../../blocs/system_state/bloc/system_state_bloc.dart';
+import '../../../blocs/system_state/bloc/system_state_state.dart';
+import '../../../modules/system_operation_also_main_module/models/alarm.dart';
 
 class SystemStatusIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer2<SystemStateProvider, AlarmProvider>(
-      builder: (context, systemProvider, alarmProvider, child) {
-        SystemStatus status = _determineSystemStatus(systemProvider, alarmProvider);
-        return GestureDetector(
-          onTap: () => _showStatusDetails(context, status, systemProvider, alarmProvider),
-          child: Row(
-            children: [
-              Icon(
-                _getStatusIcon(status),
-                color: _getStatusColor(status),
-                size: 16,
+    return BlocBuilder<SystemStateBloc, SystemStateState>(
+      builder: (context, systemState) {
+        return BlocBuilder<AlarmBloc, AlarmState>(
+          builder: (context, alarmState) {
+            final status = _determineSystemStatus(systemState, alarmState);
+            return GestureDetector(
+              onTap: () => _showStatusDetails(context, status, systemState, alarmState),
+              child: Row(
+                children: [
+                  Icon(
+                    _getStatusIcon(status),
+                    color: _getStatusColor(status),
+                    size: 16,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    _getStatusText(status),
+                    style: TextStyle(
+                      color: _getStatusColor(status),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: 8),
-              Text(
-                _getStatusText(status),
-                style: TextStyle(
-                  color: _getStatusColor(status),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
-  SystemStatus _determineSystemStatus(SystemStateProvider systemProvider, AlarmProvider alarmProvider) {
-    if (alarmProvider.hasCriticalAlarm) {
+  SystemStatus _determineSystemStatus(SystemStateState systemState, AlarmState alarmState) {
+    if (alarmState.hasCriticalAlarms) {
       return SystemStatus.error;
-    } else if (alarmProvider.hasActiveAlarms) {
+    } else if (alarmState.hasActiveAlarms) {
       return SystemStatus.warning;
-    } else if (systemProvider.isSystemRunning) {
+    } else if (systemState.isSystemRunning) {
       return SystemStatus.running;
-    } else if (systemProvider.isSystemReadyForRecipe()) {
+    } else if (systemState.isReadinessCheckPassed) {
       return SystemStatus.ready;
     } else {
       return SystemStatus.stopped;
@@ -92,7 +101,12 @@ class SystemStatusIndicator extends StatelessWidget {
     }
   }
 
-  void _showStatusDetails(BuildContext context, SystemStatus status, SystemStateProvider systemProvider, AlarmProvider alarmProvider) {
+  void _showStatusDetails(
+    BuildContext context,
+    SystemStatus status,
+    SystemStateState systemState,
+    AlarmState alarmState,
+  ) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -104,12 +118,12 @@ class SystemStatusIndicator extends StatelessWidget {
             children: [
               Text('Status: ${_getStatusText(status)}'),
               SizedBox(height: 8),
-              Text('Is Running: ${systemProvider.isSystemRunning}'),
-              Text('Active Recipe: ${systemProvider.activeRecipe?.name ?? 'None'}'),
-              Text('Current Step: ${systemProvider.currentRecipeStepIndex + 1}/${systemProvider.activeRecipe?.steps.length ?? 0}'),
+              Text('Is Running: ${systemState.isSystemRunning}'),
+              Text('Active Recipe: ${systemState.currentSystemState['activeRecipe']?.name ?? 'None'}'),
+              Text('Current Step: ${systemState.currentSystemState['currentStepIndex'] ?? 0}/${systemState.currentSystemState['totalSteps'] ?? 0}'),
               SizedBox(height: 8),
-              Text('Active Alarms: ${alarmProvider.activeAlarms.length}'),
-              Text('Critical Alarms: ${alarmProvider.criticalAlarms.length}'),
+              Text('Active Alarms: ${alarmState.activeAlarms.length}'),
+              Text('Critical Alarms: ${alarmState.criticalAlarms.length}'),
             ],
           ),
           actions: [

@@ -1,9 +1,14 @@
+// lib/modules/system_operation_also_main_module/screens/recipe_detail_screen.dart
+
+import 'package:experiment_planner/blocs/component/bloc/component_list_event.dart';
+import 'package:experiment_planner/blocs/component/bloc/component_list_state.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../blocs/recipe/bloc/recipe_bloc.dart';
+import '../../../blocs/recipe/bloc/recipe_event.dart';
+import '../../../blocs/recipe/bloc/recipe_state.dart';
+import '../../../blocs/component/bloc/component_list_bloc.dart';
 import '../models/recipe.dart';
-import '../models/system_component.dart';
-import '../providers/recipe_provider.dart';
-import '../providers/system_state_provider.dart';
 
 class DarkThemeColors {
   static const Color background = Color(0xFF121212);
@@ -24,7 +29,8 @@ class RecipeDetailScreen extends StatefulWidget {
   _RecipeDetailScreenState createState() => _RecipeDetailScreenState();
 }
 
-class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProviderStateMixin {
+class _RecipeDetailScreenState extends State<RecipeDetailScreen>
+    with TickerProviderStateMixin {
   late TextEditingController _nameController;
   late TextEditingController _substrateController;
   late TextEditingController _chamberTempController;
@@ -44,8 +50,15 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
       vsync: this,
       duration: Duration(milliseconds: 300),
     );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
+    _fadeAnimation =
+        Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
     _animationController.forward();
+
+    // Initialize blocs
+    context.read<ComponentListBloc>().add(LoadComponents());
+    if (widget.recipeId != null) {
+      context.read<RecipeBloc>().add(LoadRecipes());
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadRecipeData();
@@ -54,21 +67,27 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
 
   void _loadRecipeData() {
     if (widget.recipeId != null) {
-      final recipeProvider = Provider.of<RecipeProvider>(context, listen: false);
-      final recipe = recipeProvider.getRecipeById(widget.recipeId!);
-      if (recipe != null) {
-        setState(() {
-          _nameController.text = recipe.name;
-          _substrateController.text = recipe.substrate;
-          _chamberTempController.text = recipe.chamberTemperatureSetPoint.toString();
-          _pressureController.text = recipe.pressureSetPoint.toString();
-          _steps = List.from(recipe.steps);
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Recipe not found'), backgroundColor: Colors.red),
-        );
-      }
+      final recipeState = context.read<RecipeBloc>().state;
+      final recipe = recipeState.recipes.firstWhere(
+        (r) => r.id == widget.recipeId,
+        orElse: () => Recipe(
+          id: widget.recipeId!,
+          name: '',
+          substrate: '',
+          steps: [],
+          chamberTemperatureSetPoint: 150.0,
+          pressureSetPoint: 1.0,
+        ),
+      );
+
+      setState(() {
+        _nameController.text = recipe.name;
+        _substrateController.text = recipe.substrate;
+        _chamberTempController.text =
+            recipe.chamberTemperatureSetPoint.toString();
+        _pressureController.text = recipe.pressureSetPoint.toString();
+        _steps = List.from(recipe.steps);
+      });
     }
   }
 
@@ -84,44 +103,63 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<RecipeProvider>(
-      builder: (context, recipeProvider, child) {
-        return Scaffold(
-          backgroundColor: DarkThemeColors.background,
-          appBar: AppBar(
-            elevation: 0,
-            backgroundColor: DarkThemeColors.background,
-            title: Text(
-              widget.recipeId == null ? 'Create Recipe' : 'Edit Recipe',
-              style: TextStyle(color: DarkThemeColors.primaryText, fontWeight: FontWeight.w500),
-            ),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.save, color: DarkThemeColors.accent),
-                onPressed: () => _saveRecipe(recipeProvider),
-              ),
-            ],
-          ),
-          body: SafeArea(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildRecipeNameInput(),
-                      SizedBox(height: 16),
-                      _buildSubstrateInput(),
-                      SizedBox(height: 24),
-                      _buildGlobalParametersInputs(),
-                      SizedBox(height: 24),
-                      _buildStepsHeader(),
-                      SizedBox(height: 16),
-                      _buildStepsList(),
-                    ],
-                  ),
+    return BlocListener<RecipeBloc, RecipeState>(
+      listener: (context, state) {
+        if (state.error != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.error!), backgroundColor: Colors.red),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: DarkThemeColors.background,
+        appBar: _buildAppBar(),
+        body: _buildBody(),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: DarkThemeColors.background,
+      title: Text(
+        widget.recipeId == null ? 'Create Recipe' : 'Edit Recipe',
+        style: TextStyle(
+            color: DarkThemeColors.primaryText, fontWeight: FontWeight.w500),
+      ),
+      actions: [
+        BlocBuilder<RecipeBloc, RecipeState>(
+          builder: (context, state) {
+            return IconButton(
+              icon: Icon(Icons.save, color: DarkThemeColors.accent),
+              onPressed: state.isLoading ? null : () => _saveRecipe(context),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBody() {
+    return BlocBuilder<RecipeBloc, RecipeState>(
+      builder: (context, recipeState) {
+        if (recipeState.isLoading) {
+          return Center(child: CircularProgressIndicator());
+        }
+        return SafeArea(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildBasicInputs(),
+                    SizedBox(height: 24),
+                    _buildStepsSection(),
+                  ],
                 ),
               ),
             ),
@@ -131,19 +169,24 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
     );
   }
 
-  Widget _buildRecipeNameInput() {
-    return _buildTextField(
-      controller: _nameController,
-      label: 'Recipe Name',
-      icon: Icons.title,
-    );
-  }
-
-  Widget _buildSubstrateInput() {
-    return _buildTextField(
-      controller: _substrateController,
-      label: 'Substrate',
-      icon: Icons.layers,
+  Widget _buildBasicInputs() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildTextField(
+          controller: _nameController,
+          label: 'Recipe Name',
+          icon: Icons.title,
+        ),
+        SizedBox(height: 16),
+        _buildTextField(
+          controller: _substrateController,
+          label: 'Substrate',
+          icon: Icons.layers,
+        ),
+        SizedBox(height: 24),
+        _buildGlobalParametersInputs(),
+      ],
     );
   }
 
@@ -182,13 +225,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
     required String label,
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
-    Function(String)? onChanged,
   }) {
     return TextField(
       controller: controller,
       style: TextStyle(color: DarkThemeColors.primaryText),
       keyboardType: keyboardType,
-      onChanged: onChanged,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: DarkThemeColors.secondaryText),
@@ -204,6 +245,17 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
           borderSide: BorderSide(color: DarkThemeColors.accent),
         ),
       ),
+    );
+  }
+
+  Widget _buildStepsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildStepsHeader(),
+        SizedBox(height: 16),
+        _buildStepsList(),
+      ],
     );
   }
 
@@ -236,22 +288,26 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
   }
 
   Widget _buildStepsList() {
-    return ReorderableListView(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      children: _steps.asMap().entries.map((entry) {
-        final index = entry.key;
-        final step = entry.value;
-        return _buildStepCard(step, index);
-      }).toList(),
-      onReorder: (oldIndex, newIndex) {
-        setState(() {
-          if (newIndex > oldIndex) {
-            newIndex -= 1;
-          }
-          final RecipeStep item = _steps.removeAt(oldIndex);
-          _steps.insert(newIndex, item);
-        });
+    return BlocBuilder<ComponentListBloc, ComponentListState>(
+      builder: (context, componentState) {
+        return ReorderableListView(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          children: _steps.asMap().entries.map((entry) {
+            final index = entry.key;
+            final step = entry.value;
+            return _buildStepCard(step, index);
+          }).toList(),
+          onReorder: (oldIndex, newIndex) {
+            setState(() {
+              if (newIndex > oldIndex) {
+                newIndex -= 1;
+              }
+              final RecipeStep item = _steps.removeAt(oldIndex);
+              _steps.insert(newIndex, item);
+            });
+          },
+        );
       },
     );
   }
@@ -296,84 +352,108 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
     );
   }
 
-  String _getStepTitle(RecipeStep step) {
-    switch (step.type) {
-      case StepType.loop:
-        return 'Loop ${step.parameters['iterations']} times';
-      case StepType.valve:
-        return '${step.parameters['valveType'] == ValveType.valveA ? 'Valve A' : 'Valve B'} for ${step.parameters['duration']}s';
-      case StepType.purge:
-        return 'Purge for ${step.parameters['duration']}s';
-      case StepType.setParameter:
-        return 'Set ${step.parameters['component']} ${step.parameters['parameter']} to ${step.parameters['value']}';
-      default:
-        return 'Unknown Step';
-    }
+  // show dialog to confirm deletion of a step
+  void _showDeleteStepDialog(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Step',
+              style: TextStyle(color: DarkThemeColors.primaryText)),
+          content: Text(
+            'Are you sure you want to delete this step?',
+            style: TextStyle(color: DarkThemeColors.primaryText),
+          ),
+          backgroundColor: DarkThemeColors.cardBackground,
+          actions: [
+            TextButton(
+              child: Text('Cancel',
+                  style: TextStyle(color: DarkThemeColors.accent)),
+              onPressed: () => Navigator.pop(context),
+            ),
+            TextButton(
+              child: Text('Delete',
+                  style: TextStyle(color: DarkThemeColors.accent)),
+              onPressed: () {
+                Navigator.pop(context);
+                setState(() {
+                  _steps.removeAt(index);
+                });
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildStepEditor(RecipeStep step) {
     switch (step.type) {
       case StepType.loop:
-        return Column(
-          children: [
-            _buildNumberInput(
-              label: 'Number of iterations',
-              value: step.parameters['iterations'],
-              onChanged: (value) {
-                setState(() {
-                  step.parameters['iterations'] = value;
-                });
-              },
-            ),
-            SizedBox(height: 16),
-            _buildNumberInput(
-              label: 'Temperature (°C)',
-              value: step.parameters['temperature'],
-              onChanged: (value) {
-                setState(() {
-                  step.parameters['temperature'] = value;
-                });
-              },
-            ),
-            SizedBox(height: 16),
-            _buildNumberInput(
-              label: 'Pressure (atm)',
-              value: step.parameters['pressure'],
-              onChanged: (value) {
-                setState(() {
-                  step.parameters['pressure'] = value;
-                });
-              },
-            ),
-          ],
-        );
+        return _buildLoopEditor(step);
       case StepType.valve:
-        return Column(
-          children: [
-            _buildDropdown<ValveType>(
-              label: 'Valve',
-              value: step.parameters['valveType'],
-              items: ValveType.values,
-              onChanged: (value) {
-                setState(() {
-                  step.parameters['valveType'] = value;
-                });
-              },
-            ),
-            SizedBox(height: 16),
-            _buildNumberInput(
-              label: 'Duration (seconds)',
-              value: step.parameters['duration'],
-              onChanged: (value) {
-                setState(() {
-                  step.parameters['duration'] = value;
-                });
-              },
-            ),
-          ],
-        );
+        return _buildValveEditor(step);
       case StepType.purge:
-        return _buildNumberInput(
+        return _buildPurgeEditor(step);
+      case StepType.setParameter:
+        return _buildSetParameterEditor(step);
+      default:
+        return Text('Unknown Step Type',
+            style: TextStyle(color: DarkThemeColors.primaryText));
+    }
+  }
+
+  Widget _buildLoopEditor(RecipeStep step) {
+    return Column(
+      children: [
+        _buildNumberInput(
+          label: 'Number of iterations',
+          value: step.parameters['iterations'],
+          onChanged: (value) {
+            setState(() {
+              step.parameters['iterations'] = value;
+            });
+          },
+        ),
+        SizedBox(height: 16),
+        _buildNumberInput(
+          label: 'Temperature (°C)',
+          value: step.parameters['temperature'],
+          onChanged: (value) {
+            setState(() {
+              step.parameters['temperature'] = value;
+            });
+          },
+        ),
+        SizedBox(height: 16),
+        _buildNumberInput(
+          label: 'Pressure (atm)',
+          value: step.parameters['pressure'],
+          onChanged: (value) {
+            setState(() {
+              step.parameters['pressure'] = value;
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildValveEditor(RecipeStep step) {
+    return Column(
+      children: [
+        _buildDropdown<ValveType>(
+          label: 'Valve',
+          value: step.parameters['valveType'],
+          items: ValveType.values,
+          onChanged: (value) {
+            setState(() {
+              step.parameters['valveType'] = value;
+            });
+          },
+        ),
+        SizedBox(height: 16),
+        _buildNumberInput(
           label: 'Duration (seconds)',
           value: step.parameters['duration'],
           onChanged: (value) {
@@ -381,141 +461,82 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
               step.parameters['duration'] = value;
             });
           },
-        );
-      case StepType.setParameter:
-        return _buildSetParameterEditor(step);
-      default:
-        return Text('Unknown Step Type', style: TextStyle(color: DarkThemeColors.primaryText));
-    }
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPurgeEditor(RecipeStep step) {
+    return _buildNumberInput(
+      label: 'Duration (seconds)',
+      value: step.parameters['duration'],
+      onChanged: (value) {
+        setState(() {
+          step.parameters['duration'] = value;
+        });
+      },
+    );
   }
 
   Widget _buildSetParameterEditor(RecipeStep step) {
-    final systemStateProvider = Provider.of<SystemStateProvider>(context, listen: false);
-    final availableComponents = systemStateProvider.components.values.toList();
+    return BlocBuilder<ComponentListBloc, ComponentListState>(
+      builder: (context, state) {
+        if (state.isLoading) {
+          return Center(child: CircularProgressIndicator());
+        }
 
-    SystemComponent? selectedComponent = step.parameters['component'] != null
-        ? availableComponents.firstWhere((c) => c.name == step.parameters['component'])
-        : null;
+        final availableComponents = state.components.values.toList();
+        final selectedComponent = step.parameters['component'] != null
+            ? availableComponents.firstWhere(
+                (c) => c.name == step.parameters['component'],
+                orElse: () => availableComponents.first,
+              )
+            : availableComponents.first;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildDropdown<SystemComponent>(
-          label: 'Component',
-          value: selectedComponent,
-          items: availableComponents,
-          onChanged: (value) {
-            setState(() {
-              step.parameters['component'] = value?.name;
-              step.parameters['parameter'] = null; // Reset parameter when component changes
-              step.parameters['value'] = null; // Reset value when component changes
-            });
-          },
-          itemToString: (component) => component.name,
-        ),
-        SizedBox(height: 16),
-        if (selectedComponent != null)
-          _buildDropdown<String>(
-            label: 'Parameter',
-            value: step.parameters['parameter'],
-            items: selectedComponent.setValues.keys.toList(),
-            onChanged: (value) {
-              setState(() {
-                step.parameters['parameter'] = value;
-                step.parameters['value'] = null; // Reset value when parameter changes
-              });
-            },
-          ),
-        SizedBox(height: 16),
-        if (step.parameters['parameter'] != null)
-          _buildNumberInput(
-            label: 'Value',
-            value: step.parameters['value'],
-            onChanged: (value) {
-              setState(() {
-                step.parameters['value'] = value;
-              });
-            },
-          ),
-      ],
-    );
-  }
-
-  Widget _buildDropdown<T>({
-    required String label,
-    required T? value,
-    required List<T> items,
-    required Function(T?) onChanged,
-    String Function(T)? itemToString,
-  }) {
-    return Row(
-      children: [
-      Expanded(
-      flex: 2,
-      child: Text(label, style: TextStyle(color: DarkThemeColors.secondaryText)),
-    ),
-    Expanded(
-    flex: 3,
-    child: DropdownButtonFormField<T>(
-      value: value,
-      onChanged: onChanged,
-      items: items.map((T item) {
-        return DropdownMenuItem<T>(
-          value: item,
-          child: Text(
-            itemToString != null ? itemToString(item) : item.toString(),
-            style: TextStyle(color: DarkThemeColors.primaryText),
-          ),
-        );
-      }).toList(),
-      dropdownColor: DarkThemeColors.cardBackground,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: DarkThemeColors.inputFill,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      ),
-    ),
-    ),
-      ],
-    );
-  }
-
-  Widget _buildNumberInput({
-    required String label,
-    required dynamic value,
-    required Function(dynamic) onChanged,
-  }) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 2,
-          child: Text(label, style: TextStyle(color: DarkThemeColors.secondaryText)),
-        ),
-        Expanded(
-          flex: 3,
-          child: TextFormField(
-            initialValue: value?.toString() ?? '',
-            style: TextStyle(color: DarkThemeColors.primaryText),
-            keyboardType: TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: DarkThemeColors.inputFill,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildDropdown<String>(
+              label: 'Component',
+              value: step.parameters['component'] ?? selectedComponent.name,
+              items: availableComponents.map((c) => c.name).toList(),
+              onChanged: (value) {
+                setState(() {
+                  step.parameters['component'] = value;
+                  step.parameters['parameter'] = null;
+                  step.parameters['value'] = null;
+                });
+              },
             ),
-            onChanged: (newValue) {
-              onChanged(num.tryParse(newValue));
-            },
-          ),
-        ),
-      ],
+            if (selectedComponent != null) ...[
+              SizedBox(height: 16),
+              _buildDropdown<String>(
+                label: 'Parameter',
+                value: step.parameters['parameter'],
+                items: selectedComponent.setValues.keys.toList(),
+                onChanged: (value) {
+                  setState(() {
+                    step.parameters['parameter'] = value;
+                    step.parameters['value'] = null;
+                  });
+                },
+              ),
+              if (step.parameters['parameter'] != null) ...[
+                SizedBox(height: 16),
+                _buildNumberInput(
+                  label: 'Value',
+                  value: step.parameters['value'],
+                  onChanged: (value) {
+                    setState(() {
+                      step.parameters['value'] = value;
+                    });
+                  },
+                ),
+              ],
+            ],
+          ],
+        );
+      },
     );
   }
 
@@ -562,20 +583,19 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
       child: ListTile(
         title: Text(
           'Substep ${index + 1}: ${_getStepTitle(step)}',
-          style: TextStyle(
-            color: DarkThemeColors.primaryText,
-            fontWeight: FontWeight.w500,
-            fontSize: 14,
-          ),
+          style: TextStyle(color: DarkThemeColors.primaryText, fontSize: 14),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
               icon: Icon(Icons.edit, color: DarkThemeColors.accent),
-              onPressed: () {
-                _showEditStepDialog(context, step, index, parentStep: parentStep);
-              },
+              onPressed: () => _showEditStepDialog(
+                context,
+                step,
+                index,
+                parentStep: parentStep,
+              ),
             ),
             IconButton(
               icon: Icon(Icons.delete, color: Colors.red),
@@ -588,6 +608,117 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDropdown<T>({
+    required String label,
+    required T? value,
+    required List<T> items,
+    required Function(T?) onChanged,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(label,
+              style: TextStyle(color: DarkThemeColors.secondaryText)),
+        ),
+        Expanded(
+          flex: 3,
+          child: DropdownButtonFormField<T>(
+            value: value,
+            onChanged: onChanged,
+            items: items.map((T item) {
+              return DropdownMenuItem<T>(
+                value: item,
+                child: Text(
+                  item.toString(),
+                  style: TextStyle(color: DarkThemeColors.primaryText),
+                ),
+              );
+            }).toList(),
+            dropdownColor: DarkThemeColors.cardBackground,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: DarkThemeColors.inputFill,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNumberInput({
+    required String label,
+    required dynamic value,
+    required Function(dynamic) onChanged,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(label,
+              style: TextStyle(color: DarkThemeColors.secondaryText)),
+        ),
+        Expanded(
+          flex: 3,
+          child: TextFormField(
+            initialValue: value?.toString() ?? '',
+            style: TextStyle(color: DarkThemeColors.primaryText),
+            keyboardType: TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: DarkThemeColors.inputFill,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            ),
+            onChanged: (newValue) {
+              onChanged(num.tryParse(newValue));
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showEditStepDialog(BuildContext context, RecipeStep step, int index,
+      {RecipeStep? parentStep}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Edit Step',
+              style: TextStyle(color: DarkThemeColors.primaryText)),
+          content: SingleChildScrollView(
+            child: _buildStepEditor(step),
+          ),
+          backgroundColor: DarkThemeColors.cardBackground,
+          actions: [
+            TextButton(
+              child: Text('Cancel',
+                  style: TextStyle(color: DarkThemeColors.accent)),
+              onPressed: () => Navigator.pop(context),
+            ),
+            TextButton(
+              child:
+                  Text('Save', style: TextStyle(color: DarkThemeColors.accent)),
+              onPressed: () {
+                Navigator.pop(context);
+                setState(() {});
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -604,43 +735,59 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                title: Text('Add Step', style: TextStyle(color: DarkThemeColors.primaryText, fontWeight: FontWeight.bold)),
+                title: Text('Add Step',
+                    style: TextStyle(
+                        color: DarkThemeColors.primaryText,
+                        fontWeight: FontWeight.bold)),
               ),
-              ListTile(
-                leading: Icon(Icons.loop, color: DarkThemeColors.accent),
-                title: Text('Loop', style: TextStyle(color: DarkThemeColors.primaryText)),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addStep(StepType.loop, parentStep?.subSteps ?? _steps);
-                },
+              _buildStepTypeOption(
+                context,
+                'Loop',
+                Icons.loop,
+                StepType.loop,
+                parentStep,
               ),
-              ListTile(
-                leading: Icon(Icons.arrow_forward, color: DarkThemeColors.accent),
-                title: Text('Valve', style: TextStyle(color: DarkThemeColors.primaryText)),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addStep(StepType.valve, parentStep?.subSteps ?? _steps);
-                },
+              _buildStepTypeOption(
+                context,
+                'Valve',
+                Icons.arrow_forward,
+                StepType.valve,
+                parentStep,
               ),
-              ListTile(
-                leading: Icon(Icons.air, color: DarkThemeColors.accent),
-                title: Text('Purge', style: TextStyle(color: DarkThemeColors.primaryText)),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addStep(StepType.purge, parentStep?.subSteps ?? _steps);
-                },
+              _buildStepTypeOption(
+                context,
+                'Purge',
+                Icons.air,
+                StepType.purge,
+                parentStep,
               ),
-              ListTile(
-                leading: Icon(Icons.settings, color: DarkThemeColors.accent),
-                title: Text('Set Parameter', style: TextStyle(color: DarkThemeColors.primaryText)),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addStep(StepType.setParameter, parentStep?.subSteps ?? _steps);
-                },
+              _buildStepTypeOption(
+                context,
+                'Set Parameter',
+                Icons.settings,
+                StepType.setParameter,
+                parentStep,
               ),
             ],
           ),
         );
+      },
+    );
+  }
+
+  Widget _buildStepTypeOption(
+    BuildContext context,
+    String title,
+    IconData icon,
+    StepType type,
+    RecipeStep? parentStep,
+  ) {
+    return ListTile(
+      leading: Icon(icon, color: DarkThemeColors.accent),
+      title: Text(title, style: TextStyle(color: DarkThemeColors.primaryText)),
+      onTap: () {
+        Navigator.pop(context);
+        _addStep(type, parentStep?.subSteps ?? _steps);
       },
     );
   }
@@ -651,7 +798,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
         case StepType.loop:
           steps.add(RecipeStep(
             type: StepType.loop,
-            parameters: {'iterations': 1, 'temperature': null, 'pressure': null},
+            parameters: {
+              'iterations': 1,
+              'temperature': null,
+              'pressure': null
+            },
             subSteps: [],
           ));
           break;
@@ -668,22 +819,22 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
           ));
           break;
         case StepType.setParameter:
-          final systemStateProvider = Provider.of<SystemStateProvider>(context, listen: false);
-          final availableComponents = systemStateProvider.components.values.toList();
+          final componentState = context.read<ComponentListBloc>().state;
+          final availableComponents = componentState.components.values.toList();
+
           if (availableComponents.isNotEmpty) {
             final firstComponent = availableComponents.first;
-            final availableParameters = firstComponent.setValues.keys.toList();
             steps.add(RecipeStep(
               type: StepType.setParameter,
               parameters: {
                 'component': firstComponent.name,
-                'parameter': availableParameters.isNotEmpty ? availableParameters.first : null,
+                'parameter': null,
                 'value': null,
               },
             ));
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('No components available to set parameters.')),
+              SnackBar(content: Text('No components available')),
             );
           }
           break;
@@ -691,128 +842,154 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with TickerProv
     });
   }
 
-  void _showEditStepDialog(BuildContext context, RecipeStep step, int index, {RecipeStep? parentStep}) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Edit Step', style: TextStyle(color: DarkThemeColors.primaryText)),
-          content: SingleChildScrollView(
-            child: _buildStepEditor(step),
-          ),
-          actions: [
-            TextButton(
-              child: Text('Cancel', style: TextStyle(color: DarkThemeColors.accent)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('Save', style: TextStyle(color: DarkThemeColors.accent)),
-              onPressed: () {
-                Navigator.of(context).pop();
-                setState(() {});
-              },
-            ),
-          ],
-          backgroundColor: DarkThemeColors.cardBackground,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        );
-      },
-    );
+  String _getStepTitle(RecipeStep step) {
+    switch (step.type) {
+      case StepType.loop:
+        return 'Loop ${step.parameters['iterations']} times';
+      case StepType.valve:
+        return '${step.parameters['valveType'] == ValveType.valveA ? 'Valve A' : 'Valve B'} '
+            'for ${step.parameters['duration']}s';
+      case StepType.purge:
+        return 'Purge for ${step.parameters['duration']}s';
+      case StepType.setParameter:
+        return 'Set ${step.parameters['component']} ${step.parameters['parameter']} '
+            'to ${step.parameters['value']}';
+      default:
+        return 'Unknown Step';
+    }
   }
 
-  void _showDeleteStepDialog(BuildContext context, int index) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Delete Step', style: TextStyle(color: DarkThemeColors.primaryText)),
-          content: Text('Are you sure you want to delete this step?', style: TextStyle(color: DarkThemeColors.primaryText)),
-          actions: [
-            TextButton(
-              child: Text('Cancel', style: TextStyle(color: DarkThemeColors.accent)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('Delete', style: TextStyle(color: Colors.red)),
-              onPressed: () {
-                Navigator.of(context).pop();
-                setState(() {
-                  _steps.removeAt(index);
-                });
-              },
-            ),
-          ],
-          backgroundColor: DarkThemeColors.cardBackground,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        );
-      },
-    );
-  }
-
-  void _saveRecipe(RecipeProvider recipeProvider) async {
-    if (_nameController.text.isEmpty) {
-      _showValidationError('Please enter a recipe name');
-      return;
-    }
-
-    if (_substrateController.text.isEmpty) {
-      _showValidationError('Please enter a substrate');
-      return;
-    }
-
-    if (_steps.isEmpty) {
-      _showValidationError('Please add at least one step to the recipe');
+  void _saveRecipe(BuildContext context) {
+    final errors = _validateRecipe();
+    if (errors.isNotEmpty) {
+      _showValidationErrors(errors);
       return;
     }
 
     final newRecipe = Recipe(
-      id: widget.recipeId ?? DateTime
-          .now()
-          .millisecondsSinceEpoch
-          .toString(),
+      id: widget.recipeId ?? DateTime.now().millisecondsSinceEpoch.toString(),
       name: _nameController.text,
       substrate: _substrateController.text,
       steps: _steps,
-      chamberTemperatureSetPoint: double.tryParse(
-          _chamberTempController.text) ?? 150.0,
+      chamberTemperatureSetPoint:
+          double.tryParse(_chamberTempController.text) ?? 150.0,
       pressureSetPoint: double.tryParse(_pressureController.text) ?? 1.0,
     );
 
-    try {
-      if (widget.recipeId == null) {
-        await recipeProvider.addRecipe(newRecipe);
-      } else {
-        await recipeProvider.updateRecipe(newRecipe);
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Recipe saved successfully'),
-          backgroundColor: DarkThemeColors.accent,
-        ),
-      );
-
-      // Use Navigator.of(context).pop() only once
-      Navigator.of(context).pop(true);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error saving recipe: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    if (widget.recipeId == null) {
+      context.read<RecipeBloc>().add(AddRecipe(newRecipe));
+    } else {
+      context.read<RecipeBloc>().add(UpdateRecipe(newRecipe));
     }
   }
 
-  void _showValidationError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
+  List<String> _validateRecipe() {
+    final errors = <String>[];
+
+    if (_nameController.text.isEmpty) {
+      errors.add('Recipe name is required');
+    }
+
+    if (_substrateController.text.isEmpty) {
+      errors.add('Substrate is required');
+    }
+
+    if (_steps.isEmpty) {
+      errors.add('At least one step is required');
+    }
+
+    // Validate all steps
+    for (var i = 0; i < _steps.length; i++) {
+      final stepErrors = _validateStep(_steps[i], i + 1);
+      errors.addAll(stepErrors);
+    }
+
+    return errors;
+  }
+
+  List<String> _validateStep(RecipeStep step, int stepNumber) {
+    final errors = <String>[];
+    final prefix = 'Step $stepNumber:';
+
+    switch (step.type) {
+      case StepType.loop:
+        if (step.parameters['iterations'] == null ||
+            step.parameters['iterations'] <= 0) {
+          errors.add('$prefix Loop iterations must be greater than 0');
+        }
+        if (step.subSteps == null || step.subSteps!.isEmpty) {
+          errors.add('$prefix Loop must contain at least one step');
+        } else {
+          for (var i = 0; i < step.subSteps!.length; i++) {
+            final subErrors = _validateStep(step.subSteps![i], i + 1);
+            errors.addAll(subErrors.map((e) => '$prefix Substep $e'));
+          }
+        }
+        break;
+
+      case StepType.valve:
+        if (step.parameters['duration'] == null ||
+            step.parameters['duration'] <= 0) {
+          errors.add('$prefix Valve duration must be greater than 0');
+        }
+        if (step.parameters['valveType'] == null) {
+          errors.add('$prefix Valve type must be selected');
+        }
+        break;
+
+      case StepType.purge:
+        if (step.parameters['duration'] == null ||
+            step.parameters['duration'] <= 0) {
+          errors.add('$prefix Purge duration must be greater than 0');
+        }
+        break;
+
+      case StepType.setParameter:
+        if (step.parameters['component'] == null) {
+          errors.add('$prefix Component must be selected');
+        }
+        if (step.parameters['parameter'] == null) {
+          errors.add('$prefix Parameter must be selected');
+        }
+        if (step.parameters['value'] == null) {
+          errors.add('$prefix Value must be set');
+        }
+        break;
+    }
+
+    return errors;
+  }
+
+  void _showValidationErrors(List<String> errors) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Validation Errors',
+          style: TextStyle(color: DarkThemeColors.primaryText),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: errors
+                .map((error) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Text(
+                        '• $error',
+                        style: TextStyle(color: DarkThemeColors.primaryText),
+                      ),
+                    ))
+                .toList(),
+          ),
+        ),
+        backgroundColor: DarkThemeColors.cardBackground,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK', style: TextStyle(color: DarkThemeColors.accent)),
+          ),
+        ],
       ),
     );
   }

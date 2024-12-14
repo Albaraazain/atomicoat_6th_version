@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 2,
+            "activePatchIndex": 6,
             "patches": [
                 {
                     "date": 1734043335749,
@@ -16,6 +16,22 @@
                 {
                     "date": 1734043874324,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -38,11 +38,17 @@\n         await _componentSubscription?.cancel();\r\n         _componentSubscription = _repository\r\n             .watchComponent(event.componentName)\r\n             .listen(\r\n-              (component) => component != null\r\n-                  ? emit(ComponentState.loaded(component))\r\n-                  : emit(ComponentState.error('Component not found')),\r\n+              (component) {\r\n+                if (!emit.isDone) {\r\n+                  if (component != null) {\r\n+                    emit(ComponentState.loaded(component));\r\n+                  } else {\r\n+                    emit(ComponentState.error('Component not found'));\r\n+                  }\r\n+                }\r\n+              },\r\n             );\r\n       } else {\r\n         emit(ComponentState.error('Component not found'));\r\n       }\r\n"
+                },
+                {
+                    "date": 1734070480407,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,9 +1,9 @@\n // lib/blocs/component/bloc/component_bloc.dart\r\n \r\n import 'dart:async';\r\n import 'package:bloc/bloc.dart';\r\n-import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';\r\n+import '../../../modules/system_operation_also_main_module/models/system_component.dart';\r\n import '../repository/component_repository.dart';\r\n import 'component_event.dart';\r\n import 'component_state.dart';\r\n \r\n"
+                },
+                {
+                    "date": 1734143477330,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,8 @@\n // lib/blocs/component/bloc/component_bloc.dart\r\n \r\n import 'dart:async';\r\n-import 'package:bloc/bloc.dart';\r\n+import 'package:flutter_bloc/flutter_bloc.dart';\r\n import '../../../modules/system_operation_also_main_module/models/system_component.dart';\r\n import '../repository/component_repository.dart';\r\n import 'component_event.dart';\r\n import 'component_state.dart';\r\n@@ -20,8 +20,9 @@\n     on<ComponentErrorsCleared>(_onComponentErrorsCleared);\r\n     on<ComponentStatusUpdated>(_onComponentStatusUpdated);\r\n     on<ComponentCheckDateUpdated>(_onComponentCheckDateUpdated);\r\n     on<ComponentLimitsUpdated>(_onComponentLimitsUpdated);\r\n+    on<LoadComponents>(_onLoadComponents);\r\n   }\r\n \r\n   Future<void> _onComponentInitialized(\r\n     ComponentInitialized event,\r\n@@ -189,8 +190,27 @@\n       emit(state.copyWith(error: e.toString()));\r\n     }\r\n   }\r\n \r\n+  Future<void> _onLoadComponents(\r\n+    LoadComponents event,\r\n+    Emitter<ComponentState> emit,\r\n+  ) async {\r\n+    try {\r\n+      emit(state.copyWith(isLoading: true));\r\n+      final components = await _repository.getComponents();\r\n+      emit(state.copyWith(\r\n+        components: components,\r\n+        isLoading: false,\r\n+      ));\r\n+    } catch (error) {\r\n+      emit(state.copyWith(\r\n+        error: error.toString(),\r\n+        isLoading: false,\r\n+      ));\r\n+    }\r\n+  }\r\n+\r\n   @override\r\n   Future<void> close() {\r\n     _componentSubscription?.cancel();\r\n     return super.close();\r\n"
+                },
+                {
+                    "date": 1734143652507,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,9 +1,9 @@\n // lib/blocs/component/bloc/component_bloc.dart\r\n \r\n import 'dart:async';\r\n-import 'package:flutter_bloc/flutter_bloc.dart';\r\n-import '../../../modules/system_operation_also_main_module/models/system_component.dart';\r\n+import 'package:bloc/bloc.dart';\r\n+import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';\r\n import '../repository/component_repository.dart';\r\n import 'component_event.dart';\r\n import 'component_state.dart';\r\n \r\n@@ -20,9 +20,8 @@\n     on<ComponentErrorsCleared>(_onComponentErrorsCleared);\r\n     on<ComponentStatusUpdated>(_onComponentStatusUpdated);\r\n     on<ComponentCheckDateUpdated>(_onComponentCheckDateUpdated);\r\n     on<ComponentLimitsUpdated>(_onComponentLimitsUpdated);\r\n-    on<LoadComponents>(_onLoadComponents);\r\n   }\r\n \r\n   Future<void> _onComponentInitialized(\r\n     ComponentInitialized event,\r\n@@ -190,27 +189,8 @@\n       emit(state.copyWith(error: e.toString()));\r\n     }\r\n   }\r\n \r\n-  Future<void> _onLoadComponents(\r\n-    LoadComponents event,\r\n-    Emitter<ComponentState> emit,\r\n-  ) async {\r\n-    try {\r\n-      emit(state.copyWith(isLoading: true));\r\n-      final components = await _repository.getComponents();\r\n-      emit(state.copyWith(\r\n-        components: components,\r\n-        isLoading: false,\r\n-      ));\r\n-    } catch (error) {\r\n-      emit(state.copyWith(\r\n-        error: error.toString(),\r\n-        isLoading: false,\r\n-      ));\r\n-    }\r\n-  }\r\n-\r\n   @override\r\n   Future<void> close() {\r\n     _componentSubscription?.cancel();\r\n     return super.close();\r\n"
+                },
+                {
+                    "date": 1734143766905,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,9 +1,9 @@\n // lib/blocs/component/bloc/component_bloc.dart\r\n \r\n import 'dart:async';\r\n import 'package:bloc/bloc.dart';\r\n-import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';\r\n+import '../../../modules/system_operation_also_main_module/models/system_component.dart';\r\n import '../repository/component_repository.dart';\r\n import 'component_event.dart';\r\n import 'component_state.dart';\r\n \r\n"
                 }
             ],
             "date": 1734043335749,

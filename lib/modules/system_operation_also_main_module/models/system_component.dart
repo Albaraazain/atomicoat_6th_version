@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:experiment_planner/modules/maintenance_module/models/maintenance_task.dart';
 import 'data_point.dart';
-import '../../maintenance_module/models/maintenance_task.dart';
 
 enum ComponentStatus { normal, warning, error, ok }
 

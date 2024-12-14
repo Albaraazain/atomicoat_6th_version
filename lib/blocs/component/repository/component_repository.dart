@@ -1,7 +1,8 @@
 // lib/blocs/component/repository/component_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:experiment_planner/modules/system_operation_also_main_module/models/data_point.dart';
+import '../../../modules/system_operation_also_main_module/models/data_point.dart';
+// Update other imports to use relative paths
 import '../../../modules/system_operation_also_main_module/models/system_component.dart';
 import '../../../repositories/base_repository.dart';
 import '../../../services/auth_service.dart';
@@ -62,6 +63,17 @@ class ComponentRepository extends BaseRepository<SystemComponent> {
     await getUserCollection(userId)
         .doc(componentName)
         .update({'currentValues': newState});
+  }
+
+  Future<void> saveComponentState(SystemComponent component) async {
+    final userId = _authService.currentUser?.uid;
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    await getUserCollection(userId)
+        .doc(component.name)
+        .set(component.toJson(), SetOptions(merge: true));
   }
 
   Stream<SystemComponent?> watchComponent(String componentName) {

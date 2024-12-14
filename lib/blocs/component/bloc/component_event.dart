@@ -1,7 +1,7 @@
 // lib/blocs/component/bloc/component_event.dart
 
 import 'package:equatable/equatable.dart';
-import 'package:experiment_planner/modules/system_operation_also_main_module/models/data_point.dart';
+import '../../../modules/system_operation_also_main_module/models/data_point.dart';
 import '../../../modules/system_operation_also_main_module/models/system_component.dart';
 
 abstract class ComponentEvent extends Equatable {
@@ -112,15 +112,16 @@ class ComponentSetValueUpdated extends ComponentEvent {
   final String componentName;
   final String parameter;
   final double value;
+  final Map<String, double> setValues; // Add this field
 
-  const ComponentSetValueUpdated(
+  ComponentSetValueUpdated(
     this.componentName,
     this.parameter,
     this.value,
-  );
+  ) : setValues = <String, double>{parameter: value};
 
   @override
-  List<Object?> get props => [componentName, parameter, value];
+  List<Object?> get props => [componentName, parameter, value, setValues];
 }
 
 class ComponentValueUpdated extends ComponentEvent {
@@ -185,4 +186,12 @@ class ComponentLimitsUpdated extends ComponentEvent {
 
   @override
   List<Object?> get props => [componentName, minValues, maxValues];
+}
+
+class LoadComponents extends ComponentEvent {
+  final String? userId;
+  const LoadComponents({this.userId});
+
+  @override
+  List<Object> get props => [userId ?? ''];
 }

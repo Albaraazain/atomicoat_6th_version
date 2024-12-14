@@ -58,3 +58,12 @@ class RemoveComponent extends ComponentListEvent {
   @override
   List<Object> get props => [componentId, userId ?? ''];
 }
+
+class AddComponent extends ComponentListEvent {
+  final SystemComponent component;
+
+  const AddComponent(this.component);
+
+  @override
+  List<Object> get props => [component];
+}

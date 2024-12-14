@@ -1,5 +1,6 @@
 // lib/widgets/component_dashboard.dart
 
+import 'package:experiment_planner/blocs/component/bloc/component_list_state.dart';
 import 'package:experiment_planner/blocs/component/repository/component_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

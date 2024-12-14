@@ -1,20 +1,23 @@
+// lib/modules/system_operation_also_main_module/widgets/recipe_progress_indicator.dart
+
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../blocs/recipe/bloc/recipe_bloc.dart';
+import '../../../blocs/recipe/bloc/recipe_state.dart';
 import '../models/recipe.dart';
-import '../providers/system_state_provider.dart';
 
 class RecipeProgressIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer<SystemStateProvider>(
-      builder: (context, provider, child) {
-        if (provider.activeRecipe == null) {
+    return BlocBuilder<RecipeBloc, RecipeState>(
+      builder: (context, state) {
+        if (state.activeRecipe == null) {
           return SizedBox.shrink();
         }
 
-        int totalSteps = provider.activeRecipe!.steps.length;
-        int currentStep = provider.currentRecipeStepIndex;
-        double progress = currentStep / totalSteps;
+        int totalSteps = state.activeRecipe!.steps.length;
+        int currentStep = state.currentStepIndex;
+        double progress = totalSteps > 0 ? currentStep / totalSteps : 0.0;
 
         return Container(
           width: 250,
@@ -28,21 +31,22 @@ class RecipeProgressIndicator extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Recipe Progress: ${provider.activeRecipe!.name}',
+                'Recipe Progress: ${state.activeRecipe!.name}',
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 4),
               LinearProgressIndicator(value: progress),
               SizedBox(height: 4),
               Text(
-                provider.isSystemRunning
+                state.executionStatus == RecipeExecutionStatus.running
                     ? 'Step ${currentStep + 1} of $totalSteps'
-                    : 'Recipe Completed',
+                    : _getStatusText(state.executionStatus),
                 style: TextStyle(color: Colors.white),
               ),
-              if (provider.isSystemRunning && currentStep < totalSteps)
+              if (state.executionStatus == RecipeExecutionStatus.running &&
+                  currentStep < totalSteps)
                 Text(
-                  _getStepDescription(provider.activeRecipe!.steps[currentStep]),
+                  _getStepDescription(state.activeRecipe!.steps[currentStep]),
                   style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
             ],
@@ -50,6 +54,21 @@ class RecipeProgressIndicator extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _getStatusText(RecipeExecutionStatus status) {
+    switch (status) {
+      case RecipeExecutionStatus.completed:
+        return 'Recipe Completed';
+      case RecipeExecutionStatus.paused:
+        return 'Recipe Paused';
+      case RecipeExecutionStatus.error:
+        return 'Recipe Error';
+      case RecipeExecutionStatus.idle:
+        return 'Recipe Ready';
+      case RecipeExecutionStatus.running:
+        return 'Recipe Running';
+    }
   }
 
   String _getStepDescription(RecipeStep step) {

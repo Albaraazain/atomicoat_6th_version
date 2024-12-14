@@ -2,7 +2,7 @@
 
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';
+import '../../../modules/system_operation_also_main_module/models/system_component.dart';
 import '../repository/component_repository.dart';
 import 'component_event.dart';
 import 'component_state.dart';

@@ -1,10 +1,14 @@
 // lib/modules/system_operation_also_main_module/widgets/data_visualization.dart
 
+import 'package:experiment_planner/blocs/component/bloc/component_event.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../models/system_component.dart';
-import '../providers/system_state_provider.dart';
+import '../../../blocs/component/bloc/component_bloc.dart';
+import '../../../blocs/component/bloc/component_list_bloc.dart';
+import '../../../blocs/component/bloc/component_state.dart';
+import '../../../blocs/component/bloc/component_list_state.dart';
 
 class DataVisualization extends StatefulWidget {
   @override
@@ -16,56 +20,66 @@ class _DataVisualizationState extends State<DataVisualization> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SystemStateProvider>(
-      builder: (context, systemStateProvider, child) {
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: DropdownButton<String>(
-                value: _selectedParameter,
-                items: [
-                  'Chamber Pressure',
-                  'Chamber Temperature',
-                  'MFC Flow Rate',
-                  'Precursor Heater 1 Temperature',
-                  'Precursor Heater 2 Temperature',
-                ].map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    setState(() {
-                      _selectedParameter = newValue;
-                    });
-                  }
-                },
-              ),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: DropdownButton<String>(
+            value: _selectedParameter,
+            items: [
+              'Chamber Pressure',
+              'Chamber Temperature',
+              'MFC Flow Rate',
+              'Precursor Heater 1 Temperature',
+              'Precursor Heater 2 Temperature',
+            ].map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              if (newValue != null) {
+                setState(() {
+                  _selectedParameter = newValue;
+                });
+                _initializeComponent(newValue);
+              }
+            },
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: BlocBuilder<ComponentBloc, ComponentState>(
+              builder: (context, state) {
+                if (state.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state.error != null) {
+                  return Center(child: Text('Error: ${state.error}'));
+                }
+                if (state.component == null) {
+                  return const Center(child: Text('No data available'));
+                }
+                return _buildChart(state.component!);
+              },
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: _buildChart(systemStateProvider),
-              ),
-            ),
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildChart(SystemStateProvider systemStateProvider) {
-    final component = _getComponentForParameter(systemStateProvider);
-    if (component == null) {
-      return Center(child: Text('No data available'));
-    }
+  void _initializeComponent(String parameter) {
+    final componentName = _getComponentName(parameter);
+    context.read<ComponentBloc>().add(ComponentInitialized(componentName));
+  }
 
+  Widget _buildChart(SystemComponent component) {
     final parameterData = _getParameterData(component);
     if (parameterData.isEmpty) {
-      return Center(child: Text('No data available'));
+      return const Center(child: Text('No data available'));
     }
 
     return LineChart(
@@ -99,19 +113,19 @@ class _DataVisualizationState extends State<DataVisualization> {
     );
   }
 
-  SystemComponent? _getComponentForParameter(SystemStateProvider systemStateProvider) {
-    switch (_selectedParameter) {
+  String _getComponentName(String parameter) {
+    switch (parameter) {
       case 'Chamber Pressure':
       case 'Chamber Temperature':
-        return systemStateProvider.getComponentByName('Reaction Chamber');
+        return 'Reaction Chamber';
       case 'MFC Flow Rate':
-        return systemStateProvider.getComponentByName('MFC');
+        return 'MFC';
       case 'Precursor Heater 1 Temperature':
-        return systemStateProvider.getComponentByName('Precursor Heater 1');
+        return 'Precursor Heater 1';
       case 'Precursor Heater 2 Temperature':
-        return systemStateProvider.getComponentByName('Precursor Heater 2');
+        return 'Precursor Heater 2';
       default:
-        return null;
+        throw Exception('Unknown parameter: $parameter');
     }
   }
 
@@ -140,5 +154,11 @@ class _DataVisualizationState extends State<DataVisualization> {
       default:
         return '';
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeComponent(_selectedParameter);
   }
 }

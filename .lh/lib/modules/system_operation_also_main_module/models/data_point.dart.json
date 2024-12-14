@@ -3,11 +3,27 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 4,
             "patches": [
                 {
                     "date": 1734049946065,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734070480361,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -28,8 +28,10 @@\n     return 'DataPoint(timestamp: $timestamp, value: ${value.toStringAsFixed(2)})';\r\n   }\r\n }\r\n \r\n+export 'package:experiment_planner/modules/system_operation_also_main_module/models/data_point.dart';\r\n+\r\n /*\r\n \r\n class DataPoint {\r\n     /// Timestamp of the data point\r\n"
+                },
+                {
+                    "date": 1734070552684,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,5 @@\n-// path: lib/modules/system_operation_also_main_module/models/data_point.dart\r\n+export 'package:experiment_planner/modules/system_operation_also_main_module/models/data_point.dart';\r\n \r\n class DataPoint {\r\n   final DateTime timestamp;\r\n   final double value;\r\n@@ -28,10 +28,8 @@\n     return 'DataPoint(timestamp: $timestamp, value: ${value.toStringAsFixed(2)})';\r\n   }\r\n }\r\n \r\n-export 'package:experiment_planner/modules/system_operation_also_main_module/models/data_point.dart';\r\n-\r\n /*\r\n \r\n class DataPoint {\r\n     /// Timestamp of the data point\r\n"
+                },
+                {
+                    "date": 1734070801055,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,4 @@\n-export 'package:experiment_planner/modules/system_operation_also_main_module/models/data_point.dart';\r\n-\r\n class DataPoint {\r\n   final DateTime timestamp;\r\n   final double value;\r\n \r\n"
+                },
+                {
+                    "date": 1734142462819,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -24,28 +24,5 @@\n   @override\r\n   String toString() {\r\n     return 'DataPoint(timestamp: $timestamp, value: ${value.toStringAsFixed(2)})';\r\n   }\r\n-}\r\n-\r\n-/*\r\n-\r\n-class DataPoint {\r\n-    /// Timestamp of the data point\r\n-    final DateTime timestamp;\r\n-    /// Measured value\r\n-    final double value;\r\n-\r\n-    /// Constructor for creating a new data point\r\n-    DataPoint({\r\n-        required this.timestamp,\r\n-        required this.value\r\n-    });\r\n-\r\n-    /// Creates a data point with reduced precision for storage efficiency\r\n-    DataPoint.reducedPrecision({\r\n-        required this.timestamp,\r\n-        required double value\r\n-    });\r\n-}\r\n-\r\n- */\n\\ No newline at end of file\n+}\n\\ No newline at end of file\n"
                 }
             ],
             "date": 1734049946065,
