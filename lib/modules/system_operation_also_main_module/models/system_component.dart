@@ -1,6 +1,5 @@
 // path: lib/modules/system_operation_also_main_module/models/system_component.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:experiment_planner/modules/maintenance_module/models/maintenance_task.dart';
 import 'data_point.dart';
 
 enum ComponentStatus { normal, warning, error, ok }
@@ -14,14 +13,11 @@ class SystemComponent {
   final List<String> errorMessages;
   final Map<String, CircularBuffer<DataPoint>> parameterHistory;
   bool isActivated;
-  final List<MaintenanceTask> maintenanceTasks;
-
   DateTime? lastCheckDate;
   final Map<String, double> minValues;
   final Map<String, double> maxValues;
 
   static const int MAX_HISTORY_SIZE = 100;
-
 
   SystemComponent({
     required this.name,
@@ -34,7 +30,6 @@ class SystemComponent {
     this.lastCheckDate,
     Map<String, double>? minValues,
     Map<String, double>? maxValues,
-    this.maintenanceTasks = const [], // Default to empty list
   })  : currentValues = Map.from(currentValues),
         setValues = Map.from(setValues),
         errorMessages = errorMessages ?? [],
@@ -102,9 +97,6 @@ class SystemComponent {
       maxValues: json['maxValues'] != null
           ? Map<String, double>.from(json['maxValues'])
           : null,
-      maintenanceTasks: (json['maintenanceTasks'] as List?)
-          ?.map((task) => MaintenanceTask.fromJson(task))
-          .toList() ?? [],
     );
 
     if (json['parameterHistory'] != null) {
@@ -122,7 +114,6 @@ class SystemComponent {
 
     return component;
   }
-
 
   void _loadParameterHistory(Map<String, dynamic>? historyJson) {
     if (historyJson == null) return;
@@ -156,7 +147,6 @@ class SystemComponent {
         value.toList().map((dp) => dp.toJson()).toList(),
       ),
     ),
-    'maintenanceTasks': maintenanceTasks.map((task) => task.toJson()).toList(),
   };
 
   String get type => name;
@@ -174,7 +164,6 @@ class SystemComponent {
     DateTime? lastCheckDate,
     Map<String, double>? minValues,
     Map<String, double>? maxValues,
-    List<MaintenanceTask>? maintenanceTasks,
   }) {
     return SystemComponent(
       name: name ?? this.name,
@@ -187,7 +176,6 @@ class SystemComponent {
       lastCheckDate: lastCheckDate ?? this.lastCheckDate,
       minValues: minValues ?? this.minValues,
       maxValues: maxValues ?? this.maxValues,
-      maintenanceTasks: maintenanceTasks ?? this.maintenanceTasks,
     );
   }
 }

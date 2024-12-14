@@ -24,17 +24,6 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // Import Providers
-import 'modules/maintenance_module/providers/maintenance_provider.dart';
-import 'modules/maintenance_module/providers/calibration_provider.dart';
-import 'modules/maintenance_module/providers/spare_parts_provider.dart';
-import 'modules/maintenance_module/providers/report_provider.dart';
-import 'modules/maintenance_module/screens/calibration_screen.dart';
-import 'modules/maintenance_module/screens/documentation_screen.dart';
-import 'modules/maintenance_module/screens/remote_assistance_screen.dart';
-import 'modules/maintenance_module/screens/reporting_screen.dart';
-import 'modules/maintenance_module/screens/safety_procedures_screen.dart';
-import 'modules/maintenance_module/screens/spare_parts_screen.dart';
-import 'modules/maintenance_module/screens/troubleshooting_screen.dart';
 import 'modules/system_operation_also_main_module/screens/main_dashboard.dart';
 import 'modules/system_operation_also_main_module/screens/recipe_management_screen.dart';
 import 'modules/system_operation_also_main_module/screens/system_overview_screen.dart';
