@@ -4,15 +4,8 @@ import '../providers/auth_provider.dart';
 import '../enums/navigation_item.dart';
 import '../widgets/app_drawer.dart';
 import '../modules/system_operation_also_main_module/screens/main_dashboard.dart';
-import '../modules/maintenance_module/screens/maintenance_home_screen.dart';
-import '../modules/maintenance_module/screens/calibration_screen.dart';
-import '../modules/maintenance_module/screens/reporting_screen.dart';
-import '../modules/maintenance_module/screens/troubleshooting_screen.dart';
-import '../modules/maintenance_module/screens/spare_parts_screen.dart';
-import '../modules/maintenance_module/screens/documentation_screen.dart';
-import '../modules/maintenance_module/screens/remote_assistance_screen.dart';
-import '../modules/maintenance_module/screens/safety_procedures_screen.dart';
 import '../modules/system_operation_also_main_module/screens/recipe_management_screen.dart';
+import '../modules/system_operation_also_main_module/screens/system_overview_screen.dart';
 import '../screens/admin_dashboard_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -25,7 +18,6 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
     final isLargeScreen = MediaQuery.of(context).size.width > 800;
 
     return Scaffold(
@@ -66,26 +58,12 @@ class _MainScreenState extends State<MainScreen> {
     switch (_selectedItem) {
       case NavigationItem.mainDashboard:
         return MainDashboard();
-      case NavigationItem.adminDashboard:
-        return AdminDashboardScreen();
+      case NavigationItem.systemOverview:
+        return SystemOverviewScreen();
       case NavigationItem.recipeManagement:
         return RecipeManagementScreen();
-      case NavigationItem.calibration:
-        return CalibrationScreen();
-      case NavigationItem.reporting:
-        return ReportingScreen();
-      case NavigationItem.troubleshooting:
-        return TroubleshootingScreen();
-      case NavigationItem.spareParts:
-        return SparePartsScreen();
-      case NavigationItem.documentation:
-        return DocumentationScreen();
-      case NavigationItem.remoteAssistance:
-        return RemoteAssistanceScreen();
-      case NavigationItem.safetyProcedures:
-        return SafetyProceduresScreen();
-      case NavigationItem.overview:
-        return MaintenanceHomeScreen();
+      case NavigationItem.adminDashboard:
+        return AdminDashboardScreen();
       default:
         return MainDashboard();
     }

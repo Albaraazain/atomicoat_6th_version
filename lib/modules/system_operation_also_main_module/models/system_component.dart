@@ -1,3 +1,4 @@
+// path: lib/modules/system_operation_also_main_module/models/system_component.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:experiment_planner/modules/maintenance_module/models/maintenance_task.dart';
 import 'data_point.dart';

@@ -17,7 +17,6 @@ class AppDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final isAdmin = authProvider.userRole == UserRole.admin;
-    final isOperator = authProvider.userRole == UserRole.operator;
 
     return Drawer(
       child: ListView(
@@ -31,13 +30,13 @@ class AppDrawer extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  Icons.build,
+                  Icons.precision_manufacturing,
                   color: Theme.of(context).iconTheme.color,
                   size: 48,
                 ),
                 SizedBox(height: 8),
                 Text(
-                  'ALD Machine Maintenance',
+                  'ALD System Operations',
                   style: Theme.of(context).textTheme.titleLarge!.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
@@ -53,6 +52,20 @@ class AppDrawer extends StatelessWidget {
             isSelected: selectedItem == NavigationItem.mainDashboard,
             onTap: () => onSelectItem(NavigationItem.mainDashboard),
           ),
+          _buildDrawerItem(
+            context: context,
+            icon: Icons.monitor,
+            text: 'System Overview',
+            isSelected: selectedItem == NavigationItem.systemOverview,
+            onTap: () => onSelectItem(NavigationItem.systemOverview),
+          ),
+          _buildDrawerItem(
+            context: context,
+            icon: Icons.book,
+            text: 'Recipe Management',
+            isSelected: selectedItem == NavigationItem.recipeManagement,
+            onTap: () => onSelectItem(NavigationItem.recipeManagement),
+          ),
           if (isAdmin)
             _buildDrawerItem(
               context: context,
@@ -61,71 +74,6 @@ class AppDrawer extends StatelessWidget {
               isSelected: selectedItem == NavigationItem.adminDashboard,
               onTap: () => onSelectItem(NavigationItem.adminDashboard),
             ),
-          _buildDrawerItem(
-            context: context,
-            icon: Icons.book,
-            text: 'Recipe Management',
-            isSelected: selectedItem == NavigationItem.recipeManagement,
-            onTap: () => onSelectItem(NavigationItem.recipeManagement),
-          ),
-          if (!isOperator) ...[
-            _buildDrawerItem(
-              context: context,
-              icon: Icons.science,
-              text: 'Calibration',
-              isSelected: selectedItem == NavigationItem.calibration,
-              onTap: () => onSelectItem(NavigationItem.calibration),
-            ),
-            _buildDrawerItem(
-              context: context,
-              icon: Icons.assessment,
-              text: 'Reporting',
-              isSelected: selectedItem == NavigationItem.reporting,
-              onTap: () => onSelectItem(NavigationItem.reporting),
-            ),
-            _buildDrawerItem(
-              context: context,
-              icon: Icons.help,
-              text: 'Troubleshooting',
-              isSelected: selectedItem == NavigationItem.troubleshooting,
-              onTap: () => onSelectItem(NavigationItem.troubleshooting),
-            ),
-            _buildDrawerItem(
-              context: context,
-              icon: Icons.inventory,
-              text: 'Spare Parts',
-              isSelected: selectedItem == NavigationItem.spareParts,
-              onTap: () => onSelectItem(NavigationItem.spareParts),
-            ),
-            _buildDrawerItem(
-              context: context,
-              icon: Icons.library_books,
-              text: 'Documentation',
-              isSelected: selectedItem == NavigationItem.documentation,
-              onTap: () => onSelectItem(NavigationItem.documentation),
-            ),
-            _buildDrawerItem(
-              context: context,
-              icon: Icons.video_call,
-              text: 'Remote Assistance',
-              isSelected: selectedItem == NavigationItem.remoteAssistance,
-              onTap: () => onSelectItem(NavigationItem.remoteAssistance),
-            ),
-            _buildDrawerItem(
-              context: context,
-              icon: Icons.health_and_safety,
-              text: 'Safety Procedures',
-              isSelected: selectedItem == NavigationItem.safetyProcedures,
-              onTap: () => onSelectItem(NavigationItem.safetyProcedures),
-            ),
-            _buildDrawerItem(
-              context: context,
-              icon: Icons.home_repair_service,
-              text: 'Maintenance Overview',
-              isSelected: selectedItem == NavigationItem.overview,
-              onTap: () => onSelectItem(NavigationItem.overview),
-            ),
-          ],
         ],
       ),
     );

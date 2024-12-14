@@ -3,11 +3,23 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 3,
             "patches": [
                 {
                     "date": 1734027909454,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734146005452,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,13 +1,30 @@\n+// lib/enums/navigation_item.dart\r\n+\r\n enum NavigationItem {\r\n+  // Maintenance Module\r\n   mainDashboard,\r\n-  adminDashboard,\r\n-  recipeManagement,\r\n   calibration,\r\n   reporting,\r\n+  schedule,\r\n+  reports,\r\n   troubleshooting,\r\n   spareParts,\r\n   documentation,\r\n   remoteAssistance,\r\n   safetyProcedures,\r\n+\r\n+  // System Operation Module\r\n+  recipeManagement,\r\n+\r\n+  // Others Section\r\n+  profile,\r\n+  settings,\r\n+  helpSupport,\r\n+\r\n+  // System Diagram View Module\r\n   overview,\r\n+  diagramDetails,\r\n+\r\n+  adminDashboard,\r\n+\r\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1734146017488,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,9 +4,8 @@\n   // Maintenance Module\r\n   mainDashboard,\r\n   calibration,\r\n   reporting,\r\n-  schedule,\r\n   reports,\r\n   troubleshooting,\r\n   spareParts,\r\n   documentation,\r\n"
+                },
+                {
+                    "date": 1734146233177,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,29 +1,6 @@\n-// lib/enums/navigation_item.dart\r\n-\r\n enum NavigationItem {\r\n-  // Maintenance Module\r\n   mainDashboard,\r\n-  calibration,\r\n-  reporting,\r\n-  reports,\r\n-  troubleshooting,\r\n-  spareParts,\r\n-  documentation,\r\n-  remoteAssistance,\r\n-  safetyProcedures,\r\n-\r\n-  // System Operation Module\r\n   recipeManagement,\r\n-\r\n-  // Others Section\r\n-  profile,\r\n-  settings,\r\n-  helpSupport,\r\n-\r\n-  // System Diagram View Module\r\n-  overview,\r\n-  diagramDetails,\r\n-\r\n+  systemOverview,\r\n   adminDashboard,\r\n-\r\n }\n\\ No newline at end of file\n"
                 }
             ],
             "date": 1734027909454,
