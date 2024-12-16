@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/models/user.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734377532496,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734377532496,
+            "name": "Commit-0",
+            "content": "class User {\r\n  final String id;\r\n  final String email;\r\n  final String name;\r\n  final UserRole role;\r\n  final String status;\r\n  final String machineSerial;\r\n\r\n  User({\r\n    required this.id,\r\n    required this.email,\r\n    required this.name,\r\n    required this.role,\r\n    required this.status,\r\n    required this.machineSerial,\r\n  });\r\n\r\n  Map<String, dynamic> toJson() => {\r\n    'id': id,\r\n    'email': email,\r\n    'name': name,\r\n    'role': role.toString().split('.').last,\r\n    'status': status,\r\n    'machineSerial': machineSerial,\r\n  };\r\n\r\n  factory User.fromJson(Map<String, dynamic> json) => User(\r\n    id: json['id'] ?? '',\r\n    email: json['email'] ?? '',\r\n    name: json['name'] ?? '',\r\n    role: _parseUserRole(json['role']),\r\n    status: json['status'] ?? '',\r\n    machineSerial: json['machineSerial'] ?? '',\r\n  );\r\n\r\n  static UserRole _parseUserRole(dynamic roleString) {\r\n    if (roleString == null) return UserRole.user; // Default role\r\n    try {\r\n      return UserRole.values.firstWhere(\r\n            (role) => role.toString().split('.').last == roleString,\r\n        orElse: () => UserRole.user,\r\n      );\r\n    } catch (e) {\r\n      print('Error parsing UserRole: $e');\r\n      return UserRole.user;\r\n    }\r\n  }\r\n}\r\n\r\n"
+        }
+    ]
+}

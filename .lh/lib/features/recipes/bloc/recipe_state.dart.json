@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/recipes/bloc/recipe_state.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734376760281,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734376760281,
+            "name": "Commit-0",
+            "content": "\r\nimport 'package:experiment_planner/blocs/base/base_bloc_state.dart';\r\n\r\nimport '../models/recipe.dart';\r\n\r\nenum RecipeExecutionStatus {\r\n  idle,\r\n  running,\r\n  paused,\r\n  completed,\r\n  error\r\n}\r\n\r\nclass RecipeState extends BaseBlocState {\r\n  final List<Recipe> recipes;\r\n  final Recipe? activeRecipe;\r\n  final int currentStepIndex;\r\n  final RecipeExecutionStatus executionStatus;\r\n  final Map<String, List<Recipe>> recipeVersions;\r\n  final Map<String, dynamic>? versionComparison;\r\n  final bool isExecutionReady;\r\n\r\n  RecipeState({\r\n    required super.isLoading,\r\n    super.error,\r\n    super.lastUpdated,\r\n    required this.recipes,\r\n    this.activeRecipe,\r\n    this.currentStepIndex = 0,\r\n    this.executionStatus = RecipeExecutionStatus.idle,\r\n    this.recipeVersions = const {},\r\n    this.versionComparison,\r\n    this.isExecutionReady = false,\r\n  });\r\n\r\n  factory RecipeState.initial() {\r\n    return RecipeState(\r\n      isLoading: false,\r\n      recipes: const [],\r\n    );\r\n  }\r\n\r\n  RecipeState copyWith({\r\n    bool? isLoading,\r\n    String? error,\r\n    DateTime? lastUpdated,\r\n    List<Recipe>? recipes,\r\n    Recipe? activeRecipe,\r\n    int? currentStepIndex,\r\n    RecipeExecutionStatus? executionStatus,\r\n    Map<String, List<Recipe>>? recipeVersions,\r\n    Map<String, dynamic>? versionComparison,\r\n    bool? isExecutionReady,\r\n  }) {\r\n    return RecipeState(\r\n      isLoading: isLoading ?? this.isLoading,\r\n      error: error ?? this.error,\r\n      lastUpdated: lastUpdated ?? this.lastUpdated,\r\n      recipes: recipes ?? this.recipes,\r\n      activeRecipe: activeRecipe ?? this.activeRecipe,\r\n      currentStepIndex: currentStepIndex ?? this.currentStepIndex,\r\n      executionStatus: executionStatus ?? this.executionStatus,\r\n      recipeVersions: recipeVersions ?? this.recipeVersions,\r\n      versionComparison: versionComparison ?? this.versionComparison,\r\n      isExecutionReady: isExecutionReady ?? this.isExecutionReady,\r\n    );\r\n  }\r\n\r\n  @override\r\n  List<Object?> get props => [\r\n    ...super.props,\r\n    recipes,\r\n    activeRecipe,\r\n    currentStepIndex,\r\n    executionStatus,\r\n    recipeVersions,\r\n    versionComparison,\r\n    isExecutionReady,\r\n  ];\r\n}"
+        }
+    ]
+}

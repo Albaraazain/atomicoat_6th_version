@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/core/router/auth_guard.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734378991445,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734378991445,
+            "name": "Commit-0",
+            "content": "// lib/core/router/auth_guard.dart\r\nimport 'package:auto_route/auto_route.dart';\r\nimport 'package:injectable/injectable.dart';\r\nimport '../../features/auth/domain/repositories/i_auth_repository.dart';\r\n\r\n@injectable\r\nclass AuthGuard extends AutoRouteGuard {\r\n  final IAuthRepository _authRepository;\r\n\r\n  AuthGuard(this._authRepository);\r\n\r\n  @override\r\n  Future<bool> canNavigate(NavigationResolver resolver, StackRouter router) async {\r\n    final user = await _authRepository.getSignedInUser();\r\n\r\n    if (user.isSome()) {\r\n      return true;\r\n    }\r\n\r\n    router.push(const LoginRoute());\r\n    return false;\r\n  }\r\n}\r\n"
+        }
+    ]
+}

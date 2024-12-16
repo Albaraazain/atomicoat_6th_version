@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/system/models/system_state_data.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734376761192,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734376761192,
+            "name": "Commit-0",
+            "content": "\r\n\r\nimport 'package:cloud_firestore/cloud_firestore.dart';\r\nimport 'package:equatable/equatable.dart';\r\n\r\nclass SystemStateData extends Equatable {\r\n  final String id;\r\n  final Map<String, dynamic> data;\r\n  final DateTime timestamp;\r\n\r\n  const SystemStateData({\r\n    required this.id,\r\n    required this.data,\r\n    required this.timestamp,\r\n  });\r\n\r\n  factory SystemStateData.fromJson(Map<String, dynamic> json) {\r\n    return SystemStateData(\r\n      id: json['id'] as String,\r\n      data: Map<String, dynamic>.from(json['data'] as Map),\r\n      timestamp: (json['timestamp'] as Timestamp).toDate(),\r\n    );\r\n  }\r\n\r\n  Map<String, dynamic> toJson() => {\r\n    'id': id,\r\n    'data': data,\r\n    'timestamp': Timestamp.fromDate(timestamp),\r\n  };\r\n\r\n  SystemStateData copyWith({\r\n    String? id,\r\n    Map<String, dynamic>? data,\r\n    DateTime? timestamp,\r\n  }) {\r\n    return SystemStateData(\r\n      id: id ?? this.id,\r\n      data: data ?? this.data,\r\n      timestamp: timestamp ?? this.timestamp,\r\n    );\r\n  }\r\n\r\n  @override\r\n  List<Object?> get props => [id, data, timestamp];\r\n}"
+        }
+    ]
+}

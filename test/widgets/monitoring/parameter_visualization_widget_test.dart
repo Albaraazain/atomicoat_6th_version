@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../../lib/modules/system_operation_also_main_module/models/data_point.dart';
-import '../../../lib/widgets/monitoring/parameter_visualization_widget.dart';
+import '../../../lib/features/components/models/data_point.dart';
+import '../../../lib/features/monitoring/widgets/parameter_visualization_widget.dart';
 
 void main() {
   final testDataPoints = [

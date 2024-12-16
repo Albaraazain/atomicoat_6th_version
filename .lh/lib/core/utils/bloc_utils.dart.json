@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/core/utils/bloc_utils.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734376761209,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734376761209,
+            "name": "Commit-0",
+            "content": "\r\n\r\nimport 'package:rxdart/rxdart.dart';\r\nimport '../exceptions/bloc_exception.dart';\r\n\r\n/// Utility functions for blocs\r\nclass BlocUtils {\r\n  /// Debounce stream events\r\n  static Stream<T> debounce<T>(Stream<T> stream, Duration duration) {\r\n    return stream.debounceTime(duration);\r\n  }\r\n\r\n  /// Throttle stream events\r\n  static Stream<T> throttle<T>(Stream<T> stream, Duration duration) {\r\n    return stream.throttleTime(duration);\r\n  }\r\n\r\n  /// Handle common error cases\r\n  static String handleError(dynamic error) {\r\n    if (error is BlocException) {\r\n      return error.message;\r\n    }\r\n    if (error is StateError) {\r\n      return 'Invalid operation: ${error.message}';\r\n    }\r\n    return 'An unexpected error occurred: $error';\r\n  }\r\n\r\n  /// Validate required fields\r\n  static void validateRequired(Map<String, dynamic> data, List<String> fields) {\r\n    for (final field in fields) {\r\n      if (!data.containsKey(field) || data[field] == null) {\r\n        throw BlocException('Required field missing: $field');\r\n      }\r\n    }\r\n  }\r\n}"
+        }
+    ]
+}

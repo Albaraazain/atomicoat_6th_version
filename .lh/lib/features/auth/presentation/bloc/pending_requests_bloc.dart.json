@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/bloc/pending_requests_bloc.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734379212915,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734379212915,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/presentation/bloc/pending_requests_bloc.dart\r\nimport 'package:flutter_bloc/flutter_bloc.dart';\r\nimport 'package:freezed_annotation/freezed_annotation.dart';\r\nimport 'package:injectable/injectable.dart';\r\nimport '../../domain/repositories/i_user_request_repository.dart';\r\nimport '../../domain/entities/user_request.dart';\r\nimport '../../../../core/errors/failures.dart';\r\nimport '../../../../core/enums/user_request_status.dart';\r\n\r\npart 'pending_requests_event.dart';\r\npart 'pending_requests_state.dart';\r\npart 'pending_requests_bloc.freezed.dart';\r\n\r\n@injectable\r\nclass PendingRequestsBloc extends Bloc<PendingRequestsEvent, PendingRequestsState> {\r\n  final IUserRequestRepository _repository;\r\n\r\n  PendingRequestsBloc(this._repository)\r\n      : super(const PendingRequestsState.initial()) {\r\n    on<PendingRequestsEvent>((event, emit) async {\r\n      await event.map(\r\n        loaded: (_) => _handleLoaded(emit),\r\n        approved: (e) => _handleApproved(e, emit),\r\n        denied: (e) => _handleDenied(e, emit),\r\n        refreshRequested: (_) => _handleLoaded(emit),\r\n      );\r\n    });\r\n  }\r\n\r\n  Future<void> _handleLoaded(Emitter<PendingRequestsState> emit) async {\r\n    emit(const PendingRequestsState.loading());\r\n\r\n    final result = await _repository.getPendingRequests();\r\n\r\n    emit(result.fold(\r\n      (failure) => PendingRequestsState.failure(failure),\r\n      (requests) => PendingRequestsState.loaded(requests),\r\n    ));\r\n  }\r\n\r\n  Future<void> _handleApproved(\r\n    RequestApproved event,\r\n    Emitter<PendingRequestsState> emit,\r\n  ) async {\r\n    emit(const PendingRequestsState.loading());\r\n\r\n    final result = await _repository.updateStatus(\r\n      event.userId,\r\n      UserRequestStatus.approved,\r\n    );\r\n\r\n    result.fold(\r\n      (failure) => emit(PendingRequestsState.failure(failure)),\r\n      (_) => add(const PendingRequestsEvent.refreshRequested()),\r\n    );\r\n  }\r\n\r\n  Future<void> _handleDenied(\r\n    RequestDenied event,\r\n    Emitter<PendingRequestsState> emit,\r\n  ) async {\r\n    emit(const PendingRequestsState.loading());\r\n\r\n    final result = await _repository.updateStatus(\r\n      event.userId,\r\n      UserRequestStatus.denied,\r\n    );\r\n\r\n    result.fold(\r\n      (failure) => emit(PendingRequestsState.failure(failure)),\r\n      (_) => add(const PendingRequestsEvent.refreshRequested()),\r\n    );\r\n  }\r\n}\r\n\r\n"
+        }
+    ]
+}

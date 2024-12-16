@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/core/errors/failures.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734378087966,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734378087966,
+            "name": "Commit-0",
+            "content": "import 'package:freezed_annotation/freezed_annotation.dart';\r\n\r\npart 'failures.freezed.dart';\r\n\r\n@freezed\r\nclass Failure with _$Failure {\r\n  const factory Failure.serverError([String? message]) = ServerFailure;\r\n  const factory Failure.networkError() = NetworkFailure;\r\n  const factory Failure.cacheError() = CacheFailure;\r\n  const factory Failure.invalidInput([String? message]) = InvalidInputFailure;\r\n}"
+        }
+    ]
+}

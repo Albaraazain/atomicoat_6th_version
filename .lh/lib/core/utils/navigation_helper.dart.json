@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/core/utils/navigation_helper.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734376765320,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734376765320,
+            "name": "Commit-0",
+            "content": "import 'package:flutter/material.dart';\r\nimport '../enums/navigation_item.dart';\r\nimport '../../screens/main_screen.dart';\r\nimport '../../features/system/screens/admin_dashboard_screen.dart';\r\nimport '../../features/system/screens/main_dashboard.dart';\r\nimport '../../features/recipes/screens/recipe_management_screen.dart';\r\nimport '../../features/system/screens/system_overview_screen.dart';\r\n\r\nvoid handleNavigation(BuildContext context, NavigationItem item) {\r\n  switch (item) {\r\n    case NavigationItem.mainDashboard:\r\n      Navigator.pushReplacement(\r\n        context,\r\n        MaterialPageRoute(builder: (_) => MainDashboard())\r\n      );\r\n      break;\r\n    case NavigationItem.systemOverview:\r\n      Navigator.pushReplacement(\r\n        context,\r\n        MaterialPageRoute(builder: (_) => SystemOverviewScreen())\r\n      );\r\n      break;\r\n    case NavigationItem.recipeManagement:\r\n      Navigator.pushReplacement(\r\n        context,\r\n        MaterialPageRoute(builder: (_) => RecipeManagementScreen())\r\n      );\r\n      break;\r\n    case NavigationItem.adminDashboard:\r\n      Navigator.pushReplacement(\r\n        context,\r\n        MaterialPageRoute(builder: (_) => AdminDashboardScreen())\r\n      );\r\n      break;\r\n  }\r\n}"
+        }
+    ]
+}

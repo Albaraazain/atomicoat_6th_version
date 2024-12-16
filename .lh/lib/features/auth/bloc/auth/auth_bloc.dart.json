@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/bloc/auth/auth_bloc.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734377912533,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734377912533,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/bloc/auth/auth_bloc.dart\r\nclass AuthBloc extends Bloc<AuthEvent, AuthState> {\r\n  final SignIn signIn;\r\n  final SignUp signUp;\r\n  final SignOut signOut;\r\n\r\n  AuthBloc({\r\n    required this.signIn,\r\n    required this.signUp,\r\n    required this.signOut,\r\n  }) : super(AuthState.initial()) {\r\n    on<SignInRequested>(_onSignInRequested);\r\n    on<SignUpRequested>(_onSignUpRequested);\r\n    on<SignOutRequested>(_onSignOutRequested);\r\n  }\r\n\r\n  Future<void> _onSignInRequested(\r\n    SignInRequested event,\r\n    Emitter<AuthState> emit,\r\n  ) async {\r\n    emit(state.copyWith(isLoading: true));\r\n\r\n    final result = await signIn(SignInParams(\r\n      email: event.email,\r\n      password: event.password,\r\n    ));\r\n\r\n    emit(result.fold(\r\n      (failure) => state.copyWith(\r\n        isLoading: false,\r\n        failure: some(failure),\r\n      ),\r\n      (user) => state.copyWith(\r\n        isLoading: false,\r\n        user: some(user),\r\n        failure: none(),\r\n      ),\r\n    ));\r\n  }\r\n}"
+        }
+    ]
+}

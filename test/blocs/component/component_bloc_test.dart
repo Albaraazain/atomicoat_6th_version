@@ -4,7 +4,7 @@ import 'package:experiment_planner/blocs/component/bloc/component_bloc.dart';
 import 'package:experiment_planner/blocs/component/bloc/component_event.dart';
 import 'package:experiment_planner/blocs/component/bloc/component_state.dart';
 import 'package:experiment_planner/blocs/component/repository/component_repository.dart';
-import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';
+import 'package:experiment_planner/features/components/models/system_component.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';

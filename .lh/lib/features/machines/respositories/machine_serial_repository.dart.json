@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/features/machines/respositories/machine_serial_repository.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734377466257,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734377471801,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,4 +1,7 @@\n+import 'package:experiment_planner/features/machines/models/machine_serial.dart';\r\n+import 'package:experiment_planner/shared/base/base_repository.dart';\r\n+\r\n class MachineSerialRepository extends BaseRepository<MachineSerial> {\r\n   MachineSerialRepository() : super('machine_serials');\r\n \r\n   @override\r\n"
+                }
+            ],
+            "date": 1734377466257,
+            "name": "Commit-0",
+            "content": "class MachineSerialRepository extends BaseRepository<MachineSerial> {\r\n  MachineSerialRepository() : super('machine_serials');\r\n\r\n  @override\r\n  MachineSerial fromJson(Map<String, dynamic> json) =>\r\n      MachineSerial.fromJson(json);\r\n\r\n  Future<bool> isSerialNumberValid(String serialNumber) async {\r\n    final doc = await getCollection().doc(serialNumber).get();\r\n    return doc.exists;\r\n  }\r\n\r\n  Future<void> addSerialNumber(String serialNumber) async {\r\n    await add(serialNumber, MachineSerial(serialNumber: serialNumber));\r\n  }\r\n\r\n  Future<void> assignUserToMachine(String serialNumber, String userId) async {\r\n    await update(serialNumber, MachineSerial(serialNumber: serialNumber, assignedUserId: userId));\r\n  }\r\n}"
+        }
+    ]
+}

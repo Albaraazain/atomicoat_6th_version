@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 3,
+            "activePatchIndex": 4,
             "patches": [
                 {
                     "date": 1734052279676,
@@ -20,6 +20,10 @@
                 {
                     "date": 1734052636267,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,9 +1,8 @@\n import 'package:experiment_planner/blocs/alarm/bloc/alarm_bloc.dart';\r\n import 'package:experiment_planner/blocs/alarm/bloc/alarm_event.dart';\r\n import 'package:experiment_planner/blocs/recipe/bloc/recipe_bloc.dart';\r\n import 'package:experiment_planner/blocs/recipe/bloc/recipe_event.dart';\r\n-import 'package:experiment_planner/blocs/recipe/bloc/recipe_state.dart';\r\n import 'package:experiment_planner/blocs/system_state/bloc/system_state_bloc.dart';\r\n import 'package:experiment_planner/blocs/system_state/bloc/system_state_event.dart';\r\n import 'package:experiment_planner/blocs/system_state/bloc/system_state_state.dart';\r\n import 'package:experiment_planner/modules/system_operation_also_main_module/models/alarm.dart';\r\n@@ -93,9 +92,9 @@\n \r\n       // Add recipe to bloc's state\r\n       when(() => repository.getAll(userId: any(named: 'userId')))\r\n           .thenAnswer((_) async => [recipe]);\r\n-      await recipeBloc.add(LoadRecipes());\r\n+      recipeBloc.add(LoadRecipes());\r\n       await Future.delayed(const Duration(milliseconds: 100));\r\n \r\n       // Mock system state to throw error\r\n       when(() => systemStateBloc.add(any(that: isA<UpdateSystemParameters>()))).thenThrow(Exception('Valve error'));\r\n@@ -136,9 +135,9 @@\n \r\n       // Add recipe to bloc's state\r\n       when(() => repository.getAll(userId: any(named: 'userId')))\r\n           .thenAnswer((_) async => [recipe]);\r\n-      await recipeBloc.add(LoadRecipes());\r\n+      recipeBloc.add(LoadRecipes());\r\n       await Future.delayed(const Duration(milliseconds: 100));\r\n \r\n       // Mock system state to throw error\r\n       when(() => systemStateBloc.add(any(that: isA<UpdateSystemParameters>()))).thenThrow(Exception('Temperature too high'));\r\n"
+                },
+                {
+                    "date": 1734376765572,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,11 +5,11 @@\n import 'package:experiment_planner/blocs/system_state/bloc/system_state_bloc.dart';\r\n import 'package:experiment_planner/blocs/system_state/bloc/system_state_event.dart';\r\n import 'package:experiment_planner/blocs/system_state/bloc/system_state_state.dart';\r\n import 'package:experiment_planner/features/alarms/models/alarm.dart';\r\n-import 'package:experiment_planner/modules/system_operation_also_main_module/models/recipe.dart';\r\n+import 'package:experiment_planner/features/recipes/models/recipe.dart';\r\n import 'package:experiment_planner/repositories/recipe_reposiory.dart';\r\n-import 'package:experiment_planner/services/auth_service.dart';\r\n+import 'package:experiment_planner/features/auth/services/auth_service.dart';\r\n import 'package:flutter_test/flutter_test.dart';\r\n import 'package:mocktail/mocktail.dart';\r\n \r\n // Mock classes\r\n"
                 }
             ],
             "date": 1734052279676,

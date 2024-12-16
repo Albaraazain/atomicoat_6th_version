@@ -1,0 +1,1 @@
+enum UserRequestStatus { pending, approved, denied }

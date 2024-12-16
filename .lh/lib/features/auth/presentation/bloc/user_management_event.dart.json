@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/bloc/user_management_event.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734379150430,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734379150430,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/presentation/bloc/user_management_event.dart\r\npart of 'user_management_bloc.dart';\r\n\r\n@freezed\r\nclass UserManagementEvent with _$UserManagementEvent {\r\n  const factory UserManagementEvent.loaded() = _Loaded;\r\n  const factory UserManagementEvent.roleChanged({\r\n    required String userId,\r\n    required UserRole newRole,\r\n  }) = RoleChanged;\r\n  const factory UserManagementEvent.statusChanged({\r\n    required String userId,\r\n    required String newStatus,\r\n  }) = StatusChanged;\r\n  const factory UserManagementEvent.userDeleted({\r\n    required String userId,\r\n  }) = UserDeleted;\r\n  const factory UserManagementEvent.refreshRequested() = _RefreshRequested;\r\n}\r\n\r\n// lib/features/auth/presentation/bloc/user_management_state.dart\r\npart of 'user_management_bloc.dart';\r\n\r\n@freezed\r\nclass UserManagementState with _$UserManagementState {\r\n  const factory UserManagementState.initial() = Initial;\r\n  const factory UserManagementState.loading() = Loading;\r\n  const factory UserManagementState.loaded(List<User> users) = UserManagementLoaded;\r\n  const factory UserManagementState.failure(Failure failure) = _Failure;\r\n}\r\n\r\n"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/widgets/dashboard_card.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734379072577,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734379072577,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/presentation/widgets/dashboard_card.dart\r\nimport 'package:flutter/material.dart';\r\n\r\nclass DashboardCard extends StatelessWidget {\r\n  final String title;\r\n  final String value;\r\n  final IconData icon;\r\n  final VoidCallback? onTap;\r\n\r\n  const DashboardCard({\r\n    super.key,\r\n    required this.title,\r\n    required this.value,\r\n    required this.icon,\r\n    this.onTap,\r\n  });\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return Card(\r\n      elevation: 4,\r\n      margin: const EdgeInsets.all(8),\r\n      child: InkWell(\r\n        onTap: onTap,\r\n        borderRadius: BorderRadius.circular(8),\r\n        child: Padding(\r\n          padding: const EdgeInsets.all(16),\r\n          child: Column(\r\n            mainAxisAlignment: MainAxisAlignment.center,\r\n            children: [\r\n              Icon(\r\n                icon,\r\n                size: 48,\r\n                color: Theme.of(context).primaryColor,\r\n              ),\r\n              const SizedBox(height: 16),\r\n              Text(\r\n                title,\r\n                style: Theme.of(context).textTheme.titleMedium,\r\n                textAlign: TextAlign.center,\r\n              ),\r\n              const SizedBox(height: 8),\r\n              Text(\r\n                value,\r\n                style: Theme.of(context).textTheme.headlineMedium,\r\n                textAlign: TextAlign.center,\r\n              ),\r\n            ],\r\n          ),\r\n        ),\r\n      ),\r\n    );\r\n  }\r\n}\r\n"
+        }
+    ]
+}

@@ -4,9 +4,9 @@ import 'package:experiment_planner/blocs/alarm/repository/alarm_repository.dart'
 import 'package:experiment_planner/blocs/safety/bloc/safety_bloc.dart';
 import 'package:experiment_planner/blocs/safety/bloc/safety_event.dart';
 import 'package:experiment_planner/blocs/safety/repository/safety_repository.dart';
-import 'package:experiment_planner/modules/system_operation_also_main_module/models/safety_error.dart';
-import 'package:experiment_planner/modules/system_operation_also_main_module/models/alarm.dart';
-import 'package:experiment_planner/services/auth_service.dart';
+import 'package:experiment_planner/features/safety/models/safety_error.dart';
+import 'package:experiment_planner/features/alarms/models/alarm.dart';
+import 'package:experiment_planner/features/auth/services/auth_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 

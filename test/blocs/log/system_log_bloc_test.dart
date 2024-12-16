@@ -5,10 +5,10 @@ import 'package:mocktail/mocktail.dart';
 import 'package:experiment_planner/blocs/log/bloc/system_log_bloc.dart';
 import 'package:experiment_planner/blocs/log/bloc/system_log_event.dart';
 import 'package:experiment_planner/blocs/log/bloc/system_log_state.dart';
-import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_log_entry.dart';
-import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';
-import 'package:experiment_planner/services/auth_service.dart';
-import 'package:experiment_planner/repositories/system_log_entry_repository.dart';
+import 'package:experiment_planner/features/log/models/system_log_entry.dart';
+import 'package:experiment_planner/features/components/models/system_component.dart';
+import 'package:experiment_planner/features/auth/services/auth_service.dart';
+import 'package:experiment_planner/features/log/repositories/system_log_entry_repository.dart';
 
 // Mock implementations
 class MockSystemLogEntryRepository extends Mock implements SystemLogEntryRepository {}

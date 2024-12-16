@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/core/utils/permission_helper.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734376761209,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734376761209,
+            "name": "Commit-0",
+            "content": "\r\n\r\nimport '../enums/user_role.dart';\r\n\r\nclass PermissionHelper {\r\n  static bool hasPermission(UserRole? userRole, List<UserRole> requiredRoles) {\r\n    if (userRole == null) return false;\r\n    if (userRole == UserRole.admin) return true; // Admin has access to everything\r\n    return requiredRoles.contains(userRole);\r\n  }\r\n\r\n  static bool canAccessMaintenanceModule(UserRole? userRole) {\r\n    return hasPermission(userRole, [UserRole.engineer, UserRole.admin]);\r\n  }\r\n\r\n  static bool canAccessRecipeManagement(UserRole? userRole) {\r\n    return hasPermission(userRole, [UserRole.engineer, UserRole.admin]);\r\n  }\r\n\r\n  static bool canModifySystemSettings(UserRole? userRole) {\r\n    return hasPermission(userRole, [UserRole.admin]);\r\n  }\r\n\r\n  static bool canViewReports(UserRole? userRole) {\r\n    return hasPermission(userRole, [UserRole.engineer, UserRole.admin]);\r\n  }\r\n\r\n// Add more specific permission checks as needed\r\n}"
+        }
+    ]
+}

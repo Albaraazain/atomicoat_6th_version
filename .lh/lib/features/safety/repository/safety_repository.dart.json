@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/features/safety/repository/safety_repository.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734375166820,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734376760362,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,8 @@\n-// lib/blocs/safety/repository/safety_repository.dart\r\n+\r\n import 'package:cloud_firestore/cloud_firestore.dart';\r\n-import '../../../modules/system_operation_also_main_module/models/safety_error.dart';\r\n-import '../../../modules/system_operation_also_main_module/models/system_component.dart';\r\n+import '../models/safety_error.dart';\r\n+import '../../components/models/system_component.dart';\r\n import '../../../shared/base/base_repository.dart';\r\n \r\n class SafetyRepository extends BlocRepository<SafetyError> {\r\n   SafetyRepository({String? userId}) : super(\r\n"
+                }
+            ],
+            "date": 1734375166820,
+            "name": "Commit-0",
+            "content": "// lib/blocs/safety/repository/safety_repository.dart\r\nimport 'package:cloud_firestore/cloud_firestore.dart';\r\nimport '../../../modules/system_operation_also_main_module/models/safety_error.dart';\r\nimport '../../../modules/system_operation_also_main_module/models/system_component.dart';\r\nimport '../../../shared/base/base_repository.dart';\r\n\r\nclass SafetyRepository extends BlocRepository<SafetyError> {\r\n  SafetyRepository({String? userId}) : super(\r\n    collectionName: 'safety_errors',\r\n    userId: userId,\r\n  );\r\n\r\n  @override\r\n  SafetyError fromJson(Map<String, dynamic> json) => SafetyError.fromJson(json);\r\n\r\n  @override\r\n  Map<String, dynamic> toJson(SafetyError error) => error.toJson();\r\n\r\n  Stream<List<SafetyError>> watchActiveErrors() {\r\n    return userCollection\r\n        .where('resolved', isEqualTo: false)\r\n        .snapshots()\r\n        .map((snapshot) => snapshot.docs\r\n            .map((doc) => fromJson(doc.data() as Map<String, dynamic>))\r\n            .toList());\r\n  }\r\n\r\n  Future<void> addSafetyError(SafetyError error) async {\r\n    await save(error.id, {\r\n      ...toJson(error),\r\n      'resolved': false,\r\n      'createdAt': FieldValue.serverTimestamp(),\r\n    });\r\n  }\r\n\r\n  Future<void> resolveError(String errorId) async {\r\n    await save(errorId, {\r\n      'resolved': true,\r\n      'resolvedAt': FieldValue.serverTimestamp(),\r\n    });\r\n  }\r\n\r\n  Future<void> updateThresholds(\r\n    String componentId,\r\n    String parameter,\r\n    double minValue,\r\n    double maxValue,\r\n  ) async {\r\n    await save('thresholds', {\r\n      componentId: {\r\n        parameter: {\r\n          'min': minValue,\r\n          'max': maxValue,\r\n          'updatedAt': FieldValue.serverTimestamp(),\r\n        }\r\n      }\r\n    });\r\n  }\r\n}"
+        }
+    ]
+}

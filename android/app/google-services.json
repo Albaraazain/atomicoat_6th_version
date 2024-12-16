@@ -2,9 +2,53 @@
   "project_info": {
     "project_number": "453571415915",
     "project_id": "atomicoat-a6241",
-    "storage_bucket": "atomicoat-a6241.appspot.com"
+    "storage_bucket": "atomicoat-a6241.firebasestorage.app"
   },
   "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:453571415915:android:3cec82dc3c3eb74627462e",
+        "android_client_info": {
+          "package_name": "com.albaraa.atomicoat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBqULWQWwZuZ1SxsUjlAo0dsKTMq31yEYc"
+        },
+        {
+          "current_key": "AIzaSyByMYvcYFc_IJxYwYWRRrjvZ8yJBkvWf_Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:453571415915:android:d41d0fd6a2c0b79427462e",
+        "android_client_info": {
+          "package_name": "com.albaraa.atomicoat_11th_version"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBqULWQWwZuZ1SxsUjlAo0dsKTMq31yEYc"
+        },
+        {
+          "current_key": "AIzaSyByMYvcYFc_IJxYwYWRRrjvZ8yJBkvWf_Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
     {
       "client_info": {
         "mobilesdk_app_id": "1:453571415915:android:ac719308a7529f8f27462e",
@@ -14,6 +58,9 @@
       },
       "oauth_client": [],
       "api_key": [
+        {
+          "current_key": "AIzaSyBqULWQWwZuZ1SxsUjlAo0dsKTMq31yEYc"
+        },
         {
           "current_key": "AIzaSyByMYvcYFc_IJxYwYWRRrjvZ8yJBkvWf_Y"
         }

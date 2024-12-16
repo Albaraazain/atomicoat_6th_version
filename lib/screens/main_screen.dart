@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
-import '../enums/navigation_item.dart';
-import '../widgets/app_drawer.dart';
-import '../modules/system_operation_also_main_module/screens/main_dashboard.dart';
-import '../modules/system_operation_also_main_module/screens/recipe_management_screen.dart';
-import '../modules/system_operation_also_main_module/screens/system_overview_screen.dart';
-import '../screens/admin_dashboard_screen.dart';
+import '../features/auth/providers/auth_provider.dart';
+import '../core/enums/navigation_item.dart';
+import '../shared/widgets/app_drawer.dart';
+import '../features/system/screens/main_dashboard.dart';
+import '../features/recipes/screens/recipe_management_screen.dart';
+import '../features/system/screens/system_overview_screen.dart';
+import '../features/system/screens/admin_dashboard_screen.dart';
 
 class MainScreen extends StatefulWidget {
   @override

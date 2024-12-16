@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/alarms/widgets/alarm_indicator.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734376760284,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734376760284,
+            "name": "Commit-0",
+            "content": "\r\n\r\nimport 'package:flutter/material.dart';\r\nimport 'package:flutter_bloc/flutter_bloc.dart';\r\nimport '../../../blocs/alarm/bloc/alarm_bloc.dart';\r\nimport '../../../blocs/alarm/bloc/alarm_state.dart';\r\nimport '../models/alarm.dart';\r\n\r\nclass AlarmIndicator extends StatelessWidget {\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return BlocBuilder<AlarmBloc, AlarmState>(\r\n      builder: (context, state) {\r\n        if (!state.hasActiveAlarms) {\r\n          return SizedBox.shrink();\r\n        }\r\n\r\n        return GestureDetector(\r\n          onTap: () => _showAlarmDetails(context, state),\r\n          child: Container(\r\n            padding: EdgeInsets.all(8),\r\n            decoration: BoxDecoration(\r\n              color: state.hasCriticalAlarms ? Colors.red : Colors.orange,\r\n              borderRadius: BorderRadius.circular(8),\r\n            ),\r\n            child: Row(\r\n              mainAxisSize: MainAxisSize.min,\r\n              children: [\r\n                Icon(Icons.warning, color: Colors.white),\r\n                SizedBox(width: 8),\r\n                Text(\r\n                  '${state.activeAlarms.length} Alarm${state.activeAlarms.length > 1 ? 's' : ''}',\r\n                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),\r\n                ),\r\n              ],\r\n            ),\r\n          ),\r\n        );\r\n      },\r\n    );\r\n  }\r\n\r\n  void _showAlarmDetails(BuildContext context, AlarmState state) {\r\n    showDialog(\r\n      context: context,\r\n      builder: (BuildContext context) {\r\n        return AlertDialog(\r\n          title: Text('Active Alarms'),\r\n          content: SingleChildScrollView(\r\n            child: ListBody(\r\n              children: [\r\n                if (state.criticalAlarms.isNotEmpty) ...[\r\n                  _buildAlarmSection('Critical', state.criticalAlarms),\r\n                  Divider(),\r\n                ],\r\n                if (state.warningAlarms.isNotEmpty) ...[\r\n                  _buildAlarmSection('Warning', state.warningAlarms),\r\n                  Divider(),\r\n                ],\r\n                if (state.infoAlarms.isNotEmpty)\r\n                  _buildAlarmSection('Info', state.infoAlarms),\r\n              ],\r\n            ),\r\n          ),\r\n          actions: [\r\n            TextButton(\r\n              child: Text('Close'),\r\n              onPressed: () => Navigator.of(context).pop(),\r\n            ),\r\n          ],\r\n        );\r\n      },\r\n    );\r\n  }\r\n\r\n  Widget _buildAlarmSection(String title, List<Alarm> alarms) {\r\n    return Column(\r\n      crossAxisAlignment: CrossAxisAlignment.start,\r\n      children: [\r\n        Text(\r\n          title,\r\n          style: TextStyle(fontWeight: FontWeight.bold),\r\n        ),\r\n        SizedBox(height: 8),\r\n        ...alarms.map((alarm) => Padding(\r\n          padding: EdgeInsets.only(left: 16, bottom: 8),\r\n          child: Text(alarm.message),\r\n        )),\r\n      ],\r\n    );\r\n  }\r\n}"
+        }
+    ]
+}

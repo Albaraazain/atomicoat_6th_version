@@ -5,10 +5,10 @@ import 'package:experiment_planner/blocs/recipe/bloc/recipe_event.dart';
 import 'package:experiment_planner/blocs/system_state/bloc/system_state_bloc.dart';
 import 'package:experiment_planner/blocs/system_state/bloc/system_state_event.dart';
 import 'package:experiment_planner/blocs/system_state/bloc/system_state_state.dart';
-import 'package:experiment_planner/modules/system_operation_also_main_module/models/alarm.dart';
-import 'package:experiment_planner/modules/system_operation_also_main_module/models/recipe.dart';
+import 'package:experiment_planner/features/alarms/models/alarm.dart';
+import 'package:experiment_planner/features/recipes/models/recipe.dart';
 import 'package:experiment_planner/repositories/recipe_reposiory.dart';
-import 'package:experiment_planner/services/auth_service.dart';
+import 'package:experiment_planner/features/auth/services/auth_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 

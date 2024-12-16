@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:experiment_planner/blocs/system_state/bloc/system_state_bloc.dart';
 import 'package:experiment_planner/blocs/system_state/bloc/system_state_event.dart';
 import 'package:experiment_planner/blocs/system_state/bloc/system_state_state.dart';
-import 'package:experiment_planner/repositories/system_state_repository.dart';
+import 'package:experiment_planner/features/system/repositories/system_state_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../helpers/system_state_test_helper.dart';
 

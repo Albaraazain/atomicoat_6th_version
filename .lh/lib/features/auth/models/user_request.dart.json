@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/features/auth/models/user_request.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734377629343,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734377672748,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,4 +1,6 @@\n+import 'package:experiment_planner/core/enums/user_request_status.dart';\r\n+\r\n class UserRequest {\r\n   final String userId;\r\n   final String email;\r\n   final String name;\r\n"
+                }
+            ],
+            "date": 1734377629343,
+            "name": "Commit-0",
+            "content": "class UserRequest {\r\n  final String userId;\r\n  final String email;\r\n  final String name;\r\n  final String machineSerial;\r\n  final UserRequestStatus status;\r\n\r\n  UserRequest({\r\n    required this.userId,\r\n    required this.email,\r\n    required this.name,\r\n    required this.machineSerial,\r\n    this.status = UserRequestStatus.pending,\r\n  });\r\n\r\n  Map<String, dynamic> toJson() => {\r\n    'userId': userId,\r\n    'email': email,\r\n    'name': name,\r\n    'machineSerial': machineSerial,\r\n    'status': status.toString(),\r\n  };\r\n\r\n  factory UserRequest.fromJson(Map<String, dynamic> json) => UserRequest(\r\n    userId: json['userId'],\r\n    email: json['email'],\r\n    name: json['name'],\r\n    machineSerial: json['machineSerial'],\r\n    status: UserRequestStatus.values.firstWhere(\r\n            (e) => e.toString() == json['status'],\r\n        orElse: () => UserRequestStatus.pending),\r\n  );\r\n}"
+        }
+    ]
+}

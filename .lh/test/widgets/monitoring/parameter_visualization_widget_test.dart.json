@@ -3,11 +3,15 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 1,
             "patches": [
                 {
                     "date": 1734050071531,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734376765475,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,10 +1,10 @@\n // test/widgets/monitoring/parameter_visualization_widget_test.dart\r\n import 'package:flutter/material.dart';\r\n import 'package:flutter_test/flutter_test.dart';\r\n import 'package:fl_chart/fl_chart.dart';\r\n-import '../../../lib/modules/system_operation_also_main_module/models/data_point.dart';\r\n-import '../../../lib/widgets/monitoring/parameter_visualization_widget.dart';\r\n+import '../../../lib/features/components/models/data_point.dart';\r\n+import '../../../lib/features/monitoring/widgets/parameter_visualization_widget.dart';\r\n \r\n void main() {\r\n   final testDataPoints = [\r\n     DataPoint(timestamp: DateTime.now().subtract(Duration(minutes: 5)), value: 25.0),\r\n"
                 }
             ],
             "date": 1734050071531,

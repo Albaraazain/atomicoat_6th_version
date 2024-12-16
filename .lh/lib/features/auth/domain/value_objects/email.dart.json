@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/domain/value_objects/email.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734378384668,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734378384668,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/domain/value_objects/email.dart\r\nimport 'package:dartz/dartz.dart';\r\nimport '../../../../core/errors/failures.dart';\r\n\r\nclass EmailAddress {\r\n  final Either<Failure, String> value;\r\n\r\n  factory EmailAddress(String input) {\r\n    if (input.isEmpty) {\r\n      return EmailAddress._(\r\n        left(const Failure.invalidInput('Email cannot be empty')),\r\n      );\r\n    }\r\n\r\n    const emailRegex = r'^[^@]+@[^@]+\\.[^@]+$';\r\n    if (!RegExp(emailRegex).hasMatch(input)) {\r\n      return EmailAddress._(\r\n        left(const Failure.invalidInput('Invalid email format')),\r\n      );\r\n    }\r\n\r\n    return EmailAddress._(right(input));\r\n  }\r\n\r\n  const EmailAddress._(this.value);\r\n\r\n  bool isValid() => value.isRight();\r\n}\r\n"
+        }
+    ]
+}

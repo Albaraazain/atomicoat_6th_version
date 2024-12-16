@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/core/router/admin_guard.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734379011318,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734379011318,
+            "name": "Commit-0",
+            "content": "// lib/core/router/admin_guard.dart\r\nimport 'package:auto_route/auto_route.dart';\r\nimport 'package:injectable/injectable.dart';\r\nimport '../../features/auth/domain/repositories/i_auth_repository.dart';\r\nimport '../../core/enums/user_role.dart';\r\n\r\n@injectable\r\nclass AdminGuard extends AutoRouteGuard {\r\n  final IAuthRepository _authRepository;\r\n\r\n  AdminGuard(this._authRepository);\r\n\r\n  @override\r\n  Future<bool> canNavigate(NavigationResolver resolver, StackRouter router) async {\r\n    final userOption = await _authRepository.getSignedInUser();\r\n\r\n    if (userOption.isSome()) {\r\n      final user = userOption.getOrElse(() => throw Error());\r\n      if (user.role == UserRole.admin) {\r\n        return true;\r\n      }\r\n    }\r\n\r\n    router.push(const LoginRoute());\r\n    return false;\r\n  }\r\n}\r\n"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/domain/usecases/sign_out.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734378454651,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734378454651,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/domain/usecases/sign_out.dart\r\nimport 'package:injectable/injectable.dart';\r\nimport 'package:dartz/dartz.dart';\r\nimport '../repositories/i_auth_repository.dart';\r\nimport '../../../../core/errors/failures.dart';\r\n\r\n@injectable\r\nclass SignOut {\r\n  final IAuthRepository repository;\r\n\r\n  SignOut(this.repository);\r\n\r\n  Future<Either<Failure, Unit>> call() async {\r\n    return await repository.signOut();\r\n  }\r\n}\r\n"
+        }
+    ]
+}

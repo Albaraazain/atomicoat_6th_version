@@ -3,11 +3,15 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 1,
             "patches": [
                 {
                     "date": 1734142394172,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734154276671,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -18,12 +18,14 @@\n     this.zoomFactor = 1.0,\r\n     this.enableOverlaySwiping = true,\r\n   }) : super(key: key);\r\n \r\n-  @override\r\n   Widget build(BuildContext context) {\r\n+    print(\"SystemDiagramView: build called with ${overlays.length} overlays\");\r\n     return BlocBuilder<ComponentListBloc, ComponentListState>(\r\n       builder: (context, componentState) {\r\n+        print(\r\n+            \"SystemDiagramView: ComponentListState update - Components: ${componentState.components.length}\");\r\n         return BlocBuilder<SystemStateBloc, SystemStateState>(\r\n           builder: (context, systemState) {\r\n             Widget overlayWidget;\r\n \r\n@@ -86,5 +88,5 @@\n         ),\r\n       ),\r\n     );\r\n   }\r\n-}\n\\ No newline at end of file\n+}\r\n"
                 }
             ],
             "date": 1734142394172,

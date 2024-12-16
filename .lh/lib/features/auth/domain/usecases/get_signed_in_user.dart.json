@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/domain/usecases/get_signed_in_user.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734378409199,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734378409199,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/domain/usecases/get_signed_in_user.dart\r\nimport 'package:injectable/injectable.dart';\r\nimport 'package:dartz/dartz.dart';\r\nimport '../repositories/i_auth_repository.dart';\r\nimport '../entities/user.dart';\r\n\r\n@injectable\r\nclass GetSignedInUser {\r\n  final IAuthRepository repository;\r\n\r\n  GetSignedInUser(this.repository);\r\n\r\n  Future<Option<User>> call() async {\r\n    return await repository.getSignedInUser();\r\n  }\r\n}\r\n"
+        }
+    ]
+}

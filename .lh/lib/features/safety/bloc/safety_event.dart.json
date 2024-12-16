@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/features/safety/bloc/safety_event.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734375170509,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734376760367,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,7 @@\n-// lib/blocs/safety/bloc/safety_event.dart\r\n+\r\n import 'package:equatable/equatable.dart';\r\n-import '../../../modules/system_operation_also_main_module/models/safety_error.dart';\r\n+import '../models/safety_error.dart';\r\n import '../../../shared/base/base_bloc_event.dart';\r\n \r\n sealed class SafetyEvent extends BaseBlocEvent {\r\n   SafetyEvent() : super();\r\n"
+                }
+            ],
+            "date": 1734375170509,
+            "name": "Commit-0",
+            "content": "// lib/blocs/safety/bloc/safety_event.dart\r\nimport 'package:equatable/equatable.dart';\r\nimport '../../../modules/system_operation_also_main_module/models/safety_error.dart';\r\nimport '../../../shared/base/base_bloc_event.dart';\r\n\r\nsealed class SafetyEvent extends BaseBlocEvent {\r\n  SafetyEvent() : super();\r\n}\r\n\r\nclass SafetyMonitoringStarted extends SafetyEvent {}\r\n\r\nclass SafetyMonitoringPaused extends SafetyEvent {}\r\n\r\nclass SafetyErrorDetected extends SafetyEvent {\r\n  final SafetyError error;\r\n  SafetyErrorDetected(this.error);\r\n}\r\n\r\nclass SafetyErrorCleared extends SafetyEvent {\r\n  final String errorId;\r\n  SafetyErrorCleared(this.errorId);\r\n}\r\n\r\nclass SafetyThresholdAdjusted extends SafetyEvent {\r\n  final String componentId;\r\n  final String parameterName;\r\n  final double minThreshold;\r\n  final double maxThreshold;\r\n\r\n  SafetyThresholdAdjusted({\r\n    required this.componentId,\r\n    required this.parameterName,\r\n    required this.minThreshold,\r\n    required this.maxThreshold,\r\n  });\r\n}"
+        }
+    ]
+}

@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 2,
+            "activePatchIndex": 3,
             "patches": [
                 {
                     "date": 1734043528416,
@@ -16,6 +16,10 @@
                 {
                     "date": 1734043921664,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -11,12 +11,28 @@\n \r\n // Create mocks\r\n class MockComponentRepository extends Mock implements ComponentRepository {}\r\n \r\n+// Create a fake for SystemComponent\r\n+class FakeSystemComponent extends Fake implements SystemComponent {\r\n+  @override\r\n+  String get name => 'Fake Component';\r\n+\r\n+  @override\r\n+  Map<String, double> get currentValues => {'test': 0.0};\r\n+\r\n+  @override\r\n+  Map<String, double> get setValues => {'test': 0.0};\r\n+}\r\n+\r\n void main() {\r\n   late ComponentBloc componentBloc;\r\n   late MockComponentRepository mockRepository;\r\n \r\n+  setUpAll(() {\r\n+    registerFallbackValue(FakeSystemComponent());\r\n+  });\r\n+\r\n   // Test component data\r\n   final testComponent = SystemComponent(\r\n     name: 'Test Component',\r\n     description: 'Test Description',\r\n@@ -43,9 +59,9 @@\n       build: () {\r\n         when(() => mockRepository.getComponent(any()))\r\n             .thenAnswer((_) async => testComponent);\r\n         when(() => mockRepository.watchComponent(any()))\r\n-            .thenAnswer((_) => Stream.value(testComponent));\r\n+            .thenAnswer((_) => Stream.fromIterable([testComponent]));\r\n         return componentBloc;\r\n       },\r\n       act: (bloc) => bloc.add(ComponentInitialized('Test Component')),\r\n       expect: () => [\r\n@@ -122,5 +138,5 @@\n         verify(() => mockRepository.saveComponentState(any())).called(1);\r\n       },\r\n     );\r\n   });\r\n-}\n\\ No newline at end of file\n+}\r\n"
+                },
+                {
+                    "date": 1734376765472,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,9 +3,9 @@\n import 'package:experiment_planner/blocs/component/bloc/component_bloc.dart';\r\n import 'package:experiment_planner/blocs/component/bloc/component_event.dart';\r\n import 'package:experiment_planner/blocs/component/bloc/component_state.dart';\r\n import 'package:experiment_planner/blocs/component/repository/component_repository.dart';\r\n-import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';\r\n+import 'package:experiment_planner/features/components/models/system_component.dart';\r\n import 'package:flutter_test/flutter_test.dart';\r\n import 'package:mocktail/mocktail.dart';\r\n import 'package:bloc_test/bloc_test.dart';\r\n \r\n"
                 }
             ],
             "date": 1734043528416,

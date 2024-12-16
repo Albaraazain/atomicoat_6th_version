@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/system_state/bloc/system_state_event.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734375170509,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734375170509,
+            "name": "Commit-0",
+            "content": "// lib/blocs/system_state/bloc/system_state_event.dart\r\n\r\nimport '../../../shared/base/base_bloc_event.dart';\r\n\r\nabstract class SystemStateEvent extends BaseBlocEvent {}\r\n\r\nclass InitializeSystem extends SystemStateEvent {}\r\n\r\nclass StartSystem extends SystemStateEvent {}\r\n\r\nclass StopSystem extends SystemStateEvent {}\r\n\r\nclass EmergencyStop extends SystemStateEvent {}\r\n\r\nclass CheckSystemReadiness extends SystemStateEvent {}\r\n\r\nclass SaveSystemState extends SystemStateEvent {\r\n  final Map<String, dynamic> state;\r\n\r\n  SaveSystemState(this.state);\r\n\r\n  @override\r\n  List<Object?> get props => [...super.props, state];\r\n}\r\n\r\nclass ValidateSystemState extends SystemStateEvent {}\r\n\r\nclass UpdateSystemParameters extends SystemStateEvent {\r\n  final Map<String, Map<String, double>> updates;\r\n\r\n  UpdateSystemParameters(this.updates);\r\n\r\n  @override\r\n  List<Object?> get props => [...super.props, updates];\r\n}"
+        }
+    ]
+}

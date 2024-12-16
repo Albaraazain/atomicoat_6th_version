@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/bloc/user_management_bloc.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734379134782,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734379134782,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/presentation/bloc/user_management_bloc.dart\r\nimport 'package:flutter_bloc/flutter_bloc.dart';\r\nimport 'package:freezed_annotation/freezed_annotation.dart';\r\nimport 'package:injectable/injectable.dart';\r\nimport '../../domain/repositories/i_auth_repository.dart';\r\nimport '../../domain/entities/user.dart';\r\nimport '../../../../core/errors/failures.dart';\r\nimport '../../../../core/enums/user_role.dart';\r\n\r\npart 'user_management_event.dart';\r\npart 'user_management_state.dart';\r\npart 'user_management_bloc.freezed.dart';\r\n\r\n@injectable\r\nclass UserManagementBloc extends Bloc<UserManagementEvent, UserManagementState> {\r\n  final IAuthRepository _authRepository;\r\n\r\n  UserManagementBloc(this._authRepository)\r\n      : super(const UserManagementState.initial()) {\r\n    on<UserManagementEvent>((event, emit) async {\r\n      await event.map(\r\n        loaded: (_) => _handleLoaded(emit),\r\n        roleChanged: (e) => _handleRoleChanged(e, emit),\r\n                statusChanged: (e) => _handleStatusChanged(e, emit),\r\n        userDeleted: (e) => _handleUserDeleted(e, emit),\r\n        refreshRequested: (_) => _handleLoaded(emit),\r\n      );\r\n    });\r\n  }\r\n\r\n  Future<void> _handleLoaded(Emitter<UserManagementState> emit) async {\r\n    emit(const UserManagementState.loading());\r\n\r\n    final result = await _authRepository.getAllUsers();\r\n\r\n    emit(result.fold(\r\n      (failure) => UserManagementState.failure(failure),\r\n      (users) => UserManagementState.loaded(users),\r\n    ));\r\n  }\r\n\r\n  Future<void> _handleRoleChanged(\r\n    RoleChanged event,\r\n    Emitter<UserManagementState> emit,\r\n  ) async {\r\n    final currentState = state;\r\n    if (currentState is! UserManagementLoaded) return;\r\n\r\n    emit(UserManagementState.loading());\r\n\r\n    final result = await _authRepository.updateUserRole(\r\n      event.userId,\r\n      event.newRole,\r\n    );\r\n\r\n    result.fold(\r\n      (failure) => emit(UserManagementState.failure(failure)),\r\n      (_) => add(const UserManagementEvent.refreshRequested()),\r\n    );\r\n  }\r\n\r\n  Future<void> _handleStatusChanged(\r\n    StatusChanged event,\r\n    Emitter<UserManagementState> emit,\r\n  ) async {\r\n    final currentState = state;\r\n    if (currentState is! UserManagementLoaded) return;\r\n\r\n    emit(UserManagementState.loading());\r\n\r\n    final result = await _authRepository.updateUserStatus(\r\n      event.userId,\r\n      event.newStatus,\r\n    );\r\n\r\n    result.fold(\r\n      (failure) => emit(UserManagementState.failure(failure)),\r\n      (_) => add(const UserManagementEvent.refreshRequested()),\r\n    );\r\n  }\r\n\r\n  Future<void> _handleUserDeleted(\r\n    UserDeleted event,\r\n    Emitter<UserManagementState> emit,\r\n  ) async {\r\n    final currentState = state;\r\n    if (currentState is! UserManagementLoaded) return;\r\n\r\n    emit(UserManagementState.loading());\r\n\r\n    final result = await _authRepository.deleteUser(event.userId);\r\n\r\n    result.fold(\r\n      (failure) => emit(UserManagementState.failure(failure)),\r\n      (_) => add(const UserManagementEvent.refreshRequested()),\r\n    );\r\n  }\r\n}\r\n\r\n\r\n"
+        }
+    ]
+}

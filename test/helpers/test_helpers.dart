@@ -1,8 +1,8 @@
 // test/helpers/test_helpers.dart
 
-import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';
-import 'package:experiment_planner/repositories/system_state_repository.dart';
-import 'package:experiment_planner/services/auth_service.dart';
+import 'package:experiment_planner/features/components/models/system_component.dart';
+import 'package:experiment_planner/features/system/repositories/system_state_repository.dart';
+import 'package:experiment_planner/features/auth/services/auth_service.dart';
 import 'package:mocktail/mocktail.dart';
 // Mock classes
 class MockAuthService extends Mock implements AuthService {}

@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/alarms/bloc/alarm_event.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734375170509,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734375170509,
+            "name": "Commit-0",
+            "content": "// lib/blocs/alarm/bloc/alarm_event.dart\r\n\r\nimport '../../../features/alarms/models/alarm.dart';\r\nimport '../../../shared/base/base_bloc_event.dart';\r\n\r\nabstract class AlarmEvent extends BaseBlocEvent {}\r\n\r\nclass LoadAlarms extends AlarmEvent {\r\n  final String? userId;\r\n  LoadAlarms({this.userId});\r\n}\r\n\r\nclass AddAlarm extends AlarmEvent {\r\n  final String message;\r\n  final AlarmSeverity severity;\r\n  final bool isSafetyAlert;\r\n\r\n  AddAlarm({\r\n    required this.message,\r\n    required this.severity,\r\n    this.isSafetyAlert = false,\r\n  });\r\n}\r\n\r\nclass AcknowledgeAlarm extends AlarmEvent {\r\n  final String alarmId;\r\n  AcknowledgeAlarm(this.alarmId);\r\n}\r\n\r\nclass ClearAlarm extends AlarmEvent {\r\n  final String alarmId;\r\n  ClearAlarm(this.alarmId);\r\n}\r\n\r\nclass ClearAllAcknowledgedAlarms extends AlarmEvent {}\r\n\r\nclass SubscribeToAlarms extends AlarmEvent {\r\n  final String? userId;\r\n  SubscribeToAlarms({this.userId});\r\n}\r\n\r\nclass UnsubscribeFromAlarms extends AlarmEvent {}"
+        }
+    ]
+}

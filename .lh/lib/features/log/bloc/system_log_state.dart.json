@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/log/bloc/system_log_state.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734376765321,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734376765321,
+            "name": "Commit-0",
+            "content": "import 'package:equatable/equatable.dart';\r\nimport 'package:experiment_planner/features/log/models/system_log_entry.dart';\r\n\r\nclass SystemLogState extends Equatable {\r\n  final bool isLoading;\r\n  final List<SystemLogEntry> entries;\r\n  final String? error;\r\n  final bool hasMoreEntries;\r\n  final DateTime? startDate;\r\n  final DateTime? endDate;\r\n\r\n  const SystemLogState({\r\n    required this.isLoading,\r\n    required this.entries,\r\n    this.error,\r\n    required this.hasMoreEntries,\r\n    this.startDate,\r\n    this.endDate,\r\n  });\r\n\r\n  factory SystemLogState.initial() {\r\n    return const SystemLogState(\r\n      isLoading: false,\r\n      entries: [],\r\n      hasMoreEntries: false,\r\n    );\r\n  }\r\n\r\n  @override\r\n  List<Object?> get props => [\r\n        isLoading,\r\n        entries,\r\n        error,\r\n        hasMoreEntries,\r\n        startDate,\r\n        endDate,\r\n      ];\r\n\r\n  SystemLogState copyWith({\r\n    bool? isLoading,\r\n    List<SystemLogEntry>? entries,\r\n    String? error,\r\n    bool? hasMoreEntries,\r\n    DateTime? startDate,\r\n    DateTime? endDate,\r\n  }) {\r\n    return SystemLogState(\r\n      isLoading: isLoading ?? this.isLoading,\r\n      entries: entries ?? this.entries,\r\n      error: error ?? this.error,\r\n      hasMoreEntries: hasMoreEntries ?? this.hasMoreEntries,\r\n      startDate: startDate ?? this.startDate,\r\n      endDate: endDate ?? this.endDate,\r\n    );\r\n  }\r\n}"
+        }
+    ]
+}

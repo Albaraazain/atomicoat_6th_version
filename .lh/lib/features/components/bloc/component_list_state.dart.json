@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/components/bloc/component_list_state.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734376765320,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734376765320,
+            "name": "Commit-0",
+            "content": "import 'package:equatable/equatable.dart';\r\nimport '../models/system_component.dart';\r\n\r\nclass ComponentListState extends Equatable {\r\n  final Map<String, SystemComponent> components;\r\n  final bool isLoading;\r\n  final String? error;\r\n\r\n  const ComponentListState({\r\n    this.components = const {},\r\n    this.isLoading = false,\r\n    this.error,\r\n  });\r\n\r\n  ComponentListState copyWith({\r\n    Map<String, SystemComponent>? components,\r\n    bool? isLoading,\r\n    String? error,\r\n  }) {\r\n    return ComponentListState(\r\n      components: components ?? this.components,\r\n      isLoading: isLoading ?? this.isLoading,\r\n      error: error ?? this.error,\r\n    );\r\n  }\r\n\r\n  @override\r\n  List<Object?> get props => [components, isLoading, error];\r\n}\r\n"
+        }
+    ]
+}

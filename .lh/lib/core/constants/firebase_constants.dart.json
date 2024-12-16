@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/core/constants/firebase_constants.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734378186419,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734378186419,
+            "name": "Commit-0",
+            "content": "// lib/core/constants/firebase_constants.dart\r\nclass FirebaseConstants {\r\n  static const String usersCollection = 'users';\r\n  static const String userRequestsCollection = 'user_requests';\r\n  static const String machineSerialCollection = 'machine_serials';\r\n\r\n  // Document fields\r\n  static const String idField = 'id';\r\n  static const String emailField = 'email';\r\n  static const String nameField = 'name';\r\n  static const String roleField = 'role';\r\n  static const String statusField = 'status';\r\n  static const String machineSerialField = 'machineSerial';\r\n  static const String createdAtField = 'createdAt';\r\n  static const String updatedAtField = 'updatedAt';\r\n}\r\n"
+        }
+    ]
+}

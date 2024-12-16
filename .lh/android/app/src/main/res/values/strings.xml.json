@@ -1,0 +1,18 @@
+{
+    "sourceFile": "android/app/src/main/res/values/strings.xml",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734301424589,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734301424589,
+            "name": "Commit-0",
+            "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<resources>\r\n    <string name=\"app_name\">AtomiCoat</string>\r\n</resources>\r\n"
+        }
+    ]
+}

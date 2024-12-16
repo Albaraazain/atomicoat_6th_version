@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/domain/repositories/i_user_request_repository.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734378364584,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734378364584,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/domain/repositories/i_user_request_repository.dart\r\nimport 'package:dartz/dartz.dart';\r\nimport '../entities/user_request.dart';\r\nimport '../../../../core/errors/failures.dart';\r\nimport '../../../../core/enums/user_request_status.dart';\r\n\r\nabstract class IUserRequestRepository {\r\n  Future<Either<Failure, Unit>> create(UserRequest request);\r\n  Future<Either<Failure, Unit>> updateStatus(String userId, UserRequestStatus status);\r\n  Future<Either<Failure, List<UserRequest>>> getPendingRequests();\r\n  Future<Either<Failure, int>> getPendingRequestCount();\r\n}\r\n"
+        }
+    ]
+}

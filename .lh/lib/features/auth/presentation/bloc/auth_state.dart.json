@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/bloc/auth_state.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734378833444,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734378833444,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/presentation/bloc/auth_state.dart\r\npart of 'auth_bloc.dart';\r\n\r\n@freezed\r\nclass AuthState with _$AuthState {\r\n  const factory AuthState.initial() = Initial;\r\n  const factory AuthState.authenticating() = Authenticating;\r\n  const factory AuthState.authenticated(User user) = Authenticated;\r\n  const factory AuthState.unauthenticated() = Unauthenticated;\r\n  const factory AuthState.failure(Failure failure) = Failure;\r\n}\r\n\r\n"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/widgets/auth_text_field.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734378849930,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734378849930,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/presentation/widgets/auth_text_field.dart\r\nimport 'package:flutter/material.dart';\r\n\r\nclass AuthTextField extends StatelessWidget {\r\n  final String label;\r\n  final String? hint;\r\n  final bool obscureText;\r\n  final TextEditingController? controller;\r\n  final String? Function(String?)? validator;\r\n  final TextInputType keyboardType;\r\n  final TextInputAction textInputAction;\r\n  final VoidCallback? onSubmitted;\r\n\r\n  const AuthTextField({\r\n    super.key,\r\n    required this.label,\r\n    this.hint,\r\n    this.obscureText = false,\r\n    this.controller,\r\n    this.validator,\r\n    this.keyboardType = TextInputType.text,\r\n    this.textInputAction = TextInputAction.next,\r\n    this.onSubmitted,\r\n  });\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return TextFormField(\r\n      controller: controller,\r\n      decoration: InputDecoration(\r\n        labelText: label,\r\n        hintText: hint,\r\n        border: const OutlineInputBorder(),\r\n        floatingLabelBehavior: FloatingLabelBehavior.always,\r\n      ),\r\n      obscureText: obscureText,\r\n      validator: validator,\r\n      keyboardType: keyboardType,\r\n      textInputAction: textInputAction,\r\n      onFieldSubmitted: (_) => onSubmitted?.call(),\r\n    );\r\n  }\r\n}\r\n"
+        }
+    ]
+}

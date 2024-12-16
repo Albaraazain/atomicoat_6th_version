@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/log/bloc/system_log_event.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734376765338,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734376765338,
+            "name": "Commit-0",
+            "content": "import 'package:equatable/equatable.dart';\r\nimport 'package:experiment_planner/features/components/models/system_component.dart';\r\n\r\nabstract class SystemLogEvent extends Equatable {\r\n  @override\r\n  List<Object?> get props => [];\r\n}\r\n\r\nclass LogEntryAdded extends SystemLogEvent {\r\n  final String message;\r\n  final ComponentStatus severity;\r\n\r\n  LogEntryAdded({\r\n    required this.message,\r\n    required this.severity,\r\n  });\r\n\r\n  @override\r\n  List<Object> get props => [message, severity];\r\n}\r\n\r\nclass LogEntriesLoaded extends SystemLogEvent {\r\n  final int limit;\r\n\r\n  LogEntriesLoaded({this.limit = 50});\r\n\r\n  @override\r\n  List<Object> get props => [limit];\r\n}\r\n\r\nclass LogEntriesFiltered extends SystemLogEvent {\r\n  final DateTime startDate;\r\n  final DateTime endDate;\r\n  final ComponentStatus? severityFilter;\r\n\r\n  LogEntriesFiltered({\r\n    required this.startDate,\r\n    required this.endDate,\r\n    this.severityFilter,\r\n  });\r\n\r\n  @override\r\n  List<Object?> get props => [startDate, endDate, severityFilter];\r\n}\r\n\r\nclass LogStreamStarted extends SystemLogEvent {}\r\n\r\nclass LogStreamStopped extends SystemLogEvent {}"
+        }
+    ]
+}

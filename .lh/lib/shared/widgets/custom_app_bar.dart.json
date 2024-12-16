@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/shared/widgets/custom_app_bar.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734376761208,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734376761208,
+            "name": "Commit-0",
+            "content": "\r\n\r\nimport 'package:flutter/material.dart';\r\nimport 'package:provider/provider.dart';\r\nimport '../../features/auth/providers/auth_provider.dart';\r\n\r\nclass CustomAppBar extends StatelessWidget implements PreferredSizeWidget {\r\n  final String title;\r\n  final VoidCallback? onDrawerIconPressed;\r\n\r\n  CustomAppBar({\r\n    required this.title,\r\n    this.onDrawerIconPressed,\r\n  });\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    final authProvider = Provider.of<AuthProvider>(context);\r\n\r\n    return AppBar(\r\n      leading: IconButton(\r\n        icon: Icon(Icons.menu),\r\n        onPressed: onDrawerIconPressed ?? () => Scaffold.of(context).openDrawer(),\r\n      ),\r\n      title: Text(title),\r\n      actions: [\r\n        IconButton(\r\n          icon: Icon(Icons.notifications),\r\n          onPressed: () {\r\n            ScaffoldMessenger.of(context).showSnackBar(\r\n              SnackBar(content: Text('Notifications not implemented yet')),\r\n            );\r\n          },\r\n        ),\r\n        IconButton(\r\n          icon: Icon(Icons.logout),\r\n          onPressed: () async {\r\n            await authProvider.signOut();\r\n          },\r\n        ),\r\n      ],\r\n    );\r\n  }\r\n\r\n  @override\r\n  Size get preferredSize => Size.fromHeight(kToolbarHeight);\r\n}"
+        }
+    ]
+}

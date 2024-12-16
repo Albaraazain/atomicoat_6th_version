@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/data/repositories/user_request_repository.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734378744417,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734378744417,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/data/repositories/user_request_repository.dart\r\nimport 'package:injectable/injectable.dart';\r\nimport 'package:dartz/dartz.dart';\r\nimport '../../domain/repositories/i_user_request_repository.dart';\r\nimport '../../domain/entities/user_request.dart';\r\nimport '../../../../core/errors/failures.dart';\r\nimport '../../../../core/enums/user_request_status.dart';\r\nimport '../datasources/user_request_remote_data_source.dart';\r\nimport 'package:internet_connection_checker/internet_connection_checker.dart';\r\n\r\n@LazySingleton(as: IUserRequestRepository)\r\nclass UserRequestRepository implements IUserRequestRepository {\r\n  final IUserRequestRemoteDataSource _remoteDataSource;\r\n  final InternetConnectionChecker _connectionChecker;\r\n\r\n  UserRequestRepository(this._remoteDataSource, this._connectionChecker);\r\n\r\n  @override\r\n  Future<Either<Failure, Unit>> create(UserRequest request) async {\r\n    try {\r\n      if (!await _connectionChecker.hasConnection) {\r\n        return left(const Failure.networkError());\r\n      }\r\n\r\n      await _remoteDataSource.create(request);\r\n      return right(unit);\r\n    } catch (e) {\r\n      return left(Failure.serverError(e.toString()));\r\n    }\r\n  }\r\n\r\n  @override\r\n  Future<Either<Failure, Unit>> updateStatus(\r\n    String userId,\r\n    UserRequestStatus status,\r\n  ) async {\r\n    try {\r\n      if (!await _connectionChecker.hasConnection) {\r\n        return left(const Failure.networkError());\r\n      }\r\n\r\n      await _remoteDataSource.updateStatus(userId, status);\r\n      return right(unit);\r\n    } catch (e) {\r\n      return left(Failure.serverError(e.toString()));\r\n    }\r\n  }\r\n\r\n  @override\r\n  Future<Either<Failure, List<UserRequest>>> getPendingRequests() async {\r\n    try {\r\n      if (!await _connectionChecker.hasConnection) {\r\n        return left(const Failure.networkError());\r\n      }\r\n\r\n      final requests = await _remoteDataSource.getPendingRequests();\r\n      return right(requests.map((model) => model.toDomain()).toList());\r\n    } catch (e) {\r\n      return left(Failure.serverError(e.toString()));\r\n    }\r\n  }\r\n\r\n  @override\r\n  Future<Either<Failure, int>> getPendingRequestCount() async {\r\n    try {\r\n      if (!await _connectionChecker.hasConnection) {\r\n        return left(const Failure.networkError());\r\n      }\r\n\r\n      final count = await _remoteDataSource.getPendingRequestCount();\r\n      return right(count);\r\n    } catch (e) {\r\n      return left(Failure.serverError(e.toString()));\r\n    }\r\n  }\r\n}\r\n"
+        }
+    ]
+}

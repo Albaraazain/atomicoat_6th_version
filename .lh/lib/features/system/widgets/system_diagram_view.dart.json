@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/system/widgets/system_diagram_view.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734376761208,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734376761208,
+            "name": "Commit-0",
+            "content": "\r\n\r\nimport 'package:flutter/material.dart';\r\nimport 'package:flutter_bloc/flutter_bloc.dart';\r\nimport '../../../blocs/system_state/bloc/system_state_bloc.dart';\r\nimport '../../../blocs/system_state/bloc/system_state_state.dart';\r\nimport '../../../blocs/component/bloc/component_list_bloc.dart';\r\nimport '../../../blocs/component/bloc/component_list_state.dart';\r\n\r\nclass SystemDiagramView extends StatelessWidget {\r\n  final List<Widget> overlays;\r\n  final double zoomFactor;\r\n  final bool enableOverlaySwiping;\r\n\r\n  const SystemDiagramView({\r\n    Key? key,\r\n    required this.overlays,\r\n    this.zoomFactor = 1.0,\r\n    this.enableOverlaySwiping = true,\r\n  }) : super(key: key);\r\n\r\n  Widget build(BuildContext context) {\r\n    print(\"SystemDiagramView: build called with ${overlays.length} overlays\");\r\n    return BlocBuilder<ComponentListBloc, ComponentListState>(\r\n      builder: (context, componentState) {\r\n        print(\r\n            \"SystemDiagramView: ComponentListState update - Components: ${componentState.components.length}\");\r\n        return BlocBuilder<SystemStateBloc, SystemStateState>(\r\n          builder: (context, systemState) {\r\n            Widget overlayWidget;\r\n\r\n            if (enableOverlaySwiping && overlays.length > 1) {\r\n              PageController _pageController = PageController();\r\n\r\n              overlayWidget = PageView(\r\n                controller: _pageController,\r\n                scrollDirection: Axis.vertical,\r\n                children: overlays,\r\n              );\r\n            } else {\r\n              overlayWidget = overlays.first;\r\n            }\r\n\r\n            return Stack(\r\n              children: [\r\n                Positioned.fill(\r\n                  child: Transform.scale(\r\n                    scale: zoomFactor,\r\n                    child: FittedBox(\r\n                      fit: BoxFit.contain,\r\n                      child: Image.asset(\r\n                        'assets/ald_system_diagram.png',\r\n                        alignment: Alignment.center,\r\n                      ),\r\n                    ),\r\n                  ),\r\n                ),\r\n                Positioned.fill(\r\n                  child: overlayWidget,\r\n                ),\r\n                // Additional widgets can be added here based on system or component state\r\n                if (systemState.isError) _buildErrorOverlay(),\r\n              ],\r\n            );\r\n          },\r\n        );\r\n      },\r\n    );\r\n  }\r\n\r\n  Widget _buildErrorOverlay() {\r\n    return Container(\r\n      color: Colors.red.withOpacity(0.3),\r\n      child: Center(\r\n        child: Container(\r\n          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),\r\n          decoration: BoxDecoration(\r\n            color: Colors.red,\r\n            borderRadius: BorderRadius.circular(8),\r\n          ),\r\n          child: Text(\r\n            'System Error',\r\n            style: TextStyle(\r\n              color: Colors.white,\r\n              fontWeight: FontWeight.bold,\r\n            ),\r\n          ),\r\n        ),\r\n      ),\r\n    );\r\n  }\r\n}\r\n"
+        }
+    ]
+}

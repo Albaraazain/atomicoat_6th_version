@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 4,
+            "activePatchIndex": 5,
             "patches": [
                 {
                     "date": 1734048944969,
@@ -24,6 +24,10 @@
                 {
                     "date": 1734049112603,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,9 +29,9 @@\n     ));\r\n     registerFallbackValue(Alarm(\r\n       id: 'dummy',\r\n       message: 'dummy',\r\n-      severity: AlarmSeverity.low,\r\n+      severity: AlarmSeverity.info,\r\n       timestamp: DateTime.now(),\r\n     ));\r\n   });\r\n \r\n"
+                },
+                {
+                    "date": 1734376765552,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,11 +3,11 @@\n import 'package:experiment_planner/blocs/alarm/repository/alarm_repository.dart';\r\n import 'package:experiment_planner/blocs/safety/bloc/safety_bloc.dart';\r\n import 'package:experiment_planner/blocs/safety/bloc/safety_event.dart';\r\n import 'package:experiment_planner/blocs/safety/repository/safety_repository.dart';\r\n-import 'package:experiment_planner/modules/system_operation_also_main_module/models/safety_error.dart';\r\n+import 'package:experiment_planner/features/safety/models/safety_error.dart';\r\n import 'package:experiment_planner/features/alarms/models/alarm.dart';\r\n-import 'package:experiment_planner/services/auth_service.dart';\r\n+import 'package:experiment_planner/features/auth/services/auth_service.dart';\r\n import 'package:flutter_test/flutter_test.dart';\r\n import 'package:mocktail/mocktail.dart';\r\n \r\n class MockSafetyRepository extends Mock implements SafetyRepository {}\r\n"
                 }
             ],
             "date": 1734048944969,

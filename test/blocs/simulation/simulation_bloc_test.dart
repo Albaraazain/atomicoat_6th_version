@@ -13,7 +13,7 @@ import 'package:experiment_planner/blocs/simulation/bloc/simulation_event.dart';
 import 'package:experiment_planner/blocs/simulation/bloc/simulation_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:experiment_planner/modules/system_operation_also_main_module/models/system_component.dart';
+import 'package:experiment_planner/features/components/models/system_component.dart';
 import 'package:experiment_planner/blocs/safety/bloc/safety_event.dart';
 
 class MockComponentBloc extends Mock implements ComponentBloc {}

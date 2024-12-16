@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/widgets/auth_button.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734378865991,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734378865991,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/presentation/widgets/auth_button.dart\r\nimport 'package:flutter/material.dart';\r\n\r\nclass AuthButton extends StatelessWidget {\r\n  final String text;\r\n  final VoidCallback? onPressed;\r\n  final bool isLoading;\r\n\r\n  const AuthButton({\r\n    super.key,\r\n    required this.text,\r\n    this.onPressed,\r\n    this.isLoading = false,\r\n  });\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return SizedBox(\r\n      width: double.infinity,\r\n      height: 50,\r\n      child: ElevatedButton(\r\n        onPressed: isLoading ? null : onPressed,\r\n        child: isLoading\r\n            ? const SizedBox(\r\n                height: 20,\r\n                width: 20,\r\n                child: CircularProgressIndicator(\r\n                  strokeWidth: 2,\r\n                ),\r\n              )\r\n            : Text(text),\r\n      ),\r\n    );\r\n  }\r\n}\r\n\r\n"
+        }
+    ]
+}

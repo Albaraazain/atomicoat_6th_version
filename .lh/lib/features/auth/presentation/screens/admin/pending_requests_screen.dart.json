@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/screens/admin/pending_requests_screen.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734379242284,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734379242284,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/presentation/screens/admin/pending_requests_screen.dart\r\nimport 'package:flutter/material.dart';\r\nimport 'package:flutter_bloc/flutter_bloc.dart';\r\nimport '../../bloc/pending_requests_bloc.dart';\r\nimport '../../widgets/request_list_item.dart';\r\n\r\n@RoutePage()\r\nclass PendingRequestsScreen extends StatelessWidget {\r\n  const PendingRequestsScreen({super.key});\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return Scaffold(\r\n      appBar: AppBar(\r\n        title: const Text('Pending Requests'),\r\n        actions: [\r\n          IconButton(\r\n            icon: const Icon(Icons.refresh),\r\n            onPressed: () {\r\n              context.read<PendingRequestsBloc>().add(\r\n                const PendingRequest"
+        }
+    ]
+}

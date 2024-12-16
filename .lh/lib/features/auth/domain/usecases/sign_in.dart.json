@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/features/auth/domain/usecases/sign_in.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734377885246,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734378426993,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,10 +1,38 @@\n // lib/features/auth/domain/usecases/sign_in.dart\r\n+import 'package:injectable/injectable.dart';\r\n+import 'package:dartz/dartz.dart';\r\n+import '../repositories/i_auth_repository.dart';\r\n+import '../entities/user.dart';\r\n+import '../../../../core/errors/failures.dart';\r\n+import '../value_objects/email.dart';\r\n+import '../value_objects/password.dart';\r\n+\r\n+@injectable\r\n\\ No newline at end of file\n class SignIn {\r\n   final IAuthRepository repository;\r\n \r\n-  const SignIn(this.repository);\r\n+  SignIn(this.repository);\r\n \r\n-  Future<Either<AuthFailure, User>> call(SignInParams params) {\r\n-    return repository.signIn(params.email, params.password);\r\n+  Future<Either<Failure, User>> call(SignInParams params) async {\r\n+    final emailAddress = EmailAddress(params.email);\r\n+    final password = Password(params.password);\r\n+\r\n+    if (!emailAddress.isValid()) {\r\n+      return left(const Failure.invalidInput('Invalid email format'));\r\n+    }\r\n+\r\n+    if (!password.isValid()) {\r\n+      return left(const Failure.invalidInput('Invalid password'));\r\n+    }\r\n+\r\n+    return await repository.signInWithEmailAndPassword(emailAddress, password);\r\n   }\r\n-}\n+}\r\n+\r\n+class SignInParams {\r\n+  final String email;\r\n+  final String password;\r\n+\r\n+  SignInParams({required this.email, required this.password});\r\n+}\r\n+\r\n"
+                }
+            ],
+            "date": 1734377885246,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/domain/usecases/sign_in.dart\r\nclass SignIn {\r\n  final IAuthRepository repository;\r\n\r\n  const SignIn(this.repository);\r\n\r\n  Future<Either<AuthFailure, User>> call(SignInParams params) {\r\n    return repository.signIn(params.email, params.password);\r\n  }\r\n}"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/log/bloc/system_log_bloc.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734376765346,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734376765346,
+            "name": "Commit-0",
+            "content": "import 'package:flutter_bloc/flutter_bloc.dart';\r\nimport 'package:experiment_planner/features/auth/services/auth_service.dart';\r\nimport 'package:experiment_planner/features/log/repositories/system_log_entry_repository.dart';\r\nimport 'package:experiment_planner/features/log/models/system_log_entry.dart';\r\nimport 'package:experiment_planner/features/components/models/system_component.dart';\r\nimport 'system_log_event.dart';\r\nimport 'system_log_state.dart';\r\n\r\nclass SystemLogBloc extends Bloc<SystemLogEvent, SystemLogState> {\r\n  final SystemLogEntryRepository _repository;\r\n  final AuthService _authService;\r\n\r\n  SystemLogBloc({\r\n    required SystemLogEntryRepository repository,\r\n    required AuthService authService,\r\n  })  : _repository = repository,\r\n        _authService = authService,\r\n        super(SystemLogState.initial()) {\r\n    on<LogEntryAdded>(_onLogEntryAdded);\r\n    on<LogEntriesLoaded>(_onLogEntriesLoaded);\r\n    on<LogEntriesFiltered>(_onLogEntriesFiltered);\r\n  }\r\n\r\n  Future<void> _onLogEntryAdded(\r\n    LogEntryAdded event,\r\n    Emitter<SystemLogState> emit,\r\n  ) async {\r\n    final userId = _authService.currentUserId;\r\n    if (userId == null) {\r\n      emit(state.copyWith(error: 'User not authenticated'));\r\n      return;\r\n    }\r\n\r\n    try {\r\n      await _repository.add(event.message, event.severity, userId: userId);\r\n      final entries = [...state.entries];\r\n      entries.insert(\r\n        0,\r\n        SystemLogEntry(\r\n          timestamp: DateTime.now(),\r\n          message: event.message,\r\n          severity: event.severity,\r\n        ),\r\n      );\r\n      emit(state.copyWith(entries: entries));\r\n    } catch (e) {\r\n      emit(state.copyWith(error: e.toString()));\r\n    }\r\n  }\r\n\r\n  Future<void> _onLogEntriesLoaded(\r\n    LogEntriesLoaded event,\r\n    Emitter<SystemLogState> emit,\r\n  ) async {\r\n    emit(state.copyWith(isLoading: true));\r\n    try {\r\n      final entries = await _repository.getRecentEntries(\r\n        _authService.currentUserId!,\r\n        limit: event.limit,\r\n      );\r\n      emit(state.copyWith(\r\n        entries: entries,\r\n        isLoading: false,\r\n        hasMoreEntries: entries.length >= event.limit,\r\n      ));\r\n    } catch (e) {\r\n      emit(state.copyWith(\r\n        error: e.toString(),\r\n        isLoading: false,\r\n      ));\r\n    }\r\n  }\r\n\r\n  Future<void> _onLogEntriesFiltered(\r\n    LogEntriesFiltered event,\r\n    Emitter<SystemLogState> emit,\r\n  ) async {\r\n    emit(state.copyWith(isLoading: true));\r\n    try {\r\n      final entries = await _repository.getEntriesByDateRange(\r\n        _authService.currentUserId!,\r\n        event.startDate,\r\n        event.endDate,\r\n      );\r\n      emit(state.copyWith(\r\n        entries: entries,\r\n        isLoading: false,\r\n        startDate: event.startDate,\r\n        endDate: event.endDate,\r\n      ));\r\n    } catch (e) {\r\n      emit(state.copyWith(\r\n        error: e.toString(),\r\n        isLoading: false,\r\n      ));\r\n    }\r\n  }\r\n}"
+        }
+    ]
+}

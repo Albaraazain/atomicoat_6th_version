@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/core/utils/typedefs.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734378132584,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734378151495,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,6 +3,5 @@\n import '../errors/failures.dart';\r\n \r\n typedef ResultFuture<T> = Future<Either<Failure, T>>;\r\n typedef ResultStream<T> = Stream<Either<Failure, T>>;\r\n-typedef DataMap = Map<String, dynamic>;\r\n-\r\n+typedef DataMap = Map<String, dynamic>;\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1734378132584,
+            "name": "Commit-0",
+            "content": "// lib/core/utils/typedefs.dart\r\nimport 'package:dartz/dartz.dart';\r\nimport '../errors/failures.dart';\r\n\r\ntypedef ResultFuture<T> = Future<Either<Failure, T>>;\r\ntypedef ResultStream<T> = Stream<Either<Failure, T>>;\r\ntypedef DataMap = Map<String, dynamic>;\r\n\r\n"
+        }
+    ]
+}
