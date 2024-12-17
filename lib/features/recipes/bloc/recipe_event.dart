@@ -1,5 +1,5 @@
 
-import 'package:experiment_planner/blocs/base/base_bloc_event.dart';
+import 'package:experiment_planner/shared/base/base_bloc_event.dart';
 
 import '../models/recipe.dart';
 

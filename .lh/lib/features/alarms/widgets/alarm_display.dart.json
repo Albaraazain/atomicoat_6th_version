@@ -3,11 +3,27 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 4,
             "patches": [
                 {
                     "date": 1734376760283,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734433477573,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,11 +1,8 @@\n \r\n \r\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n-import '../../../blocs/alarm/bloc/alarm_bloc.dart';\r\n-import '../../../blocs/alarm/bloc/alarm_event.dart';\r\n-import '../../../blocs/alarm/bloc/alarm_state.dart';\r\n import '../models/alarm.dart';\r\n \r\n class AlarmDisplay extends StatefulWidget {\r\n   @override\r\n"
+                },
+                {
+                    "date": 1734433486251,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,7 @@\n \r\n \r\n+import 'package:experiment_planner/features/alarms/bloc/alarm_bloc.dart';\r\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n import '../models/alarm.dart';\r\n \r\n"
+                },
+                {
+                    "date": 1734433491615,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,8 @@\n \r\n \r\n import 'package:experiment_planner/features/alarms/bloc/alarm_bloc.dart';\r\n+import 'package:experiment_planner/features/alarms/bloc/alarm_event.dart';\r\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n import '../models/alarm.dart';\r\n \r\n"
+                },
+                {
+                    "date": 1734433496703,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,9 @@\n \r\n \r\n import 'package:experiment_planner/features/alarms/bloc/alarm_bloc.dart';\r\n import 'package:experiment_planner/features/alarms/bloc/alarm_event.dart';\r\n+import 'package:experiment_planner/features/alarms/bloc/alarm_state.dart';\r\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n import '../models/alarm.dart';\r\n \r\n"
                 }
             ],
             "date": 1734376760283,

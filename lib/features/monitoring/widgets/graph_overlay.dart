@@ -2,12 +2,12 @@
 
 import 'dart:convert';
 import 'dart:math';
+import 'package:experiment_planner/features/components/bloc/component_list_bloc.dart';
+import 'package:experiment_planner/features/components/bloc/component_list_state.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../blocs/component/bloc/component_list_bloc.dart';
-import '../../../blocs/component/bloc/component_list_state.dart';
 import '../../components/models/system_component.dart';
 import '../../components/models/data_point.dart';
 

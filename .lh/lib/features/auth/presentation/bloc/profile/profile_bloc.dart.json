@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/bloc/profile/profile_bloc.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734426995401,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734426995401,
+            "name": "Commit-0",
+            "content": "//lib/features/auth/presentation/bloc/profile/profile_bloc.dart\r\nimport 'package:flutter_bloc/flutter_bloc.dart';\r\nimport 'package:freezed_annotation/freezed_annotation.dart';\r\nimport 'package:injectable/injectable.dart';\r\nimport '../../../domain/repositories/i_auth_repository.dart';\r\nimport '../../../domain/entities/user.dart';\r\nimport '../../../../../core/errors/failures.dart';\r\n\r\npart 'profile_event.dart';\r\npart 'profile_state.dart';\r\npart 'profile_bloc.freezed.dart';\r\n\r\n@injectable\r\nclass ProfileBloc extends Bloc<ProfileEvent, ProfileState> {\r\n  final IAuthRepository _authRepository;\r\n\r\n  ProfileBloc(this._authRepository) : super(const ProfileState.initial()) {\r\n    on<ProfileEvent>((event, emit) async {\r\n      await event.map(\r\n        started: (_) => _handleStarted(emit),\r\n        nameUpdated: (e) => _handleNameUpdated(e, emit),\r\n        passwordChangeRequested: (e) => _handlePasswordChangeRequested(e, emit),\r\n        profileImageUpdated: (e) => _handleProfileImageUpdated(e, emit),\r\n      );\r\n    });\r\n  }\r\n\r\n  Future<void> _handleStarted(Emitter<ProfileState> emit) async {\r\n    emit(const ProfileState.loading());\r\n\r\n    final userOption = await _authRepository.getSignedInUser();\r\n    userOption.fold(\r\n      () => emit(const ProfileState.failure(Failure.serverError('User not found'))),\r\n      (user) => emit(ProfileState.loaded(user)),\r\n    );\r\n  }\r\n\r\n  Future<void> _handleNameUpdated(\r\n    NameUpdated event,\r\n    Emitter<ProfileState> emit,\r\n  ) async {\r\n    final currentState = state;\r\n    if (currentState is! ProfileLoaded) return;\r\n\r\n    emit(const ProfileState.loading());\r\n\r\n    final result = await _authRepository.updateUserName(event.newName);\r\n    result.fold(\r\n      (failure) => emit(ProfileState.failure(failure)),\r\n      (_) => add(const ProfileEvent.started()),\r\n    );\r\n  }\r\n\r\n  Future<void> _handlePasswordChangeRequested(\r\n    PasswordChangeRequested event,\r\n    Emitter<ProfileState> emit,\r\n  ) async {\r\n    emit(const ProfileState.loading());\r\n\r\n    final result = await _authRepository.updatePassword(\r\n      event.currentPassword,\r\n      event.newPassword,\r\n    );\r\n\r\n    result.fold(\r\n      (failure) => emit(ProfileState.failure(failure)),\r\n      (_) => emit(const ProfileState.passwordChangeSuccess()),\r\n    );\r\n  }\r\n\r\n  Future<void> _handleProfileImageUpdated(\r\n    ProfileImageUpdated event,\r\n    Emitter<ProfileState> emit,\r\n  ) async {\r\n    final currentState = state;\r\n    if (currentState is! ProfileLoaded) return;\r\n\r\n    emit(const ProfileState.loading());\r\n\r\n    final result = await _authRepository.updateProfileImage(event.imageFile);\r\n    result.fold(\r\n      (failure) => emit(ProfileState.failure(failure)),\r\n      (_) => add(const ProfileEvent.started()),\r\n    );\r\n  }\r\n}\r\n"
+        }
+    ]
+}

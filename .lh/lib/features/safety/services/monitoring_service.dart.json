@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/features/safety/services/monitoring_service.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734462242838,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734462434554,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,19 +1,90 @@\n import 'dart:async';\r\n \r\n class MonitoringService {\r\n+  StreamController<MonitoringStatus>? _controller;\r\n+  Timer? _timer;\r\n+\r\n   Stream<MonitoringStatus> startMonitoring() {\r\n-    // Implement your monitoring logic here\r\n-    return Stream.periodic(const Duration(seconds: 1), (count) {\r\n-      // Add your monitoring logic\r\n-      return MonitoringStatus(); // Replace with actual status\r\n+    _controller?.close();\r\n+    _controller = StreamController<MonitoringStatus>();\r\n+\r\n+    _timer?.cancel();\r\n+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {\r\n+      if (_controller?.isClosed ?? true) {\r\n+        timer.cancel();\r\n+        return;\r\n+      }\r\n+\r\n+      // Create status with all monitored parameters\r\n+      final status = MonitoringStatus(\r\n+        parameters: _getCurrentParameters(),\r\n+        systemState: _getSystemState(),\r\n+        timestamp: DateTime.now(),\r\n+      );\r\n+\r\n+      _controller?.add(status);\r\n     });\r\n+\r\n+    return _controller!.stream;\r\n   }\r\n \r\n   void stopMonitoring() {\r\n-    // Implement stop monitoring logic\r\n+    _timer?.cancel();\r\n+    _timer = null;\r\n+    _controller?.close();\r\n+    _controller = null;\r\n   }\r\n+\r\n+  void dispose() {\r\n+    stopMonitoring();\r\n+  }\r\n+\r\n+  Map<String, double> _getCurrentParameters() {\r\n+    // Implement your parameter reading logic\r\n+    return {\r\n+      'temperature': 25.0,\r\n+      'pressure': 1.0,\r\n+      'flow_rate': 2.5,\r\n+      // Add other parameters\r\n+    };\r\n+  }\r\n+\r\n+  SystemState _getSystemState() {\r\n+    // Get current system state\r\n+    return SystemState(\r\n+      isRunning: true,\r\n+      mode: SystemMode.normal,\r\n+      // Add other state information\r\n+    );\r\n+  }\r\n }\r\n \r\n class MonitoringStatus {\r\n-  // Add properties and methods for your monitoring status\r\n+  final Map<String, double> parameters;\r\n+  final SystemState systemState;\r\n+  final DateTime timestamp;\r\n+\r\n+  MonitoringStatus({\r\n+    required this.parameters,\r\n+    required this.systemState,\r\n+    required this.timestamp,\r\n+  });\r\n }\r\n+\r\n+class SystemState {\r\n+  final bool isRunning;\r\n+  final SystemMode mode;\r\n+  // Add other state fields\r\n+\r\n+  SystemState({\r\n+    required this.isRunning,\r\n+    required this.mode,\r\n+  });\r\n+}\r\n+\r\n+enum SystemMode {\r\n+  normal,\r\n+  maintenance,\r\n+  error,\r\n+  emergency\r\n+}\r\n"
+                }
+            ],
+            "date": 1734462242838,
+            "name": "Commit-0",
+            "content": "import 'dart:async';\r\n\r\nclass MonitoringService {\r\n  Stream<MonitoringStatus> startMonitoring() {\r\n    // Implement your monitoring logic here\r\n    return Stream.periodic(const Duration(seconds: 1), (count) {\r\n      // Add your monitoring logic\r\n      return MonitoringStatus(); // Replace with actual status\r\n    });\r\n  }\r\n\r\n  void stopMonitoring() {\r\n    // Implement stop monitoring logic\r\n  }\r\n}\r\n\r\nclass MonitoringStatus {\r\n  // Add properties and methods for your monitoring status\r\n}\r\n"
+        }
+    ]
+}

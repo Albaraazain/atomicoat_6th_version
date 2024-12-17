@@ -1,5 +1,6 @@
 // lib/blocs/monitoring/parameter/bloc/parameter_monitoring_event.dart
-import '../../../base/base_bloc_event.dart';
+import 'package:experiment_planner/shared/base/base_bloc_event.dart';
+
 
 sealed class ParameterMonitoringEvent extends BaseBlocEvent {
   ParameterMonitoringEvent() : super();

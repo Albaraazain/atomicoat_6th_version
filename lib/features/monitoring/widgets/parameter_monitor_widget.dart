@@ -1,9 +1,9 @@
 
-import 'package:experiment_planner/blocs/monitoring/parameter/bloc/parameter_monitoring_event.dart';
+import 'package:experiment_planner/features/monitoring/bloc/parameter_monitoring_bloc.dart';
+import 'package:experiment_planner/features/monitoring/bloc/parameter_monitoring_event.dart';
+import 'package:experiment_planner/features/monitoring/bloc/parameter_monitoring_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../blocs/monitoring/parameter/bloc/parameter_monitoring_bloc.dart';
-import '../../../blocs/monitoring/parameter/bloc/parameter_monitoring_state.dart';
 import '../../components/models/system_component.dart';
 
 class ParameterMonitorWidget extends StatelessWidget {

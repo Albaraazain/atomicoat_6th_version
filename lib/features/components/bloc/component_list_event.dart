@@ -1,5 +1,3 @@
-
-
 import 'package:equatable/equatable.dart';
 import '../models/system_component.dart';
 
@@ -12,7 +10,7 @@ abstract class ComponentListEvent extends Equatable {
 
 class LoadComponents extends ComponentListEvent {
   final String? userId;
-  const LoadComponents({this.userId});
+  const LoadComponents({this.userId}) : super();
 
   @override
   List<Object> get props => [userId ?? ''];
@@ -42,11 +40,12 @@ class GetSystemIssues extends ComponentListEvent {}
 
 class UpdateComponent extends ComponentListEvent {
   final SystemComponent component;
+  final String? userId;  // Make userId optional since it's not needed for global components
 
-  const UpdateComponent(this.component);
+  UpdateComponent(this.component, {this.userId});
 
   @override
-  List<Object> get props => [component];
+  List<Object> get props => [component, userId ?? ''];
 }
 
 class RemoveComponent extends ComponentListEvent {

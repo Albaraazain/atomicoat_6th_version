@@ -10,21 +10,26 @@ import '../models/safety_error.dart';
 import '../repository/safety_repository.dart';
 import 'safety_event.dart';
 import 'safety_state.dart';
+import '../services/monitoring_service.dart';
 
 class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
   final SafetyRepository _repository;
   final AlarmBloc _alarmBloc;
   final AuthBloc _authBloc;
+  final MonitoringService _monitoringService;
   StreamSubscription? _errorSubscription;
   StreamSubscription? _authSubscription;
+  StreamSubscription<MonitoringStatus>? _monitoringSubscription;
 
   SafetyBloc({
     required SafetyRepository repository,
     required AlarmBloc alarmBloc,
     required AuthBloc authBloc,
+    required MonitoringService monitoringService,
   })  : _repository = repository,
         _alarmBloc = alarmBloc,
         _authBloc = authBloc,
+        _monitoringService = monitoringService,
         super(SafetyState.initial()) {
     on<SafetyMonitoringStarted>(_onMonitoringStarted);
     on<SafetyMonitoringPaused>(_onMonitoringPaused);
@@ -48,8 +53,6 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     try {
-      await _errorSubscription?.cancel();
-
       final userId = _currentUserId;
       if (userId == null) {
         emit(state.copyWith(
@@ -59,26 +62,57 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
         return;
       }
 
-      _errorSubscription = _repository.watchActiveErrors().listen(
-        (errors) {
-          emit(state.copyWith(
-            isLoading: false,
-            isMonitoringActive: true,
-            activeErrors: errors,
-          ));
+      // Cancel existing subscription
+      await _errorSubscription?.cancel();
+
+      // Start monitoring service
+      _monitoringSubscription?.cancel();
+      _monitoringSubscription = _monitoringService.startMonitoring().listen(
+        (status) {
+          if (!isClosed) {
+            // Handle monitoring status updates
+            emit(state.copyWith(
+              isMonitoringActive: true,
+              lastStatus: status,
+              error: null,
+            ));
+          }
         },
         onError: (error) {
-          emit(state.copyWith(
-            isLoading: false,
-            error: BlocUtils.handleError(error),
-          ));
+          if (!isClosed) {
+            add(SafetyErrorDetected(
+              SafetyError(
+                id: DateTime.now().millisecondsSinceEpoch.toString(), // Add unique ID
+                description: 'Monitoring error: ${error.toString()}',
+                severity: SafetyErrorSeverity.warning,
+              ),
+            ));
+          }
         },
       );
+
+      // Set up error subscription
+      emit(state.copyWith(isLoading: true));
+
+      await emit.forEach(
+        _repository.watchActiveErrors(userId: userId),
+        onData: (List<SafetyError> errors) => state.copyWith(
+          isLoading: false,
+          isMonitoringActive: true,
+          activeErrors: errors,
+        ),
+        onError: (error, stack) => state.copyWith(
+          isLoading: false,
+          error: BlocUtils.handleError(error),
+        ),
+      );
     } catch (error) {
-      emit(state.copyWith(
-        isLoading: false,
-        error: BlocUtils.handleError(error),
-      ));
+      if (!emit.isDone) {
+        emit(state.copyWith(
+          isLoading: false,
+          error: BlocUtils.handleError(error),
+        ));
+      }
     }
   }
 
@@ -96,7 +130,10 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     try {
-      await _repository.addSafetyError(event.error);
+      final userId = _currentUserId;
+      if (userId == null) return;
+
+      await _repository.addSafetyError(event.error, userId: userId);
 
       // Add corresponding alarm using constructor
       _alarmBloc.add(AddAlarm(
@@ -115,7 +152,10 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     try {
-      await _repository.resolveError(event.errorId);
+      final userId = _currentUserId;
+      if (userId == null) return;
+
+      await _repository.resolveError(event.errorId, userId: userId);
     } catch (error) {
       emit(state.copyWith(error: BlocUtils.handleError(error)));
     }
@@ -126,11 +166,15 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     try {
+      final userId = _currentUserId;
+      if (userId == null) return;
+
       await _repository.updateThresholds(
         event.componentId,
         event.parameterName,
         event.minThreshold,
         event.maxThreshold,
+        userId: userId,
       );
     } catch (error) {
       emit(state.copyWith(error: BlocUtils.handleError(error)));
@@ -152,6 +196,8 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
   Future<void> close() async {
     await _errorSubscription?.cancel();
     await _authSubscription?.cancel();
+    await _monitoringSubscription?.cancel();
+    _monitoringService.dispose();
     return super.close();
   }
 }

@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/features/auth/data/models/notification_settings_model.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734427296562,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734427488304,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -24,11 +24,29 @@\n         systemAlerts: settings.systemAlerts,\r\n         maintenanceUpdates: settings.maintenanceUpdates,\r\n       );\r\n \r\n+  factory NotificationSettingsModel.fromFirestore(Map<String, dynamic> json) {\r\n+    return NotificationSettingsModel(\r\n+      emailNotifications: json['emailNotifications'] ?? true,\r\n+      pushNotifications: json['pushNotifications'] ?? true,\r\n+      systemAlerts: json['systemAlerts'] ?? true,\r\n+      maintenanceUpdates: json['maintenanceUpdates'] ?? true,\r\n+    );\r\n\\ No newline at end of file\n+  }\r\n+\r\n   const NotificationSettingsModel._();\r\n \r\n   NotificationSettings toDomain() => NotificationSettings(\r\n         emailNotifications: emailNotifications,\r\n         pushNotifications: pushNotifications,\r\n         systemAlerts: systemAlerts,\r\n-        maintenanceUpdates:\n+        maintenanceUpdates: maintenanceUpdates,\r\n+      );\r\n+\r\n+  Map<String, dynamic> toFirestore() => {\r\n+        'emailNotifications': emailNotifications,\r\n+        'pushNotifications': pushNotifications,\r\n+        'systemAlerts': systemAlerts,\r\n+        'maintenanceUpdates': maintenanceUpdates,\r\n+      };\r\n+}\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1734427296562,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/data/models/notification_settings_model.dart\r\nimport 'package:freezed_annotation/freezed_annotation.dart';\r\nimport '../../domain/entities/notification_settings.dart';\r\n\r\npart 'notification_settings_model.freezed.dart';\r\npart 'notification_settings_model.g.dart';\r\n\r\n@freezed\r\nclass NotificationSettingsModel with _$NotificationSettingsModel {\r\n  const factory NotificationSettingsModel({\r\n    @Default(true) bool emailNotifications,\r\n    @Default(true) bool pushNotifications,\r\n    @Default(true) bool systemAlerts,\r\n    @Default(true) bool maintenanceUpdates,\r\n  }) = _NotificationSettingsModel;\r\n\r\n  factory NotificationSettingsModel.fromJson(Map<String, dynamic> json) =>\r\n      _$NotificationSettingsModelFromJson(json);\r\n\r\n  factory NotificationSettingsModel.fromDomain(NotificationSettings settings) =>\r\n      NotificationSettingsModel(\r\n        emailNotifications: settings.emailNotifications,\r\n        pushNotifications: settings.pushNotifications,\r\n        systemAlerts: settings.systemAlerts,\r\n        maintenanceUpdates: settings.maintenanceUpdates,\r\n      );\r\n\r\n  const NotificationSettingsModel._();\r\n\r\n  NotificationSettings toDomain() => NotificationSettings(\r\n        emailNotifications: emailNotifications,\r\n        pushNotifications: pushNotifications,\r\n        systemAlerts: systemAlerts,\r\n        maintenanceUpdates:"
+        }
+    ]
+}

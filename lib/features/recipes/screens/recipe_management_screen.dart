@@ -1,6 +1,5 @@
-
-
 import 'package:experiment_planner/features/recipes/bloc/recipe_bloc.dart';
+import 'package:experiment_planner/features/recipes/bloc/recipe_event.dart';
 import 'package:experiment_planner/features/recipes/bloc/recipe_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +7,13 @@ import '../models/recipe.dart';
 import 'recipe_detail_screen.dart';
 
 class RecipeManagementScreen extends StatelessWidget {
+  final String userId;  // Add userId parameter
+
+  const RecipeManagementScreen({
+    Key? key,
+    required this.userId,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<RecipeBloc, RecipeState>(
@@ -97,7 +103,10 @@ class RecipeManagementScreen extends StatelessWidget {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => RecipeDetailScreen(recipeId: recipeId),
+        builder: (context) => RecipeDetailScreen(
+          recipeId: recipeId,
+          userId: userId,
+        ),
       ),
     );
 

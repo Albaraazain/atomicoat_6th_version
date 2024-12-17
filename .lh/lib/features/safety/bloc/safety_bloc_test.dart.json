@@ -3,11 +3,19 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 2,
             "patches": [
                 {
                     "date": 1734376765348,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734434772058,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,16 +1,9 @@\n import 'package:bloc_test/bloc_test.dart';\r\n import 'package:flutter_test/flutter_test.dart';\r\n import 'package:mocktail/mocktail.dart';\r\n-import 'package:experiment_planner/blocs/alarm/bloc/alarm_bloc.dart';\r\n-import 'package:experiment_planner/blocs/alarm/bloc/alarm_event.dart';\r\n-import 'package:experiment_planner/blocs/safety/bloc/safety_bloc.dart';\r\n-import 'package:experiment_planner/blocs/safety/bloc/safety_event.dart';\r\n-import 'package:experiment_planner/blocs/safety/bloc/safety_state.dart';\r\n-import 'package:experiment_planner/blocs/safety/repository/safety_repository.dart';\r\n import 'package:experiment_planner/features/alarms/models/alarm.dart';\r\n import 'package:experiment_planner/features/safety/models/safety_error.dart';\r\n-import 'package:experiment_planner/features/auth/services/auth_service.dart';\r\n \r\n class MockSafetyRepository extends Mock implements SafetyRepository {}\r\n class MockAuthService extends Mock implements AuthService {}\r\n class MockAlarmBloc extends Mock implements AlarmBloc {}\r\n"
+                },
+                {
+                    "date": 1734434780812,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,7 @@\n import 'package:bloc_test/bloc_test.dart';\r\n+import 'package:experiment_planner/features/alarms/bloc/alarm_bloc.dart';\r\n+import 'package:experiment_planner/features/safety/repository/safety_repository.dart';\r\n import 'package:flutter_test/flutter_test.dart';\r\n import 'package:mocktail/mocktail.dart';\r\n import 'package:experiment_planner/features/alarms/models/alarm.dart';\r\n import 'package:experiment_planner/features/safety/models/safety_error.dart';\r\n"
                 }
             ],
             "date": 1734376765348,

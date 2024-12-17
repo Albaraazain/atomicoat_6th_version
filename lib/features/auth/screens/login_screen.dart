@@ -8,7 +8,14 @@ import '../bloc/auth_event.dart';
 import 'registration_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  final String? errorMessage;
+  final String? errorCode;
+
+  const LoginScreen({
+    Key? key,
+    this.errorMessage,
+    this.errorCode,
+  }) : super(key: key);
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -101,16 +108,29 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state.hasError) {
+            final Color errorColor = state.isAuthError
+                ? Colors.red.shade700
+                : state.isAccessDenied
+                    ? Colors.orange.shade700
+                    : Colors.red.shade900;
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Row(
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.white),
+                    Icon(
+                      state.isAuthError
+                          ? Icons.security
+                          : state.isAccessDenied
+                              ? Icons.no_accounts
+                              : Icons.error_outline,
+                      color: Colors.white
+                    ),
                     const SizedBox(width: 8),
                     Expanded(child: Text(state.errorMessage!)),
                   ],
                 ),
-                backgroundColor: Colors.red.shade700,
+                backgroundColor: errorColor,
                 behavior: SnackBarBehavior.floating,
                 action: SnackBarAction(
                   label: 'Dismiss',

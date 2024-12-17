@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/core/enums/user_role.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734431232570,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734431232570,
+            "name": "Commit-0",
+            "content": "// lib/enums/user_role.dart\r\n\r\nenum UserRole {\r\n  operator,\r\n  engineer,\r\n  admin,\r\n  user;\r\n\r\n  String toJson() => toString().split('.').last;\r\n}\r\n"
+        }
+    ]
+}

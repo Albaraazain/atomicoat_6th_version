@@ -1,17 +1,16 @@
-
-
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import '../models/system_component.dart';
-import '../repository/component_repository.dart';
+import '../repository/user_component_state_repository.dart';
 import 'component_event.dart';
 import 'component_state.dart';
 
 class ComponentBloc extends Bloc<ComponentEvent, ComponentState> {
-  final ComponentRepository _repository;
+  final UserComponentStateRepository _repository;
+  final String userId;
   StreamSubscription<SystemComponent?>? _componentSubscription;
 
-  ComponentBloc(this._repository) : super(ComponentState.initial()) {
+  ComponentBloc(this._repository, {required this.userId}) : super(ComponentState.initial()) {
     on<ComponentInitialized>(_onComponentInitialized);
     on<ComponentValueUpdated>(_onComponentValueUpdated);
     on<ComponentSetValueUpdated>(_onComponentSetValueUpdated);
@@ -30,14 +29,14 @@ class ComponentBloc extends Bloc<ComponentEvent, ComponentState> {
     emit(ComponentState.loading());
 
     try {
-      final component = await _repository.getComponent(event.componentName);
+      final component = await _repository.get(event.componentName, userId: userId);
       if (component != null) {
         emit(ComponentState.loaded(component));
 
         // Start watching for changes
         await _componentSubscription?.cancel();
         _componentSubscription = _repository
-            .watchComponent(event.componentName)
+            .watch(event.componentName, userId: userId)
             .listen(
               (component) {
                 if (!emit.isDone) {
@@ -66,7 +65,10 @@ class ComponentBloc extends Bloc<ComponentEvent, ComponentState> {
     try {
       final updatedComponent = state.component!;
       updatedComponent.updateCurrentValues(event.currentValues);
-      await _repository.saveComponentState(updatedComponent);
+      await _repository.saveComponentState(
+        updatedComponent,
+        userId: userId,
+      );
       emit(ComponentState.loaded(updatedComponent));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
@@ -82,7 +84,10 @@ class ComponentBloc extends Bloc<ComponentEvent, ComponentState> {
     try {
       final updatedComponent = state.component!;
       updatedComponent.updateSetValues(event.setValues);
-      await _repository.saveComponentState(updatedComponent);
+      await _repository.saveComponentState(
+        updatedComponent,
+        userId: userId,
+      );
       emit(ComponentState.loaded(updatedComponent));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
@@ -98,7 +103,10 @@ class ComponentBloc extends Bloc<ComponentEvent, ComponentState> {
     try {
       final updatedComponent = state.component!;
       updatedComponent.isActivated = event.isActivated;
-      await _repository.saveComponentState(updatedComponent);
+      await _repository.saveComponentState(
+        updatedComponent,
+        userId: userId,
+      );
       emit(ComponentState.loaded(updatedComponent));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
@@ -114,7 +122,10 @@ class ComponentBloc extends Bloc<ComponentEvent, ComponentState> {
     try {
       final updatedComponent = state.component!;
       updatedComponent.addErrorMessage(event.errorMessage);
-      await _repository.saveComponentState(updatedComponent);
+      await _repository.saveComponentState(
+        updatedComponent,
+        userId: userId,
+      );
       emit(ComponentState.loaded(updatedComponent));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
@@ -130,7 +141,10 @@ class ComponentBloc extends Bloc<ComponentEvent, ComponentState> {
     try {
       final updatedComponent = state.component!;
       updatedComponent.clearErrorMessages();
-      await _repository.saveComponentState(updatedComponent);
+      await _repository.saveComponentState(
+        updatedComponent,
+        userId: userId,
+      );
       emit(ComponentState.loaded(updatedComponent));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
@@ -146,7 +160,10 @@ class ComponentBloc extends Bloc<ComponentEvent, ComponentState> {
     try {
       final updatedComponent = state.component!;
       updatedComponent.status = event.status;
-      await _repository.saveComponentState(updatedComponent);
+      await _repository.saveComponentState(
+        updatedComponent,
+        userId: userId,
+      );
       emit(ComponentState.loaded(updatedComponent));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
@@ -162,7 +179,10 @@ class ComponentBloc extends Bloc<ComponentEvent, ComponentState> {
     try {
       final updatedComponent = state.component!;
       updatedComponent.updateLastCheckDate(event.checkDate);
-      await _repository.saveComponentState(updatedComponent);
+      await _repository.saveComponentState(
+        updatedComponent,
+        userId: userId,
+      );
       emit(ComponentState.loaded(updatedComponent));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
@@ -183,7 +203,10 @@ class ComponentBloc extends Bloc<ComponentEvent, ComponentState> {
       if (event.maxValues != null) {
         updatedComponent.updateMaxValues(event.maxValues!);
       }
-      await _repository.saveComponentState(updatedComponent);
+      await _repository.saveComponentState(
+        updatedComponent,
+        userId: userId,
+      );
       emit(ComponentState.loaded(updatedComponent));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));

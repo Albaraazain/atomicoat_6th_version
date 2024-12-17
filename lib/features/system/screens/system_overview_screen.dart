@@ -1,10 +1,10 @@
 
 
+import 'package:experiment_planner/features/system/bloc/system_state_bloc.dart';
+import 'package:experiment_planner/features/system/bloc/system_state_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../blocs/system_state/bloc/system_state_bloc.dart';
-import '../../../blocs/system_state/bloc/system_state_state.dart';
 import '../widgets/system_diagram_view.dart';
 import '../../components/widgets/component_control_overlay.dart';
 import '../../monitoring/widgets/graph_overlay.dart';

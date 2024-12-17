@@ -1,28 +1,25 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:experiment_planner/shared/base/base_repository.dart';
 import '../../components/models/data_point.dart';
-import '../../../base/base_repository.dart';
 
-class ParameterMonitoringRepository extends BlocRepository<Map<String, dynamic>> {
+class ParameterMonitoringRepository extends BaseRepository<Map<String, dynamic>> {
   static const int MAX_HISTORY_POINTS = 1000;
+  final FirebaseFirestore _firestore;
 
-  ParameterMonitoringRepository({String? userId}) : super(
-    collectionName: 'parameter_monitoring',
-    userId: userId,
-  );
+  ParameterMonitoringRepository({String? userId}) :
+    _firestore = FirebaseFirestore.instance,
+    super('parameter_monitoring');
 
   @override
   Map<String, dynamic> fromJson(Map<String, dynamic> json) => json;
-
-  @override
-  Map<String, dynamic> toJson(Map<String, dynamic> data) => data;
 
   Future<void> saveParameterValue(
     String componentId,
     String parameterName,
     DataPoint dataPoint,
+    {required String userId}
   ) async {
-    final docRef = userCollection
+    final docRef = getUserCollection(userId)
         .doc(componentId)
         .collection('parameters')
         .doc(parameterName)
@@ -32,7 +29,7 @@ class ParameterMonitoringRepository extends BlocRepository<Map<String, dynamic>>
     await docRef.set(dataPoint.toJson());
 
     // Cleanup old data points
-    final oldData = await userCollection
+    final oldData = await getUserCollection(userId)
         .doc(componentId)
         .collection('parameters')
         .doc(parameterName)
@@ -42,7 +39,7 @@ class ParameterMonitoringRepository extends BlocRepository<Map<String, dynamic>>
         .get();
 
     if (oldData.docs.length > MAX_HISTORY_POINTS) {
-      final batch = FirebaseFirestore.instance.batch();
+      final batch = _firestore.batch();
       oldData.docs
           .sublist(MAX_HISTORY_POINTS)
           .forEach((doc) => batch.delete(doc.reference));
@@ -54,10 +51,11 @@ class ParameterMonitoringRepository extends BlocRepository<Map<String, dynamic>>
     String componentId,
     String parameterName,
     Duration duration,
+    {required String userId}
   ) {
     final cutoff = DateTime.now().subtract(duration);
 
-    return userCollection
+    return getUserCollection(userId)
         .doc(componentId)
         .collection('parameters')
         .doc(parameterName)
@@ -76,16 +74,24 @@ class ParameterMonitoringRepository extends BlocRepository<Map<String, dynamic>>
     String parameterName,
     double minValue,
     double maxValue,
+    {required String userId}
   ) async {
-    await save('thresholds/$componentId/$parameterName', {
-      'min': minValue,
-      'max': maxValue,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    await add(
+      'thresholds/$componentId/$parameterName',
+      {
+        'min': minValue,
+        'max': maxValue,
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      userId: userId
+    );
   }
 
-  Future<Map<String, Map<String, double>>> getThresholds(String componentId) async {
-    final doc = await get('thresholds/$componentId');
+  Future<Map<String, Map<String, double>>> getThresholds(
+    String componentId,
+    {required String userId}
+  ) async {
+    final doc = await get('thresholds/$componentId', userId: userId);
     if (doc == null) return {};
 
     final thresholds = <String, Map<String, double>>{};

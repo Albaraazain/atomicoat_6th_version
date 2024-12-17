@@ -3,11 +3,19 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 2,
             "patches": [
                 {
                     "date": 1734376760336,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734434612844,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,10 +1,7 @@\n \r\n-import 'package:experiment_planner/blocs/monitoring/parameter/bloc/parameter_monitoring_event.dart';\r\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n-import '../../../blocs/monitoring/parameter/bloc/parameter_monitoring_bloc.dart';\r\n-import '../../../blocs/monitoring/parameter/bloc/parameter_monitoring_state.dart';\r\n import '../../components/models/system_component.dart';\r\n \r\n class ParameterMonitorWidget extends StatelessWidget {\r\n   final SystemComponent component;\r\n"
+                },
+                {
+                    "date": 1734434617931,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,7 @@\n \r\n+import 'package:experiment_planner/features/monitoring/bloc/parameter_monitoring_bloc.dart';\r\n+import 'package:experiment_planner/features/monitoring/bloc/parameter_monitoring_state.dart';\r\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n import '../../components/models/system_component.dart';\r\n \r\n"
                 }
             ],
             "date": 1734376760336,

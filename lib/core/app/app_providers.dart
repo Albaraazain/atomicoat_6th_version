@@ -1,73 +1,94 @@
-// lib/core/app/app_providers.dart
+import 'package:experiment_planner/features/alarms/bloc/alarm_bloc.dart';
+import 'package:experiment_planner/features/alarms/repository/alarm_repository.dart';
+import 'package:experiment_planner/features/auth/bloc/auth_bloc.dart';
+import 'package:experiment_planner/features/auth/repository/auth_repository.dart';
+import 'package:experiment_planner/features/components/bloc/component_bloc.dart';
+import 'package:experiment_planner/features/components/bloc/component_list_bloc.dart';
+import 'package:experiment_planner/features/components/repository/global_component_repository.dart';
+import 'package:experiment_planner/features/components/repository/user_component_state_repository.dart';
+import 'package:experiment_planner/features/log/bloc/system_log_bloc.dart';
+import 'package:experiment_planner/features/log/repositories/system_log_entry_repository.dart';
+import 'package:experiment_planner/features/monitoring/bloc/parameter_monitoring_bloc.dart';
+import 'package:experiment_planner/features/recipes/bloc/recipe_bloc.dart';
+import 'package:experiment_planner/features/recipes/repository/recipe_repository.dart';
+import 'package:experiment_planner/features/safety/bloc/safety_bloc.dart';
+import 'package:experiment_planner/features/safety/repository/safety_repository.dart';
+import 'package:experiment_planner/features/simulation/bloc/simulation_bloc.dart';
+import 'package:experiment_planner/features/system/bloc/system_state_bloc.dart';
+import 'package:experiment_planner/features/system/repositories/global_system_state_repository.dart';
+import 'package:experiment_planner/features/system/repositories/user_system_state_repository.dart';
+import 'package:experiment_planner/shared/services/navigation_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
+import '../../features/safety/services/monitoring_service.dart';
 
-// Bloc imports
-import '../../features/auth/bloc/auth_bloc.dart';
-import '../../features/alarms/bloc/alarm_bloc.dart';
-import '../../features/components/bloc/component_bloc.dart';
-import '../../features/components/bloc/component_list_bloc.dart';
-import '../../features/monitoring/bloc/parameter_monitoring_bloc.dart';
-import '../../features/recipes/bloc/recipe_bloc.dart';
-import '../../features/safety/bloc/safety_bloc.dart';
-import '../../features/simulation/bloc/simulation_bloc.dart';
-import '../../features/system/bloc/system_state_bloc.dart';
-import '../../features/log/bloc/system_log_bloc.dart';
 
-// Repository imports
-import '../../features/auth/repository/auth_repository.dart';
-import '../../features/alarms/repository/alarm_repository.dart';
-import '../../features/components/repository/component_repository.dart';
-import '../../features/recipes/repository/recipe_repository.dart';
-import '../../features/safety/repository/safety_repository.dart';
-import '../../features/system/repositories/system_state_repository.dart';
-import '../../features/log/repositories/system_log_entry_repository.dart';
-
-// Service imports
-import '../../shared/services/navigation_service.dart';
 
 class AppProviders {
   static List<BlocProvider> createBlocProviders() {
     // Initialize repositories
     final authRepository = AuthRepository();
-    final systemStateRepository = SystemStateRepository();
-    final recipeRepository = RecipeRepository();
-    final componentRepository = ComponentRepository();
     final alarmRepository = AlarmRepository();
+    final userComponentRepository = UserComponentStateRepository();
+    final globalComponentRepository = GlobalComponentRepository();
+    final logRepository = SystemLogEntryRepository();
+    final recipeRepository = RecipeRepository();
     final safetyRepository = SafetyRepository();
-    final systemLogRepository = SystemLogEntryRepository();
+    final globalSystemStateRepository = GlobalSystemStateRepository();
+    final userSystemStateRepository = UserSystemStateRepository();
 
     // Initialize core blocs
     final authBloc = AuthBloc(authRepository: authRepository);
-    final alarmBloc = AlarmBloc(alarmRepository);
-    final systemStateBloc = SystemStateBloc(systemStateRepository);
-    final componentListBloc = ComponentListBloc(componentRepository);
+    final alarmBloc = AlarmBloc(alarmRepository, authBloc);
 
-    // Initialize safety bloc with dependencies
+    // Initialize system state bloc with dependencies
+    final systemStateBloc = SystemStateBloc(
+      userRepository: userSystemStateRepository,
+      globalRepository: globalSystemStateRepository,
+      authBloc: authBloc,
+    );
+
+    // Initialize component blocs with dependencies
+    final componentListBloc = ComponentListBloc(globalComponentRepository);
+
+    // Initialize safety bloc
     final safetyBloc = SafetyBloc(
       repository: safetyRepository,
       alarmBloc: alarmBloc,
       authBloc: authBloc,
+      monitoringService: MonitoringService(),
     );
 
     return [
       // Core blocs
-      BlocProvider<AuthBloc>.value(value: authBloc),
-      BlocProvider<AlarmBloc>.value(value: alarmBloc),
-      BlocProvider<SystemStateBloc>.value(value: systemStateBloc),
+      BlocProvider<AuthBloc>(create: (context) => authBloc),
+      BlocProvider<AlarmBloc>(create: (context) => alarmBloc),
+      BlocProvider<SystemStateBloc>(create: (context) => systemStateBloc),
 
       // Component blocs
+      BlocProvider<ComponentListBloc>(create: (context) => componentListBloc),
       BlocProvider<ComponentBloc>(
-        create: (context) => ComponentBloc(componentRepository),
+        create: (context) => ComponentBloc(
+          userComponentRepository,
+          userId: authBloc.state.user?.id ?? '',
+        ),
       ),
-      BlocProvider<ComponentListBloc>.value(value: componentListBloc),
 
       // Safety and monitoring blocs
-      BlocProvider<SafetyBloc>.value(value: safetyBloc),
+      BlocProvider<SafetyBloc>(
+        create: (context) => SafetyBloc(
+          repository: safetyRepository,
+          alarmBloc: context.read<AlarmBloc>(),
+          authBloc: context.read<AuthBloc>(),
+          monitoringService: context.read<MonitoringService>(),
+        ),
+      ),
       BlocProvider<ParameterMonitoringBloc>(
         create: (context) => ParameterMonitoringBloc(
           safetyBloc: safetyBloc,
+          userRepository: userComponentRepository,
+          userId: authBloc.state.user?.id ?? '',
         ),
       ),
 
@@ -91,7 +112,7 @@ class AppProviders {
       // System log bloc
       BlocProvider<SystemLogBloc>(
         create: (context) => SystemLogBloc(
-          repository: systemLogRepository,
+          repository: logRepository,
           authBloc: authBloc,
         ),
       ),
@@ -103,6 +124,41 @@ class AppProviders {
   }) {
     return [
       Provider<NavigationService>.value(value: navigationService),
+      Provider<MonitoringService>(
+        create: (_) => MonitoringService(),
+      ),
+    ];
+  }
+
+  static List<RepositoryProvider> createRepositoryProviders() {
+    return [
+      RepositoryProvider<AuthRepository>(
+        create: (context) => AuthRepository(),
+      ),
+      RepositoryProvider<AlarmRepository>(
+        create: (context) => AlarmRepository(),
+      ),
+      RepositoryProvider<UserComponentStateRepository>(
+        create: (context) => UserComponentStateRepository(),
+      ),
+      RepositoryProvider<GlobalComponentRepository>(
+        create: (context) => GlobalComponentRepository(),
+      ),
+      RepositoryProvider<SystemLogEntryRepository>(
+        create: (context) => SystemLogEntryRepository(),
+      ),
+      RepositoryProvider<RecipeRepository>(
+        create: (context) => RecipeRepository(),
+      ),
+      RepositoryProvider<SafetyRepository>(
+        create: (context) => SafetyRepository(),
+      ),
+      RepositoryProvider<GlobalSystemStateRepository>(
+        create: (context) => GlobalSystemStateRepository(),
+      ),
+      RepositoryProvider<UserSystemStateRepository>(
+        create: (context) => UserSystemStateRepository(),
+      ),
     ];
   }
 }

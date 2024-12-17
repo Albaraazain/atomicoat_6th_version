@@ -1,14 +1,10 @@
-
-
+import 'package:experiment_planner/features/system/bloc/system_state_bloc.dart';
+import 'package:experiment_planner/features/system/bloc/system_state_event.dart';
+import 'package:experiment_planner/features/system/bloc/system_state_state.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../auth/providers/auth_provider.dart';
-import '../../../blocs/system_state/bloc/system_state_bloc.dart';
-import '../../../blocs/system_state/bloc/system_state_event.dart';
-import '../../../blocs/system_state/bloc/system_state_state.dart';
 import '../../components/widgets/component_control_overlay.dart';
 import '../../monitoring/widgets/data_visualization.dart';
 import '../../monitoring/widgets/graph_overlay.dart';
@@ -17,6 +13,9 @@ import '../../recipes/widgets/recipe_control.dart';
 import '../../alarms/widgets/alarm_display.dart';
 import '../widgets/system_diagram_view.dart';
 import '../../monitoring/widgets/troubleshooting_overlay.dart';
+import '../../auth/bloc/auth_bloc.dart';
+import '../../auth/bloc/auth_event.dart';
+import '../../auth/bloc/auth_state.dart';
 
 class MainDashboard extends StatefulWidget {
   @override
@@ -44,34 +43,9 @@ class _MainDashboardState extends State<MainDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
     return Scaffold(
       backgroundColor: Color(0xFF1A1A1A),
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: () {
-            Scaffold.of(context).openDrawer();
-          },
-        ),
-        title: Text('Main Dashboard'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Notifications not implemented yet')),
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () async {
-              await authProvider.signOut();
-            },
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(),
       body: BlocListener<SystemStateBloc, SystemStateState>(
         listener: (context, state) {
           if (state.isError) {
@@ -109,6 +83,38 @@ class _MainDashboardState extends State<MainDashboard> {
         ),
       ),
       floatingActionButton: _buildSpeedDial(context),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      leading: IconButton(
+        icon: Icon(Icons.menu),
+        onPressed: () {
+          Scaffold.of(context).openDrawer();
+        },
+      ),
+      title: Text('Main Dashboard'),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.notifications),
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Notifications not implemented yet')),
+            );
+          },
+        ),
+        BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            return IconButton(
+              icon: Icon(Icons.logout),
+              onPressed: () {
+                context.read<AuthBloc>().add(SignOutRequested());
+              },
+            );
+          },
+        ),
+      ],
     );
   }
 

@@ -1,8 +1,7 @@
-
-
 import 'package:equatable/equatable.dart';
 import '../models/system_component.dart';
 
+// Keep this as ComponentState since it's specific to the components feature
 class ComponentState extends Equatable {
   final SystemComponent? component;
   final bool isLoading;

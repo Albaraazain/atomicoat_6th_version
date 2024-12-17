@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/widgets/settings_section.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734427646638,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734427646638,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/presentation/widgets/settings_section.dart\r\nimport 'package:flutter/material.dart';\r\n\r\nclass SettingsSection extends StatelessWidget {\r\n  final String title;\r\n  final List<Widget> children;\r\n\r\n  const SettingsSection({\r\n    super.key,\r\n    required this.title,\r\n    required this.children,\r\n  });\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return Column(\r\n      crossAxisAlignment: CrossAxisAlignment.start,\r\n      children: [\r\n        Padding(\r\n          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),\r\n          child: Text(\r\n            title,\r\n            style: Theme.of(context).textTheme.titleSmall?.copyWith(\r\n              color: Theme.of(context).colorScheme.primary,\r\n            ),\r\n          ),\r\n        ),\r\n        Card(\r\n          margin: EdgeInsets.zero,\r\n          child: Column(\r\n            children: children,\r\n          ),\r\n        ),\r\n      ],\r\n    );\r\n  }\r\n}\r\n"
+        }
+    ]
+}

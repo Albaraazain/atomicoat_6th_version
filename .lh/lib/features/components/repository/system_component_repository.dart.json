@@ -3,11 +3,15 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 1,
             "patches": [
                 {
                     "date": 1734376760285,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734433678493,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,9 +1,9 @@\n \r\n \r\n import 'package:cloud_firestore/cloud_firestore.dart';\r\n+import 'package:experiment_planner/shared/base/base_repository.dart';\r\n import '../models/system_component.dart';\r\n-import '../../../repositories/base_repository.dart';\r\n \r\n class SystemComponentRepository extends BaseRepository<SystemComponent> {\r\n   SystemComponentRepository() : super('system_components');\r\n \r\n"
                 }
             ],
             "date": 1734376760285,

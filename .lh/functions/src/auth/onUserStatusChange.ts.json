@@ -1,0 +1,18 @@
+{
+    "sourceFile": "functions/src/auth/onUserStatusChange.ts",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734427801488,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734427801488,
+            "name": "Commit-0",
+            "content": "// functions/src/auth/onUserStatusChange.ts\r\nimport * as functions from 'firebase-functions';\r\nimport * as admin from 'firebase-admin';\r\n\r\nexport const onUserStatusChange = functions.firestore\r\n  .document('users/{userId}')\r\n  .onUpdate(async (change, context) => {\r\n    const newData = change.after.data();\r\n    const previousData = change.before.data();\r\n\r\n    if (newData.status === previousData.status) {\r\n      return null;\r\n    }\r\n\r\n    const user = await admin.firestore()\r\n      .collection('users')\r\n      .doc(context.params.userId)\r\n      .get();\r\n\r\n    const fcmToken = user.data()?.fcmToken;\r\n    if (!fcmToken) return null;\r\n\r\n    const message = {\r\n      notification: {\r\n        title: 'Account Status Update',\r\n        body: `Your account status has been updated to ${newData.status}`,\r\n      },\r\n      data: {\r\n        type: 'STATUS_UPDATE',\r\n        status: newData.status,\r\n      },\r\n      token: fcmToken,\r\n    };\r\n\r\n    return admin.messaging().send(message);\r\n  });\r\n\r\n"
+        }
+    ]
+}

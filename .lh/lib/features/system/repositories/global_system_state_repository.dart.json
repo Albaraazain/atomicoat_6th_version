@@ -1,0 +1,26 @@
+{
+    "sourceFile": "lib/features/system/repositories/global_system_state_repository.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1734456975036,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734457028822,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -31,9 +31,9 @@\n     final doc = snapshot.docs.first;\r\n     return SystemStateData(\r\n       id: doc.id,\r\n       data: doc.data() as Map<String, dynamic>,\r\n-      timestamp: (doc.data()['timestamp'] as Timestamp).toDate(),\r\n+      timestamp: ((doc.data() as Map<String, dynamic>)['timestamp'] as Timestamp).toDate(),\r\n     );\r\n   }\r\n \r\n   Stream<SystemStateData?> watchSystemState() {\r\n"
+                },
+                {
+                    "date": 1734457043585,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -46,9 +46,9 @@\n       final doc = snapshot.docs.first;\r\n       return SystemStateData(\r\n         id: doc.id,\r\n         data: doc.data() as Map<String, dynamic>,\r\n-        timestamp: (doc.data()['timestamp'] as Timestamp).toDate(),\r\n+        timestamp: ((doc.data() as Map<String, dynamic>)['timestamp'] as Timestamp).toDate(),\r\n       );\r\n     });\r\n   }\r\n }\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1734456975036,
+            "name": "Commit-0",
+            "content": "// lib/features/system/repositories/global_system_state_repository.dart\r\n\r\nimport 'package:cloud_firestore/cloud_firestore.dart';\r\nimport '../models/system_state_data.dart';\r\n\r\nclass GlobalSystemStateRepository {\r\n  final FirebaseFirestore _firestore;\r\n  static const String _collection = 'system_states';\r\n\r\n  GlobalSystemStateRepository({FirebaseFirestore? firestore})\r\n      : _firestore = firestore ?? FirebaseFirestore.instance;\r\n\r\n  CollectionReference get stateCollection => _firestore.collection(_collection);\r\n\r\n  Future<void> saveSystemState(Map<String, dynamic> stateData) async {\r\n    String id = DateTime.now().millisecondsSinceEpoch.toString();\r\n    await stateCollection.doc(id).set({\r\n      ...stateData,\r\n      'timestamp': FieldValue.serverTimestamp(),\r\n    });\r\n  }\r\n\r\n  Future<SystemStateData?> getLatestState() async {\r\n    final snapshot = await stateCollection\r\n        .orderBy('timestamp', descending: true)\r\n        .limit(1)\r\n        .get();\r\n\r\n    if (snapshot.docs.isEmpty) return null;\r\n\r\n    final doc = snapshot.docs.first;\r\n    return SystemStateData(\r\n      id: doc.id,\r\n      data: doc.data() as Map<String, dynamic>,\r\n      timestamp: (doc.data()['timestamp'] as Timestamp).toDate(),\r\n    );\r\n  }\r\n\r\n  Stream<SystemStateData?> watchSystemState() {\r\n    return stateCollection\r\n        .orderBy('timestamp', descending: true)\r\n        .limit(1)\r\n        .snapshots()\r\n        .map((snapshot) {\r\n      if (snapshot.docs.isEmpty) return null;\r\n      final doc = snapshot.docs.first;\r\n      return SystemStateData(\r\n        id: doc.id,\r\n        data: doc.data() as Map<String, dynamic>,\r\n        timestamp: (doc.data()['timestamp'] as Timestamp).toDate(),\r\n      );\r\n    });\r\n  }\r\n}"
+        }
+    ]
+}

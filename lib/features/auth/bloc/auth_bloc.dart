@@ -14,6 +14,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignInRequested>(_onSignInRequested);
     on<SignUpRequested>(_onSignUpRequested);
     on<SignOutRequested>(_onSignOutRequested);
+
+    // Add automatic check on initialization
+    add(AuthCheckRequested());
   }
 
   Future<void> _onAuthCheckRequested(
@@ -46,13 +49,33 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(state.copyWith(
         status: AuthStatus.authenticated,
         user: user,
-        errorMessage: null,
       ));
     } catch (e) {
-      emit(state.copyWith(
-        status: AuthStatus.error,
-        errorMessage: e.toString(),
-      ));
+      if (e is AuthException) {
+        emit(state.copyWith(
+          status: AuthStatus.authError,
+          errorMessage: e.message,
+          errorCode: e.code,
+        ));
+      } else if (e is UserDataException) {
+        emit(state.copyWith(
+          status: AuthStatus.userDataError,
+          errorMessage: e.message,
+          errorCode: e.code,
+        ));
+      } else if (e is AccessDeniedException) {
+        emit(state.copyWith(
+          status: AuthStatus.accessDenied,
+          errorMessage: e.message,
+          errorCode: e.code,
+        ));
+      } else {
+        emit(state.copyWith(
+          status: AuthStatus.userDataError,
+          errorMessage: e.toString(),
+          errorCode: 'unknown_error',
+        ));
+      }
     }
   }
 
@@ -71,13 +94,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
 
       emit(state.copyWith(
-        status: AuthStatus.unauthenticated,
+        status: AuthStatus.registrationSuccess,
         errorMessage: 'Registration successful. Please wait for admin approval.',
       ));
     } catch (e) {
+      final isAuthError = e.toString().contains('auth/');
+
       emit(state.copyWith(
-        status: AuthStatus.error,
+        status: isAuthError ? AuthStatus.authError : AuthStatus.userDataError,
         errorMessage: e.toString(),
+        errorCode: isAuthError ? e.toString().split('/')[1] : null,
       ));
     }
   }
@@ -97,7 +123,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ));
     } catch (e) {
       emit(state.copyWith(
-        status: AuthStatus.error,
+        status: AuthStatus.userDataError,
         errorMessage: e.toString(),
       ));
     }

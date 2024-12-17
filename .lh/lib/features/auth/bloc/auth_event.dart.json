@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/features/auth/bloc/auth_event.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734431047795,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734431345334,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,27 @@\n+// lib/features/auth/bloc/auth_event.dart\r\n+abstract class AuthEvent {}\r\n+\r\n+class AuthCheckRequested extends AuthEvent {}\r\n+\r\n+class SignInRequested extends AuthEvent {\r\n+  final String email;\r\n+  final String password;\r\n+\r\n+  SignInRequested(this.email, this.password);\r\n+}\r\n+\r\n+class SignUpRequested extends AuthEvent {\r\n+  final String email;\r\n+  final String password;\r\n+  final String name;\r\n+  final String machineSerial;\r\n+\r\n+  SignUpRequested({\r\n+    required this.email,\r\n+    required this.password,\r\n+    required this.name,\r\n+    required this.machineSerial,\r\n+  });\r\n+}\r\n+\r\n+class SignOutRequested extends AuthEvent {}\r\n"
+                }
+            ],
+            "date": 1734431047795,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/bloc/auth_event.dart\r\nabstract class AuthEvent {}\r\n\r\nclass SignInRequested extends AuthEvent {\r\n  final String email;\r\n  final String password;\r\n\r\n  SignInRequested(this.email, this.password);\r\n}\r\n\r\nclass SignUpRequested extends AuthEvent {\r\n  final String email;\r\n  final String password;\r\n  final String name;\r\n  final String machineSerial;\r\n\r\n  SignUpRequested(this.email, this.password, this.name, this.machineSerial);\r\n}\r\n\r\nclass SignOutRequested extends AuthEvent {}"
+        }
+    ]
+}

@@ -3,11 +3,19 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 2,
             "patches": [
                 {
                     "date": 1734379212915,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734429675347,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,6 @@\n // lib/features/auth/presentation/bloc/pending_requests_bloc.dart\r\n+import 'package:experiment_planner/features/auth/presentation/bloc/settings/pending_requests_state.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n import 'package:freezed_annotation/freezed_annotation.dart';\r\n import 'package:injectable/injectable.dart';\r\n import '../../domain/repositories/i_user_request_repository.dart';\r\n"
+                },
+                {
+                    "date": 1734429689965,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,5 @@\n // lib/features/auth/presentation/bloc/pending_requests_bloc.dart\r\n-import 'package:experiment_planner/features/auth/presentation/bloc/settings/pending_requests_state.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n import 'package:freezed_annotation/freezed_annotation.dart';\r\n import 'package:injectable/injectable.dart';\r\n import '../../domain/repositories/i_user_request_repository.dart';\r\n"
                 }
             ],
             "date": 1734379212915,

@@ -104,16 +104,29 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state.hasError) {
+            final Color errorColor = state.isAuthError
+                ? Colors.red.shade700
+                : state.isAccessDenied
+                    ? Colors.orange.shade700
+                    : Colors.red.shade900;
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Row(
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.white),
+                    Icon(
+                      state.isAuthError
+                          ? Icons.security
+                          : state.isAccessDenied
+                              ? Icons.no_accounts
+                              : Icons.error_outline,
+                      color: Colors.white
+                    ),
                     const SizedBox(width: 8),
                     Expanded(child: Text(state.errorMessage!)),
                   ],
                 ),
-                backgroundColor: Colors.red.shade700,
+                backgroundColor: errorColor,
                 behavior: SnackBarBehavior.floating,
                 action: SnackBarAction(
                   label: 'Dismiss',
@@ -125,7 +138,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           } else if (state.isRegistrationSuccessful) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Registration successful! Please login.'),
+                content: Text('Registration successful! Please wait for admin approval.'),
                 backgroundColor: Colors.green,
               ),
             );

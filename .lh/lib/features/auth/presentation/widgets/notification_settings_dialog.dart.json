@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/widgets/notification_settings_dialog.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734427675263,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734427675263,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/presentation/widgets/notification_settings_dialog.dart\r\nimport 'package:flutter/material.dart';\r\nimport '../../domain/entities/notification_settings.dart';\r\n\r\nclass NotificationSettingsDialog extends StatefulWidget {\r\n  final NotificationSettings settings;\r\n  final ValueChanged<NotificationSettings> onSave;\r\n\r\n  const NotificationSettingsDialog({\r\n    super.key,\r\n    required this.settings,\r\n    required this.onSave,\r\n  });\r\n\r\n  @override\r\n  State<NotificationSettingsDialog> createState() => _NotificationSettingsDialogState();\r\n}\r\n\r\nclass _NotificationSettingsDialogState extends State<NotificationSettingsDialog> {\r\n  late bool emailNotifications;\r\n  late bool pushNotifications;\r\n  late bool systemAlerts;\r\n  late bool maintenanceUpdates;\r\n\r\n  @override\r\n  void initState() {\r\n    super.initState();\r\n    emailNotifications = widget.settings.emailNotifications;\r\n    pushNotifications = widget.settings.pushNotifications;\r\n    systemAlerts = widget.settings.systemAlerts;\r\n    maintenanceUpdates = widget.settings.maintenanceUpdates;\r\n  }\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return AlertDialog(\r\n      title: const Text('Notification Settings'),\r\n      content: Column(\r\n        mainAxisSize: MainAxisSize.min,\r\n        children: [\r\n          SwitchListTile(\r\n            title: const Text('Email Notifications'),\r\n            subtitle: const Text('Receive updates via email'),\r\n            value: emailNotifications,\r\n            onChanged: (value) => setState(() => emailNotifications = value),\r\n          ),\r\n          SwitchListTile(\r\n            title: const Text('Push Notifications'),\r\n            subtitle: const Text('Receive push notifications'),\r\n            value: pushNotifications,\r\n            onChanged: (value) => setState(() => pushNotifications = value),\r\n          ),\r\n          SwitchListTile(\r\n            title: const Text('System Alerts'),\r\n            subtitle: const Text('Critical system notifications'),\r\n            value: systemAlerts,\r\n            onChanged: (value) => setState(() => systemAlerts = value),\r\n          ),\r\n          SwitchListTile(\r\n            title: const Text('Maintenance Updates'),\r\n            subtitle: const Text('System maintenance notifications'),\r\n            value: maintenanceUpdates,\r\n            onChanged: (value) => setState(() => maintenanceUpdates = value),\r\n          ),\r\n        ],\r\n      ),\r\n      actions: [\r\n        TextButton(\r\n          onPressed: () => Navigator.pop(context),\r\n          child: const Text('Cancel'),\r\n        ),\r\n        TextButton(\r\n          onPressed: () {\r\n            Navigator.pop(context);\r\n            widget.onSave(\r\n              NotificationSettings(\r\n                emailNotifications: emailNotifications,\r\n                pushNotifications: pushNotifications,\r\n                systemAlerts: systemAlerts,\r\n                maintenanceUpdates: maintenanceUpdates,\r\n              ),\r\n            );\r\n          },\r\n          child: const Text('Save'),\r\n        ),\r\n      ],\r\n    );\r\n  }\r\n}\r\n\r\n"
+        }
+    ]
+}

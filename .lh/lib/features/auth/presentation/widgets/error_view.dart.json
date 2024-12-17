@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/widgets/error_view.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734426964388,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734426964388,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/presentation/widgets/error_view.dart\r\nimport 'package:flutter/material.dart';\r\n\r\nclass ErrorView extends StatelessWidget {\r\n  final String message;\r\n  final VoidCallback? onRetry;\r\n\r\n  const ErrorView({\r\n    super.key,\r\n    required this.message,\r\n    this.onRetry,\r\n  });\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return Center(\r\n      child: Padding(\r\n        padding: const EdgeInsets.all(24),\r\n        child: Column(\r\n          mainAxisAlignment: MainAxisAlignment.center,\r\n          children: [\r\n            Icon(\r\n              Icons.error_outline,\r\n              size: 48,\r\n              color: Theme.of(context).colorScheme.error,\r\n            ),\r\n            const SizedBox(height: 16),\r\n            Text(\r\n              message,\r\n              textAlign: TextAlign.center,\r\n              style: Theme.of(context).textTheme.titleMedium,\r\n            ),\r\n            if (onRetry != null) ...[\r\n              const SizedBox(height: 24),\r\n              ElevatedButton.icon(\r\n                onPressed: onRetry,\r\n                icon: const Icon(Icons.refresh),\r\n                label: const Text('Retry'),\r\n              ),\r\n            ],\r\n          ],\r\n        ),\r\n      ),\r\n    );\r\n  }\r\n}"
+        }
+    ]
+}

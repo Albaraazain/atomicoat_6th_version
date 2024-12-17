@@ -1,36 +1,31 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:experiment_planner/core/exceptions/bloc_exception.dart';
+import 'package:experiment_planner/features/recipes/utils/recipe_debug.dart';
+import 'package:experiment_planner/shared/base/base_repository.dart';
 import 'package:experiment_planner/features/recipes/models/recipe.dart';
 
-class RecipeRepository {
-  final FirebaseFirestore _firestore;
-  static const String _collection = 'recipes';
+class RecipeRepository extends BaseRepository<Recipe> {
+  RecipeRepository() : super('recipes');
 
-  RecipeRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  @override
+  Recipe fromJson(Map<String, dynamic> json) => Recipe.fromJson(json);
 
-  // Add this new method after the constructor
   Stream<List<Recipe>> watchUserRecipes(String userId) {
-    return _firestore
-        .collection(_collection)
-        .where('userId', isEqualTo: userId)
+    return getUserCollection(userId)
         .orderBy('lastModified', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => Recipe.fromJson(doc.data()))
+            .map((doc) => fromJson(doc.data() as Map<String, dynamic>))
             .toList());
   }
 
-  // Replace existing getAll method
-  Future<List<Recipe>> getAll({
+  Future<List<Recipe>> getByFilters({
     required String userId,
     String? substrate,
     DateTime? modifiedAfter,
   }) async {
     try {
-      Query query = _firestore
-          .collection(_collection)
-          .where('userId', isEqualTo: userId);
+      var query = getUserCollection(userId).orderBy('lastModified', descending: true);
 
       if (substrate != null) {
         query = query.where('substrate', isEqualTo: substrate);
@@ -41,12 +36,10 @@ class RecipeRepository {
             isGreaterThan: Timestamp.fromDate(modifiedAfter));
       }
 
-      final querySnapshot = await query
-          .orderBy('lastModified', descending: true)
-          .get();
+      final querySnapshot = await query.get();
 
       return querySnapshot.docs
-          .map((doc) => Recipe.fromJson(doc.data() as Map<String, dynamic>))
+          .map((doc) => fromJson(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
       throw BlocException(
@@ -55,13 +48,42 @@ class RecipeRepository {
     }
   }
 
-  // Add a new recipe
-  Future<void> add(String id, Recipe recipe, {required String userId}) async {
+  // Modified to match base class signature
+  @override
+  Future<void> add(String id, Recipe recipe, {String? userId}) async {
     try {
-      final data = recipe.toJson();
-      data['userId'] = userId;
+      if (userId == null) {
+        throw BlocException('UserId is required for adding recipes');
+      }
 
-      await _firestore.collection(_collection).doc(id).set(data);
+      // Debug print before saving
+      print('Saving recipe:\n${RecipeDebug.prettyPrintRecipe(recipe)}');
+
+      final validation = RecipeDebug.validateRecipeData(recipe);
+      if (validation['critical']!.isNotEmpty) {
+        throw BlocException(
+          'Recipe validation failed:\n${validation['critical']!.join('\n')}',
+        );
+      }
+
+      if (validation['warnings']!.isNotEmpty) {
+        print('Recipe warnings:\n${validation['warnings']!.join('\n')}');
+      }
+
+      // Convert to JSON and verify data
+      final json = recipe.toJson();
+      print('Recipe JSON:\n$json');
+
+      await getUserCollection(userId).doc(id).set(json);
+
+      // Verify save
+      final savedDoc = await getUserCollection(userId).doc(id).get();
+      if (!savedDoc.exists) {
+        throw BlocException('Recipe was not saved properly');
+      }
+
+      final savedRecipe = Recipe.fromJson(savedDoc.data() as Map<String, dynamic>);
+      print('Recipe saved and retrieved successfully:\n${RecipeDebug.prettyPrintRecipe(savedRecipe)}');
     } catch (e) {
       throw BlocException(
         'Failed to add recipe: ${e.toString()}',
@@ -69,126 +91,14 @@ class RecipeRepository {
     }
   }
 
-  // Update an existing recipe
-  Future<void> update(String id, Recipe recipe,
-      {required String userId}) async {
+  Future<void> duplicate(
+    String sourceId,
+    String newId,
+    String newName,
+    {required String userId}
+  ) async {
     try {
-      final docRef = _firestore.collection(_collection).doc(id);
-      final doc = await docRef.get();
-
-      if (!doc.exists) {
-        throw BlocException('Recipe not found');
-      }
-
-      final existingData = doc.data();
-      if (existingData?['userId'] != userId) {
-        throw BlocException('Unauthorized to update this recipe');
-      }
-
-      final data = recipe.toJson();
-      data['userId'] = userId;
-      data['lastModified'] = Timestamp.now();
-
-      await docRef.update(data);
-    } catch (e) {
-      throw BlocException(
-        'Failed to update recipe: ${e.toString()}',
-      );
-    }
-  }
-
-  // Delete a recipe
-  Future<void> delete(String id, {required String userId}) async {
-    try {
-      final docRef = _firestore.collection(_collection).doc(id);
-      final doc = await docRef.get();
-
-      if (!doc.exists) {
-        throw BlocException('Recipe not found');
-      }
-
-      final data = doc.data();
-      if (data?['userId'] != userId) {
-        throw BlocException('Unauthorized to delete this recipe');
-      }
-
-      await docRef.delete();
-    } catch (e) {
-      throw BlocException(
-        'Failed to delete recipe: ${e.toString()}',
-      );
-    }
-  }
-
-  // Get a specific recipe by ID
-  Future<Recipe?> getById(String id, {required String userId}) async {
-    try {
-      final docSnapshot =
-          await _firestore.collection(_collection).doc(id).get();
-
-      if (!docSnapshot.exists) {
-        return null;
-      }
-
-      final data = docSnapshot.data()!;
-      if (data['userId'] != userId) {
-        throw BlocException('Unauthorized to access this recipe');
-      }
-
-      return Recipe.fromJson(data);
-    } catch (e) {
-      throw BlocException(
-        'Failed to fetch recipe: ${e.toString()}',
-      );
-    }
-  }
-
-  // Get recipes by substrate type
-  Future<List<Recipe>> getBySubstrate(String substrate,
-      {required String userId}) async {
-    try {
-      final querySnapshot = await _firestore
-          .collection(_collection)
-          .where('userId', isEqualTo: userId)
-          .where('substrate', isEqualTo: substrate)
-          .orderBy('lastModified', descending: true)
-          .get();
-
-      return querySnapshot.docs
-          .map((doc) => Recipe.fromJson(doc.data()))
-          .toList();
-    } catch (e) {
-      throw BlocException(
-        'Failed to fetch recipes by substrate: ${e.toString()}',
-      );
-    }
-  }
-
-  // Stream of recipe updates
-  Stream<Recipe> watchRecipe(String id, {required String userId}) {
-    return _firestore
-        .collection(_collection)
-        .doc(id)
-        .snapshots()
-        .map((snapshot) {
-      if (!snapshot.exists) {
-        throw BlocException('Recipe not found');
-      }
-
-      final data = snapshot.data()!;
-      if (data['userId'] != userId) {
-        throw BlocException('Unauthorized to access this recipe');
-      }
-
-      return Recipe.fromJson(data);
-    });
-  }
-
-  // Duplicate a recipe
-  Future<void> duplicate(String sourceId, String newId, String newName,
-      {required String userId}) async {
-    try {
-      final sourceRecipe = await getById(sourceId, userId: userId);
+      final sourceRecipe = await get(sourceId, userId: userId);
       if (sourceRecipe == null) {
         throw BlocException('Source recipe not found');
       }
@@ -204,6 +114,39 @@ class RecipeRepository {
     } catch (e) {
       throw BlocException(
         'Failed to duplicate recipe: ${e.toString()}',
+      );
+    }
+  }
+
+  Stream<Recipe> watchRecipe(String id, {required String userId}) {
+    return getUserCollection(userId)
+        .doc(id)
+        .snapshots()
+        .map((snapshot) {
+          if (!snapshot.exists) {
+            throw BlocException('Recipe not found');
+          }
+
+          return fromJson(snapshot.data() as Map<String, dynamic>);
+        });
+  }
+
+  Future<List<Recipe>> getBySubstrate(
+    String substrate,
+    {required String userId}
+  ) async {
+    try {
+      final snapshot = await getUserCollection(userId)
+          .where('substrate', isEqualTo: substrate)
+          .orderBy('lastModified', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => fromJson(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      throw BlocException(
+        'Failed to fetch recipes by substrate: ${e.toString()}',
       );
     }
   }

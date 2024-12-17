@@ -8,6 +8,7 @@ import 'package:experiment_planner/features/auth/bloc/auth_bloc.dart';
 import 'package:experiment_planner/features/auth/bloc/auth_state.dart';
 import 'package:experiment_planner/features/recipes/models/recipe.dart';
 import 'package:experiment_planner/features/recipes/repository/recipe_repository.dart';
+import 'package:experiment_planner/features/recipes/utils/recipe_debug.dart';
 import 'package:experiment_planner/features/system/bloc/system_state_event.dart';
 import '../../system/bloc/system_state_bloc.dart';
 import 'recipe_event.dart';
@@ -256,21 +257,26 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
         throw Exception('Invalid recipe: ${validation.errors.join(', ')}');
       }
 
-      // Check system readiness
-      _systemStateBloc.add(CheckSystemReadiness());
-      if (!_systemStateBloc.state.isReadinessCheckPassed) {
-        throw Exception('System not ready for recipe execution');
-      }
+      // Modified system readiness check
+      final systemState = _systemStateBloc.state;
+      if (!systemState.isReadinessCheckPassed) {
+        // Request a fresh system check
+        _systemStateBloc.add(CheckSystemReadiness());
 
-      // Start system if not running
-      if (!_systemStateBloc.state.isSystemRunning) {
-        _systemStateBloc.add(StartSystem());
+        // Wait briefly for the check to complete
+        await Future.delayed(Duration(milliseconds: 100));
+
+        // Get updated state
+        if (!_systemStateBloc.state.isReadinessCheckPassed) {
+          throw Exception('System not ready: ${_systemStateBloc.state.systemIssues.join(", ")}');
+        }
       }
 
       emit(state.copyWith(
         activeRecipe: recipe,
         currentStepIndex: 0,
         executionStatus: RecipeExecutionStatus.running,
+        isExecutionReady: true,
       ));
 
       // Execute first step
@@ -279,6 +285,7 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
       emit(state.copyWith(
         error: BlocUtils.handleError(error),
         executionStatus: RecipeExecutionStatus.error,
+        isExecutionReady: false,
       ));
     }
   }
@@ -554,6 +561,20 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
         return;
       }
 
+      // Validate recipe before saving
+      final validation = RecipeDebug.validateRecipeData(event.recipe);
+      if (validation['critical']!.isNotEmpty) {
+        throw Exception('Invalid recipe:\n${validation['critical']!.join('\n')}');
+      }
+
+      // Log warnings if any
+      if (validation['warnings']!.isNotEmpty) {
+        print('Recipe warnings:\n${validation['warnings']!.join('\n')}');
+      }
+
+      // Print recipe debug information
+      print('Adding recipe:\n${RecipeDebug.prettyPrintRecipe(event.recipe)}');
+
       await _repository.add(event.recipe.id, event.recipe, userId: userId);
 
       final updatedRecipes = [...state.recipes, event.recipe];
@@ -561,7 +582,10 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
         recipes: updatedRecipes,
         isLoading: false,
       ));
+
+      print('Recipe added successfully');
     } catch (error) {
+      print('Error adding recipe: $error');
       emit(state.copyWith(
         error: BlocUtils.handleError(error),
         isLoading: false,

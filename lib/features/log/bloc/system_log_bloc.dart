@@ -46,16 +46,19 @@ class SystemLogBloc extends Bloc<SystemLogEvent, SystemLogState> {
     }
 
     try {
-      await _repository.add(event.message, event.severity, userId: userId);
-      final entries = [...state.entries];
-      entries.insert(
-        0,
-        SystemLogEntry(
-          timestamp: DateTime.now(),
-          message: event.message,
-          severity: event.severity,
-        ),
+      final logEntry = SystemLogEntry(
+        timestamp: DateTime.now(),
+        message: event.message,
+        severity: event.severity,
       );
+
+      // Generate a unique ID for the log entry
+      final id = DateTime.now().millisecondsSinceEpoch.toString();
+
+      await _repository.add(id, logEntry, userId: userId);
+
+      final entries = [...state.entries];
+      entries.insert(0, logEntry);
       emit(state.copyWith(entries: entries));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));

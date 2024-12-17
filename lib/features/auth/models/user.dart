@@ -1,4 +1,4 @@
-// lib/features/auth/models/user.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/enums/user_role.dart';
 
 class User {
@@ -7,7 +7,7 @@ class User {
   final String name;
   final UserRole role;
   final String status;
-  final String machineSerial;
+  final DateTime createdAt;  // Changed type to DateTime
 
   User({
     required this.id,
@@ -15,37 +15,32 @@ class User {
     required this.name,
     required this.role,
     required this.status,
-    required this.machineSerial,
+    required this.createdAt,
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'email': email,
-    'name': name,
-    'role': role.toJson(),
-    'status': status,
-    'machineSerial': machineSerial,
-  };
+        'id': id,
+        'email': email,
+        'name': name ?? '',  // Provide default for optional field
+        'role': role.toString().split('.').last,
+        'status': status,
+        'createdAt': Timestamp.fromDate(createdAt),  // Convert to Timestamp
+      };
 
   factory User.fromJson(Map<String, dynamic> json) => User(
-    id: json['id'] ?? '',
-    email: json['email'] ?? '',
-    name: json['name'] ?? '',
-    role: _parseUserRole(json['role']),
-    status: json['status'] ?? '',
-    machineSerial: json['machineSerial'] ?? '',
-  );
-
-  static UserRole _parseUserRole(dynamic roleString) {
-    if (roleString == null) return UserRole.user;
-    try {
-      return UserRole.values.firstWhere(
-        (role) => role.toString().split('.').last == roleString,
-        orElse: () => UserRole.user,
+        id: json['id'] as String,
+        email: json['email'] as String,
+        name: json['name'] as String? ?? '',  // Handle potentially missing name
+        role: UserRole.values.firstWhere(
+          (e) => e.toString() == 'UserRole.${json['role']}',
+          orElse: () => UserRole.user,
+        ),
+        status: json['status'] as String,
+        createdAt: (json['createdAt'] as Timestamp).toDate(),  // Convert from Timestamp
       );
-    } catch (e) {
-      print('Error parsing UserRole: $e');
-      return UserRole.user;
-    }
+
+  @override
+  String toString() {
+    return 'User(id: $id, email: $email, name: $name, role: $role, status: $status)';
   }
 }

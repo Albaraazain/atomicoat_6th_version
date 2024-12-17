@@ -2,20 +2,19 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:bloc/bloc.dart';
-import 'package:experiment_planner/blocs/simulation/models/component_simulation_behavior.dart';
+import 'package:experiment_planner/features/alarms/bloc/alarm_bloc.dart';
+import 'package:experiment_planner/features/alarms/bloc/alarm_event.dart';
+import 'package:experiment_planner/features/components/bloc/component_bloc.dart';
+import 'package:experiment_planner/features/components/bloc/component_event.dart';
 import 'package:experiment_planner/features/components/models/system_component.dart';
 import 'package:experiment_planner/features/alarms/models/alarm.dart';
+import 'package:experiment_planner/features/safety/bloc/safety_bloc.dart';
+import 'package:experiment_planner/features/safety/bloc/safety_event.dart';
 import 'package:experiment_planner/features/safety/models/safety_error.dart';
-import 'package:experiment_planner/blocs/component/bloc/component_bloc.dart';
-import 'package:experiment_planner/blocs/component/bloc/component_event.dart';
-import 'package:experiment_planner/blocs/alarm/bloc/alarm_bloc.dart';
-import 'package:experiment_planner/blocs/alarm/bloc/alarm_event.dart';
-import 'package:experiment_planner/blocs/safety/bloc/safety_bloc.dart';
-import 'package:experiment_planner/blocs/safety/bloc/safety_event.dart';
 import 'package:experiment_planner/core/utils/bloc_utils.dart';
-import 'package:experiment_planner/blocs/simulation/bloc/simulation_event.dart';
-import 'package:experiment_planner/blocs/simulation/bloc/simulation_state.dart';
-
+import 'package:experiment_planner/features/simulation/bloc/simulation_event.dart';
+import 'package:experiment_planner/features/simulation/bloc/simulation_state.dart';
+import 'package:experiment_planner/features/simulation/models/component_simulation_behavior.dart';
 class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
   final ComponentBloc _componentBloc;
   final AlarmBloc _alarmBloc;

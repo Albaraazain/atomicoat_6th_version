@@ -1,31 +1,47 @@
-
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:experiment_planner/shared/base/base_repository.dart';
 import '../models/system_log_entry.dart';
 import '../../components/models/system_component.dart';
 
-class SystemLogEntryRepository {
-  final FirebaseFirestore _firestore;
+class SystemLogEntryRepository extends BaseRepository<SystemLogEntry> {
+  static const int DEFAULT_LIMIT = 50;
 
-  SystemLogEntryRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  SystemLogEntryRepository() : super('logs');
 
-  Future<void> add(String message, ComponentStatus severity, {required String userId}) async {
-    await _firestore.collection('users/$userId/logs').add({
-      'timestamp': FieldValue.serverTimestamp(),
-      'message': message,
-      'severity': severity.toString().split('.').last,
-    });
+  @override
+  SystemLogEntry fromJson(Map<String, dynamic> json) =>
+      SystemLogEntry.fromJson(json);
+
+  Future<void> addLogEntry(
+    String message,
+    ComponentStatus severity,
+    {required String userId}
+  ) async {
+    final logEntry = SystemLogEntry(
+      timestamp: DateTime.now(),
+      message: message,
+      severity: severity,
+    );
+
+    await add(
+      DateTime.now().millisecondsSinceEpoch.toString(),
+      logEntry,
+      userId: userId,
+    );
   }
 
-  Future<List<SystemLogEntry>> getRecentEntries(String userId, {int limit = 50}) async {
-    final snapshot = await _firestore
-        .collection('users/$userId/logs')
+  Future<List<SystemLogEntry>> getRecentEntries(
+    String userId,
+    {int limit = DEFAULT_LIMIT}
+  ) async {
+    final snapshot = await getUserCollection(userId)
         .orderBy('timestamp', descending: true)
         .limit(limit)
         .get();
 
-    return snapshot.docs.map((doc) => SystemLogEntry.fromJson(doc.data())).toList();
+    return snapshot.docs
+        .map((doc) => fromJson(doc.data() as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<SystemLogEntry>> getEntriesByDateRange(
@@ -33,13 +49,27 @@ class SystemLogEntryRepository {
     DateTime startDate,
     DateTime endDate,
   ) async {
-    final snapshot = await _firestore
-        .collection('users/$userId/logs')
+    final snapshot = await getUserCollection(userId)
         .where('timestamp', isGreaterThanOrEqualTo: startDate)
         .where('timestamp', isLessThanOrEqualTo: endDate)
         .orderBy('timestamp', descending: true)
         .get();
 
-    return snapshot.docs.map((doc) => SystemLogEntry.fromJson(doc.data())).toList();
+    return snapshot.docs
+        .map((doc) => fromJson(doc.data() as Map<String, dynamic>))
+        .toList();
+  }
+
+  Stream<List<SystemLogEntry>> watchRecentLogs(
+    String userId,
+    {int limit = DEFAULT_LIMIT}
+  ) {
+    return getUserCollection(userId)
+        .orderBy('timestamp', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => fromJson(doc.data() as Map<String, dynamic>))
+            .toList());
   }
 }

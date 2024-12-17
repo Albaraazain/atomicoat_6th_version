@@ -3,16 +3,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
+import '../initialization/component_initializer.dart';
 
 class AppBootstrap {
   static Future<void> initialize() async {
     try {
       WidgetsFlutterBinding.ensureInitialized();
+      await Firebase.initializeApp();
 
-      // Initialize Firebase if not already initialized
-      if (Firebase.apps.isEmpty) {
-        await Firebase.initializeApp();
-      }
+      // Initialize system components
+      await ComponentInitializer.initializeSystemComponents();
+
+      debugPrint('Firebase and components initialized successfully');
 
       // Initialize Crashlytics
       await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
@@ -21,8 +23,7 @@ class AppBootstrap {
       // Initialize other services here
       await _createFirestoreIndexes();
     } catch (e, stack) {
-      print('Initialization error: $e');
-      print(stack);
+      debugPrint('Failed to initialize app: $e\n$stack');
       rethrow;
     }
   }
@@ -45,7 +46,7 @@ class AppBootstrap {
         }]
       });
     } catch (e) {
-      print('Error creating Firestore indexes: $e');
+      debugPrint('Error creating Firestore indexes: $e');
     }
   }
 }

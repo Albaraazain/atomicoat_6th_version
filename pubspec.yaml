@@ -74,21 +74,18 @@ dependencies:
   # Utilities
   equatable: ^2.0.5
   internet_connection_checker: ^1.0.0
+  firebase_messaging: ^15.1.6
+  connectivity_plus: ^6.1.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   # Code Generation
-  build_runner: ^2.4.7
-  freezed: ^2.4.5
   json_serializable: ^6.7.1
   auto_route_generator: ^7.3.2
   injectable_generator: ^2.4.1
 
-  # Testing
-  mocktail: ^1.0.1
-  bloc_test: ^9.1.5
 
 
 flutter:

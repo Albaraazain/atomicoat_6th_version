@@ -1,9 +1,9 @@
 
+import 'package:experiment_planner/features/simulation/bloc/simulation_bloc.dart';
+import 'package:experiment_planner/features/simulation/bloc/simulation_event.dart';
+import 'package:experiment_planner/features/simulation/bloc/simulation_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../blocs/simulation/bloc/simulation_bloc.dart';
-import '../../../blocs/simulation/bloc/simulation_event.dart';
-import '../../../blocs/simulation/bloc/simulation_state.dart';
 
 class SimulationMonitorWidget extends StatelessWidget {
   const SimulationMonitorWidget({Key? key}) : super(key: key);

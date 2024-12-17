@@ -3,11 +3,23 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 3,
             "patches": [
                 {
                     "date": 1734376760288,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734454825296,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,10 +1,7 @@\n \r\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n-import '../../../blocs/simulation/bloc/simulation_bloc.dart';\r\n-import '../../../blocs/simulation/bloc/simulation_event.dart';\r\n-import '../../../blocs/simulation/bloc/simulation_state.dart';\r\n \r\n class SimulationMonitorWidget extends StatelessWidget {\r\n   const SimulationMonitorWidget({Key? key}) : super(key: key);\r\n \r\n"
+                },
+                {
+                    "date": 1734454836202,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,7 @@\n \r\n+import 'package:experiment_planner/features/simulation/bloc/simulation_bloc.dart';\r\n+import 'package:experiment_planner/features/simulation/bloc/simulation_state.dart';\r\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n \r\n class SimulationMonitorWidget extends StatelessWidget {\r\n"
+                },
+                {
+                    "date": 1734454842321,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,7 @@\n \r\n import 'package:experiment_planner/features/simulation/bloc/simulation_bloc.dart';\r\n+import 'package:experiment_planner/features/simulation/bloc/simulation_event.dart';\r\n import 'package:experiment_planner/features/simulation/bloc/simulation_state.dart';\r\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n \r\n"
                 }
             ],
             "date": 1734376760288,

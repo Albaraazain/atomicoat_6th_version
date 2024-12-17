@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/system/models/system_component_state.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734466494324,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734466494324,
+            "name": "Commit-0",
+            "content": "class SystemComponentState {\r\n  final bool isInitialized;\r\n  final bool isConnected;\r\n  final bool hasError;\r\n  final String? errorMessage;\r\n  final Map<String, dynamic> currentValues;\r\n  final Map<String, dynamic> setValues;\r\n  final String name;\r\n\r\n  const SystemComponentState({\r\n    required this.name,\r\n    this.isInitialized = false,\r\n    this.isConnected = false,\r\n    this.hasError = false,\r\n    this.errorMessage,\r\n    this.currentValues = const {},\r\n    this.setValues = const {},\r\n  });\r\n\r\n  SystemComponentState copyWith({\r\n    String? name,\r\n    bool? isInitialized,\r\n    bool? isConnected,\r\n    bool? hasError,\r\n    String? errorMessage,\r\n    Map<String, dynamic>? currentValues,\r\n    Map<String, dynamic>? setValues,\r\n  }) {\r\n    return SystemComponentState(\r\n      name: name ?? this.name,\r\n      isInitialized: isInitialized ?? this.isInitialized,\r\n      isConnected: isConnected ?? this.isConnected,\r\n      hasError: hasError ?? this.hasError,\r\n      errorMessage: errorMessage ?? this.errorMessage,\r\n      currentValues: currentValues ?? this.currentValues,\r\n      setValues: setValues ?? this.setValues,\r\n    );\r\n  }\r\n}\r\n"
+        }
+    ]
+}

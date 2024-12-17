@@ -3,11 +3,19 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 2,
             "patches": [
                 {
                     "date": 1734376761208,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734455039304,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,13 +1,8 @@\n \r\n \r\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n-import '../../../blocs/system_state/bloc/system_state_bloc.dart';\r\n-import '../../../blocs/system_state/bloc/system_state_state.dart';\r\n-import '../../../blocs/component/bloc/component_list_bloc.dart';\r\n-import '../../../blocs/component/bloc/component_list_state.dart';\r\n-\r\n class SystemDiagramView extends StatelessWidget {\r\n   final List<Widget> overlays;\r\n   final double zoomFactor;\r\n   final bool enableOverlaySwiping;\r\n"
+                },
+                {
+                    "date": 1734455050402,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,10 @@\n \r\n \r\n+import 'package:experiment_planner/features/components/bloc/component_list_bloc.dart';\r\n+import 'package:experiment_planner/features/components/bloc/component_list_state.dart';\r\n+import 'package:experiment_planner/features/system/bloc/system_state_bloc.dart';\r\n+import 'package:experiment_planner/features/system/bloc/system_state_state.dart';\r\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n class SystemDiagramView extends StatelessWidget {\r\n   final List<Widget> overlays;\r\n"
                 }
             ],
             "date": 1734376761208,

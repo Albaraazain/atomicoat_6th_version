@@ -1,11 +1,12 @@
-
 import '../../../shared/base/base_bloc_state.dart';
 import '../models/safety_error.dart';
+import '../services/monitoring_service.dart';
 
 class SafetyState extends BaseBlocState {
   final bool isMonitoringActive;
   final List<SafetyError> activeErrors;
   final Map<String, Map<String, SafetyThreshold>> thresholds;
+  final MonitoringStatus? lastStatus;
 
   SafetyState({
     required super.isLoading,
@@ -14,6 +15,7 @@ class SafetyState extends BaseBlocState {
     required this.isMonitoringActive,
     required this.activeErrors,
     required this.thresholds,
+    this.lastStatus,
   });
 
   factory SafetyState.initial() {
@@ -22,6 +24,7 @@ class SafetyState extends BaseBlocState {
       isMonitoringActive: false,
       activeErrors: const [],
       thresholds: const {},
+      lastStatus: null,
     );
   }
 
@@ -32,6 +35,7 @@ class SafetyState extends BaseBlocState {
     bool? isMonitoringActive,
     List<SafetyError>? activeErrors,
     Map<String, Map<String, SafetyThreshold>>? thresholds,
+    MonitoringStatus? lastStatus,
   }) {
     return SafetyState(
       isLoading: isLoading ?? this.isLoading,
@@ -40,6 +44,7 @@ class SafetyState extends BaseBlocState {
       isMonitoringActive: isMonitoringActive ?? this.isMonitoringActive,
       activeErrors: activeErrors ?? this.activeErrors,
       thresholds: thresholds ?? this.thresholds,
+      lastStatus: lastStatus ?? this.lastStatus,
     );
   }
 }

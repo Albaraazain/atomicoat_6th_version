@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/widgets/profile_header.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734427057572,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734427057572,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/presentation/widgets/profile_header.dart\r\nimport 'package:flutter/material.dart';\r\nimport '../../domain/entities/user.dart';\r\n\r\nclass ProfileHeader extends StatelessWidget {\r\n  final User user;\r\n  final VoidCallback onImageTap;\r\n\r\n  const ProfileHeader({\r\n    super.key,\r\n    required this.user,\r\n    required this.onImageTap,\r\n  });\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return Column(\r\n      children: [\r\n        GestureDetector(\r\n          onTap: onImageTap,\r\n          child: Stack(\r\n            children: [\r\n              CircleAvatar(\r\n                radius: 50,\r\n                backgroundColor: Theme.of(context).colorScheme.primary,\r\n                child: Text(\r\n                  user.name[0].toUpperCase(),\r\n                  style: const TextStyle(\r\n                    fontSize: 36,\r\n                    color: Colors.white,\r\n                  ),\r\n                ),\r\n              ),\r\n              Positioned(\r\n                right: 0,\r\n                bottom: 0,\r\n                child: Container(\r\n                  padding: const EdgeInsets.all(4),\r\n                  decoration: BoxDecoration(\r\n                    color: Theme.of(context).colorScheme.primary,\r\n                    shape: BoxShape.circle,\r\n                  ),\r\n                  child: const Icon(\r\n                    Icons.camera_alt,\r\n                    size: 20,\r\n                    color: Colors.white,\r\n                  ),\r\n                ),\r\n              ),\r\n            ],\r\n          ),\r\n        ),\r\n        const SizedBox(height: 16),\r\n        Text(\r\n          user.name,\r\n          style: Theme.of(context).textTheme.headlineSmall,\r\n        ),\r\n        const SizedBox(height: 4),\r\n        Text(\r\n          user.email,\r\n          style: Theme.of(context).textTheme.bodyMedium?.copyWith(\r\n            color: Colors.grey,\r\n          ),\r\n        ),\r\n      ],\r\n    );\r\n  }\r\n}\r\n\r\n"
+        }
+    ]
+}

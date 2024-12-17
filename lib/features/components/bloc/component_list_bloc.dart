@@ -1,14 +1,13 @@
-
-
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import '../models/system_component.dart';
-import '../repository/component_repository.dart';
+import '../repository/global_component_repository.dart';
 import 'component_list_event.dart';
 import 'component_list_state.dart';
 
 class ComponentListBloc extends Bloc<ComponentListEvent, ComponentListState> {
-  final ComponentRepository _repository;
+  final GlobalComponentRepository _repository;
   StreamSubscription? _componentsSubscription;
 
   ComponentListBloc(this._repository) : super(const ComponentListState()) {
@@ -17,6 +16,9 @@ class ComponentListBloc extends Bloc<ComponentListEvent, ComponentListState> {
     on<AddComponent>(_onAddComponent);
     on<UpdateAllComponents>(_onUpdateAllComponents);
     on<ComponentError>(_onComponentError);
+
+    // Automatically load components when bloc is created
+    add(LoadComponents());
   }
 
   Future<void> _setupComponentsSubscription() async {
@@ -39,15 +41,16 @@ class ComponentListBloc extends Bloc<ComponentListEvent, ComponentListState> {
     Emitter<ComponentListState> emit,
   ) async {
     try {
-      print("ComponentListBloc: Processing event $event");
-
       emit(state.copyWith(isLoading: true));
+      debugPrint("ComponentListBloc: Loading components...");
 
-      // Load initial components
-      final components = await _repository.getAllComponents();
+      // Load initial components using global definitions
+      final components = await _repository.getAllComponentDefinitions();
       final componentsMap = {
         for (var component in components) component.name: component
       };
+
+      debugPrint("ComponentListBloc: Loaded ${components.length} components");
 
       emit(state.copyWith(
         components: componentsMap,
@@ -57,6 +60,7 @@ class ComponentListBloc extends Bloc<ComponentListEvent, ComponentListState> {
       // Setup real-time updates
       await _setupComponentsSubscription();
     } catch (e) {
+      debugPrint("ComponentListBloc: Error loading components: $e");
       emit(state.copyWith(
         error: e.toString(),
         isLoading: false,
@@ -78,8 +82,7 @@ class ComponentListBloc extends Bloc<ComponentListEvent, ComponentListState> {
 
       emit(state.copyWith(components: updatedComponents));
 
-      // Persist to repository
-      await _repository.saveComponentState(event.component);
+      // Instead of saving to repository, emit state only since this is global definitions
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
     }
@@ -99,8 +102,8 @@ class ComponentListBloc extends Bloc<ComponentListEvent, ComponentListState> {
 
       emit(state.copyWith(components: updatedComponents));
 
-      // Persist to repository
-      await _repository.saveComponentState(event.component);
+      // Save to global definitions
+      await _repository.saveComponentDefinition(event.component);
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
     }

@@ -1,14 +1,13 @@
-
-
-import 'package:experiment_planner/blocs/component/bloc/component_list_event.dart';
-import 'package:experiment_planner/blocs/component/bloc/component_list_state.dart';
+import 'package:experiment_planner/features/components/bloc/component_event.dart';
+import 'package:experiment_planner/features/components/bloc/component_list_bloc.dart';
+import 'package:experiment_planner/features/components/bloc/component_list_state.dart';
+import 'package:experiment_planner/features/recipes/bloc/recipe_bloc.dart';
+import 'package:experiment_planner/features/recipes/bloc/recipe_event.dart';
+import 'package:experiment_planner/features/recipes/bloc/recipe_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../blocs/recipe/bloc/recipe_bloc.dart';
-import '../../../blocs/recipe/bloc/recipe_event.dart';
-import '../../../blocs/recipe/bloc/recipe_state.dart';
-import '../../../blocs/component/bloc/component_list_bloc.dart';
 import '../models/recipe.dart';
+import 'package:experiment_planner/features/components/bloc/component_list_event.dart' as list_events; // Add this import
 
 class DarkThemeColors {
   static const Color background = Color(0xFF121212);
@@ -22,8 +21,12 @@ class DarkThemeColors {
 
 class RecipeDetailScreen extends StatefulWidget {
   final String? recipeId;
+  final String userId;
 
-  RecipeDetailScreen({this.recipeId});
+  RecipeDetailScreen({
+    this.recipeId,
+    required this.userId,
+  });
 
   @override
   _RecipeDetailScreenState createState() => _RecipeDetailScreenState();
@@ -54,8 +57,8 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
         Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
     _animationController.forward();
 
-    // Initialize blocs
-    context.read<ComponentListBloc>().add(LoadComponents());
+    // Initialize blocs with proper event type
+    context.read<ComponentListBloc>().add(list_events.LoadComponents(userId: widget.userId));
     if (widget.recipeId != null) {
       context.read<RecipeBloc>().add(LoadRecipes());
     }
@@ -486,12 +489,10 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
         }
 
         final availableComponents = state.components.values.toList();
-        final selectedComponent = step.parameters['component'] != null
-            ? availableComponents.firstWhere(
-                (c) => c.name == step.parameters['component'],
-                orElse: () => availableComponents.first,
-              )
-            : availableComponents.first;
+        final selectedComponent = availableComponents.firstWhere(
+          (c) => c.name == step.parameters['component'],
+          orElse: () => availableComponents.first,
+        );
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,

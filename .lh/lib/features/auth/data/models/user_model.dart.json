@@ -3,11 +3,19 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 2,
             "patches": [
                 {
                     "date": 1734378530725,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734428278271,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,46 @@\n+// lib/features/auth/data/models/user_model.dart\r\n+import 'package:freezed_annotation/freezed_annotation.dart';\r\n+import '../../domain/entities/user.dart';\r\n+import '../../../../core/enums/user_role.dart';\r\n+\r\n+part 'user_model.freezed.dart';\r\n+part 'user_model.g.dart';\r\n+\r\n+@freezed\r\n+class UserModel with _$UserModel {\r\n+  const factory UserModel({\r\n+    required String id,\r\n+    required String email,\r\n+    required String name,\r\n+    required UserRole role,\r\n+    required String status,\r\n+    required String machineSerial,\r\n+    DateTime? createdAt,\r\n+    DateTime? updatedAt,\r\n+  }) = _UserModel;\r\n+\r\n+  factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);\r\n+\r\n+  factory UserModel.fromFirestore(Map<String, dynamic> json, String id) {\r\n+    return UserModel.fromJson({\r\n+      ...json,\r\n+      'id': id,\r\n+      'role': json['role'] ?? 'user',\r\n+      'createdAt': json['createdAt']?.toDate().toIso8601String(),\r\n+      'updatedAt': json['updatedAt']?.toDate().toIso8601String(),\r\n+    });\r\n+  }\r\n+\r\n+  const UserModel._();\r\n+\r\n+  User toDomain() => User(\r\n+    id: id,\r\n+    email: email,\r\n+    name: name,\r\n+    role: role,\r\n+    status: status,\r\n+    machineSerial: machineSerial,\r\n+    createdAt: createdAt,\r\n+    updatedAt: updatedAt,\r\n+  );\r\n+}\r\n"
+                },
+                {
+                    "date": 1734428373461,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -43,50 +43,4 @@\n     createdAt: createdAt,\r\n     updatedAt: updatedAt,\r\n   );\r\n }\r\n-// lib/features/auth/data/models/user_model.dart\r\n-import 'package:freezed_annotation/freezed_annotation.dart';\r\n-import '../../domain/entities/user.dart';\r\n-import '../../../../core/enums/user_role.dart';\r\n-\r\n-part 'user_model.freezed.dart';\r\n-part 'user_model.g.dart';\r\n-\r\n-@freezed\r\n-class UserModel with _$UserModel {\r\n-  const factory UserModel({\r\n-    required String id,\r\n-    required String email,\r\n-    required String name,\r\n-    required UserRole role,\r\n-    required String status,\r\n-    required String machineSerial,\r\n-    DateTime? createdAt,\r\n-    DateTime? updatedAt,\r\n-  }) = _UserModel;\r\n-\r\n-  factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);\r\n-\r\n-  factory UserModel.fromFirestore(Map<String, dynamic> json, String id) {\r\n-    return UserModel.fromJson({\r\n-      ...json,\r\n-      'id': id,\r\n-      'role': json['role'] ?? 'user',\r\n-      'createdAt': json['createdAt']?.toDate().toIso8601String(),\r\n-      'updatedAt': json['updatedAt']?.toDate().toIso8601String(),\r\n-    });\r\n-  }\r\n-\r\n-  const UserModel._();\r\n-\r\n-  User toDomain() => User(\r\n-    id: id,\r\n-    email: email,\r\n-    name: name,\r\n-    role: role,\r\n-    status: status,\r\n-    machineSerial: machineSerial,\r\n-    createdAt: createdAt,\r\n-    updatedAt: updatedAt,\r\n-  );\r\n-}\r\n"
                 }
             ],
             "date": 1734378530725,

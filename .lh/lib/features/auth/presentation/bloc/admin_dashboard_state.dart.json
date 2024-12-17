@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/bloc/admin_dashboard_state.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734428668623,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734428668623,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/presentation/bloc/admin_dashboard_state.dart\r\npart of 'admin_dashboard_bloc.dart';\r\n\r\n@freezed\r\nclass AdminDashboardState with _$AdminDashboardState {\r\n  const factory AdminDashboardState.initial() = AdminDashboardInitial;\r\n  const factory AdminDashboardState.loading() = AdminDashboardLoading;\r\n  const factory AdminDashboardState.loaded({\r\n    required int pendingRequestsCount,\r\n    required int totalUsersCount,\r\n  }) = AdminDashboardLoaded;\r\n  const factory AdminDashboardState.failure(Failure failure) = AdminDashboardFailure;\r\n}\r\n"
+        }
+    ]
+}

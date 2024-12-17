@@ -1,9 +1,8 @@
-
-
 import 'package:experiment_planner/features/recipes/bloc/recipe_bloc.dart';
 import 'package:experiment_planner/features/recipes/bloc/recipe_event.dart';
 import 'package:experiment_planner/features/recipes/bloc/recipe_state.dart';
 import 'package:experiment_planner/features/system/bloc/system_state_bloc.dart';
+import 'package:experiment_planner/features/system/bloc/system_state_event.dart';
 import 'package:experiment_planner/features/system/bloc/system_state_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -105,13 +104,22 @@ class RecipeControl extends StatelessWidget {
           height: 1,
           color: Colors.white70,
         ),
-        onChanged: systemState.isSystemRunning
-            ? null
-            : (String? newValue) {
-                if (newValue != null) {
-                  context.read<RecipeBloc>().add(StartRecipeExecution(newValue));
-                }
-              },
+        onChanged: (String? newValue) {
+          if (newValue != null) {
+            // Don't start execution immediately, just select the recipe
+            final selectedRecipe = recipeState.recipes
+                .firstWhere((recipe) => recipe.id == newValue);
+
+            context.read<RecipeBloc>().add(
+              UpdateRecipe(selectedRecipe.copyWith(
+                lastModified: DateTime.now(),
+              )),
+            );
+
+            // Trigger a system readiness check
+            context.read<SystemStateBloc>().add(CheckSystemReadiness());
+          }
+        },
         items: recipeState.recipes.map<DropdownMenuItem<String>>((Recipe recipe) {
           return DropdownMenuItem<String>(
             value: recipe.id,

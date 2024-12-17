@@ -2,46 +2,57 @@
 import '../../../core/enums/user_request_status.dart';
 
 class UserRequest {
+  final String id;
   final String userId;
-  final String email;
   final String name;
+  final String email;
   final String machineSerial;
-  final UserRequestStatus status;
+  final UserRequestStatus status; // Changed from String to UserRequestStatus
+  final DateTime createdAt;
 
   UserRequest({
+    required this.id,
     required this.userId,
-    required this.email,
     required this.name,
+    required this.email,
     required this.machineSerial,
-    this.status = UserRequestStatus.pending,
+    this.status = UserRequestStatus.pending, // Added default value
+    required this.createdAt,
   });
 
-  Map<String, dynamic> toJson() => {
-    'userId': userId,
-    'email': email,
-    'name': name,
-    'machineSerial': machineSerial,
-    'status': status.toJson(),
-  };
+  factory UserRequest.fromJson(Map<String, dynamic> json) {
+    return UserRequest(
+      id: json['id'] as String,
+      userId: json['userId'] as String,
+      name: json['name'] as String,
+      email: json['email'] as String,
+      machineSerial: json['machineSerial'] as String,
+      status: _parseStatus(json['status']), // Added status parsing
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
 
-  factory UserRequest.fromJson(Map<String, dynamic> json) => UserRequest(
-    userId: json['userId'] ?? '',
-    email: json['email'] ?? '',
-    name: json['name'] ?? '',
-    machineSerial: json['machineSerial'] ?? '',
-    status: _parseStatus(json['status']),
-  );
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'userId': userId,
+      'name': name,
+      'email': email,
+      'machineSerial': machineSerial,
+      'status': status.toString().split('.').last, // Proper enum serialization
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
 
-  static UserRequestStatus _parseStatus(dynamic statusString) {
-    if (statusString == null) return UserRequestStatus.pending;
-    try {
+  // Helper method to parse status from string or enum
+  static UserRequestStatus _parseStatus(dynamic status) {
+    if (status is UserRequestStatus) return status;
+    if (status is String) {
       return UserRequestStatus.values.firstWhere(
-        (status) => status.toString().split('.').last == statusString,
+        (e) => e.toString().split('.').last.toLowerCase() == status.toLowerCase(),
         orElse: () => UserRequestStatus.pending,
       );
-    } catch (e) {
-      print('Error parsing UserRequestStatus: $e');
-      return UserRequestStatus.pending;
     }
+    return UserRequestStatus.pending;
   }
 }

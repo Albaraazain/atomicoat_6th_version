@@ -3,11 +3,15 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 1,
             "patches": [
                 {
                     "date": 1734377651914,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734431325154,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,1 +1,7 @@\n-enum UserRequestStatus { pending, approved, denied }\n\\ No newline at end of file\n+enum UserRequestStatus {\r\n+  pending,\r\n+  approved,\r\n+  denied;\r\n+\r\n+  String toJson() => toString().split('.').last;\r\n+}\n\\ No newline at end of file\n"
                 }
             ],
             "date": 1734377651914,

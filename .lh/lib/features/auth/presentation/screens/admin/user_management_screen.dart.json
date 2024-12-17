@@ -3,11 +3,19 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 2,
             "patches": [
                 {
                     "date": 1734379171463,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734428737407,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,6 @@\n // lib/features/auth/presentation/screens/admin/user_management_screen.dart\r\n+import 'package:experiment_planner/features/auth/domain/entities/user.dart';\r\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n import '../../bloc/user_management_bloc.dart';\r\n import '../../widgets/user_list_item.dart';\r\n"
+                },
+                {
+                    "date": 1734428748539,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,6 @@\n // lib/features/auth/presentation/screens/admin/user_management_screen.dart\r\n+import 'package:auto_route/auto_route.dart';\r\n import 'package:experiment_planner/features/auth/domain/entities/user.dart';\r\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n import '../../bloc/user_management_bloc.dart';\r\n"
                 }
             ],
             "date": 1734379171463,

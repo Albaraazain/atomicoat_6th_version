@@ -1,0 +1,26 @@
+{
+    "sourceFile": "lib/features/auth/data/services/firebase_messaging_service.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1734427714971,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734427763704,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,66 @@\n+// lib/features/auth/data/services/firebase_messaging_service.dart\r\n+import 'package:firebase_messaging/firebase_messaging.dart';\r\n+import 'package:injectable/injectable.dart';\r\n+import '../../domain/entities/notification_settings.dart';\r\n+\r\n+@lazySingleton\r\n+class FirebaseMessagingService {\r\n+  final FirebaseMessaging _messaging;\r\n+\r\n+  FirebaseMessagingService(this._messaging);\r\n+\r\n+  Future<void> initialize() async {\r\n+    await _messaging.requestPermission(\r\n+      alert: true,\r\n+      announcement: false,\r\n+      badge: true,\r\n+      carPlay: false,\r\n+      criticalAlert: false,\r\n+      provisional: false,\r\n+      sound: true,\r\n+    );\r\n+\r\n+    // Listen to messages when app is in foreground\r\n+    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);\r\n+\r\n+    // Listen to messages when app is in background\r\n+    FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessage);\r\n+  }\r\n+\r\n+  Future<void> _handleForegroundMessage(RemoteMessage message) async {\r\n+    // Handle foreground messages\r\n+  }\r\n+\r\n+  Future<void> _handleBackgroundMessage(RemoteMessage message) async {\r\n+    // Handle background messages\r\n+  }\r\n+\r\n+  Future<String?> getToken() async {\r\n+    return await _messaging.getToken();\r\n+  }\r\n+\r\n+  Future<void> subscribeToTopics(NotificationSettings settings) async {\r\n+    if (settings.systemAlerts) {\r\n+      await _messaging.subscribeToTopic('system_alerts');\r\n+    } else {\r\n+      await _messaging.unsubscribeFromTopic('system_alerts');\r\n+    }\r\n+\r\n+    if (settings.maintenanceUpdates) {\r\n+      await _messaging.subscribeToTopic('maintenance_updates');\r\n+    } else {\r\n+      await _messaging.unsubscribeFromTopic('maintenance_updates');\r\n+    }\r\n+  }\r\n+\r\n+  Future<void> updateToken(String userId) async {\r\n+    final token = await getToken();\r\n+    if (token != null) {\r\n+      // Update token in Firestore\r\n+      await FirebaseFirestore.instance\r\n+          .collection('users')\r\n+          .doc(userId)\r\n+          .update({'fcmToken': token});\r\n+    }\r\n+  }\r\n+}\r\n"
+                },
+                {
+                    "date": 1734428463110,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,6 @@\n // lib/features/auth/data/services/firebase_messaging_service.dart\r\n+import 'package:cloud_firestore/cloud_firestore.dart';\r\n import 'package:firebase_messaging/firebase_messaging.dart';\r\n import 'package:injectable/injectable.dart';\r\n import '../../domain/entities/notification_settings.dart';\r\n \r\n"
+                }
+            ],
+            "date": 1734427714971,
+            "name": "Commit-0",
+            "content": "\r\n// lib/features/auth/data/services/firebase_messaging_service.dart\r\nimport 'package:firebase_messaging/firebase_messaging.dart';\r\nimport 'package:injectable/injectable.dart';\r\nimport '../../domain/entities/notification_settings.dart';\r\n\r\n@lazySingleton\r\nclass FirebaseMessagingService {\r\n  final FirebaseMessaging _messaging;\r\n\r\n  FirebaseMessagingService(this._messaging);\r\n\r\n  Future<void> initialize() async {\r\n    await _messaging.requestPermission(\r\n      alert: true,\r\n      announcement: false,\r\n      badge: true,\r\n      carPlay: false,\r\n      criticalAlert: false,\r\n      provisional: false,\r\n      sound: true,\r\n    );\r\n\r\n    // Listen to messages when app is in foreground\r\n    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);\r\n\r\n    // Listen to messages when app is in background\r\n    FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessage);\r\n  }\r\n\r\n  Future<void> _handleForegroundMessage(RemoteMessage message) async {\r\n    // Handle foreground messages\r\n  }\r\n\r\n  Future<void> _handleBackgroundMessage(RemoteMessage message) async {\r\n    // Handle background messages\r\n  }\r\n\r\n  Future<String?> getToken() async {\r\n    return await _messaging.getToken();\r\n  }\r\n\r\n  Future<void> subscribeToTopics(NotificationSettings settings) async {\r\n    if (settings.systemAlerts) {\r\n      await _messaging.subscribeToTopic('system_alerts');\r\n    } else {\r\n      await _messaging.unsubscribeFromTopic('system_alerts');\r\n    }\r\n\r\n    if (settings.maintenanceUpdates) {\r\n      await _messaging.subscribeTo"
+        }
+    ]
+}

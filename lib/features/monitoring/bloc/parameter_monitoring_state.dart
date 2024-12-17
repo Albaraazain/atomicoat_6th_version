@@ -1,5 +1,6 @@
 // lib/blocs/monitoring/parameter/bloc/parameter_monitoring_state.dart
-import '../../../base/base_bloc_state.dart';
+import 'package:experiment_planner/shared/base/base_bloc_state.dart';
+
 
 class ParameterMonitoringState extends BaseBlocState {
   final Map<String, bool> monitoringStatus;

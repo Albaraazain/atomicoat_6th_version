@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/monitoring/bloc/parameter_monitoring_event.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734434489297,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734434489297,
+            "name": "Commit-0",
+            "content": "// lib/blocs/monitoring/parameter/bloc/parameter_monitoring_event.dart\r\nimport 'package:experiment_planner/shared/base/base_bloc_event.dart';\r\n\r\nimport '../../../base/base_bloc_event.dart';\r\n\r\nsealed class ParameterMonitoringEvent extends BaseBlocEvent {\r\n  ParameterMonitoringEvent() : super();\r\n}\r\n\r\nclass StartParameterMonitoring extends ParameterMonitoringEvent {\r\n  final String componentId;\r\n  final Map<String, Map<String, double>> thresholds;\r\n\r\n  StartParameterMonitoring({\r\n    required this.componentId,\r\n    required this.thresholds,\r\n  });\r\n}\r\n\r\nclass StopParameterMonitoring extends ParameterMonitoringEvent {\r\n  final String componentId;\r\n  StopParameterMonitoring({required this.componentId});\r\n}\r\n\r\nclass ParameterValueUpdated extends ParameterMonitoringEvent {\r\n  final String componentId;\r\n  final String parameterName;\r\n  final double value;\r\n\r\n  ParameterValueUpdated({\r\n    required this.componentId,\r\n    required this.parameterName,\r\n    required this.value,\r\n  });\r\n}\r\n\r\nclass UpdateParameterThresholds extends ParameterMonitoringEvent {\r\n  final String componentId;\r\n  final String parameterName;\r\n  final double minValue;\r\n  final double maxValue;\r\n\r\n  UpdateParameterThresholds({\r\n    required this.componentId,\r\n    required this.parameterName,\r\n    required this.minValue,\r\n    required this.maxValue,\r\n  });\r\n}"
+        }
+    ]
+}

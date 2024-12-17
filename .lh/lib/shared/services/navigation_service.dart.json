@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/shared/services/navigation_service.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734462148626,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734462148626,
+            "name": "Commit-0",
+            "content": "// lib/services/navigation_service.dart\r\n\r\nimport 'package:flutter/material.dart';\r\n\r\n/// A service that provides navigation capabilities outside the widget context.\r\n/// This is particularly useful for navigating from providers, services, or other\r\n/// non-UI classes where a [BuildContext] is not readily available.\r\nclass NavigationService {\r\n  /// A [GlobalKey] that uniquely identifies the [NavigatorState].\r\n  /// This key allows the [NavigationService] to interact with the navigator\r\n  /// without needing a [BuildContext].\r\n  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();\r\n\r\n  /// Navigates to the route specified by [routeName].\r\n  ///\r\n  /// Optionally, you can pass [arguments] to the route.\r\n  ///\r\n  /// Returns a [Future] that completes to the result of the navigation action.\r\n  Future<dynamic> navigateTo(\r\n      String routeName, {\r\n        Object? arguments,\r\n      }) async {\r\n    try {\r\n      return await navigatorKey.currentState?.pushNamed(\r\n        routeName,\r\n        arguments: arguments,\r\n      );\r\n    } catch (e) {\r\n      print('Navigation error: $e');\r\n      // Handle navigation errors\r\n      return false;\r\n    }\r\n  }\r\n\r\n  /// Replaces the current route with the route specified by [routeName].\r\n  ///\r\n  /// Optionally, you can pass [arguments] to the new route.\r\n  ///\r\n  /// Returns a [Future] that completes to the result of the navigation action.\r\n  Future<dynamic>? navigateReplacementTo(\r\n      String routeName, {\r\n        Object? arguments,\r\n      }) {\r\n    return navigatorKey.currentState?.pushReplacementNamed(\r\n      routeName,\r\n      arguments: arguments,\r\n    );\r\n  }\r\n\r\n  /// Pops the top-most route off the navigator.\r\n  ///\r\n  /// Optionally, you can pass a [result] that will be returned to the\r\n  /// previous route.\r\n  void goBack({dynamic result}) {\r\n    navigatorKey.currentState?.pop(result);\r\n  }\r\n\r\n  /// Pops all routes until the predicate returns true.\r\n  ///\r\n  /// If [predicate] is null, it defaults to popping until the first route.\r\n  void popUntil(RoutePredicate predicate) {\r\n    navigatorKey.currentState?.popUntil(predicate);\r\n  }\r\n\r\n  /// Pops routes until the route with the specified [routeName] is reached.\r\n  ///\r\n  /// If no such route exists, it will pop until the first route.\r\n  void popUntilRouteIs(String routeName) {\r\n    navigatorKey.currentState?.popUntil((route) => route.settings.name == routeName);\r\n  }\r\n\r\n  /// Removes all the routes below the current route and pushes a new named route.\r\n  ///\r\n  /// This is useful for navigating to a new screen and removing all previous\r\n  /// screens from the stack, preventing the user from navigating back.\r\n  Future<dynamic>? navigateAndRemoveUntil(\r\n      String newRouteName, {\r\n        bool Function(Route<dynamic>)? predicate,\r\n        Object? arguments,\r\n      }) {\r\n    return navigatorKey.currentState?.pushNamedAndRemoveUntil(\r\n      newRouteName,\r\n      predicate ?? (Route<dynamic> route) => false,\r\n      arguments: arguments,\r\n    );\r\n  }\r\n}\r\n"
+        }
+    ]
+}

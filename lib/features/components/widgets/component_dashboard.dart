@@ -3,10 +3,12 @@ import 'package:experiment_planner/features/components/bloc/component_event.dart
 import 'package:experiment_planner/features/components/bloc/component_list_bloc.dart';
 import 'package:experiment_planner/features/components/bloc/component_list_state.dart';
 import 'package:experiment_planner/features/components/bloc/component_state.dart';
-import 'package:experiment_planner/features/components/repository/component_repository.dart';
+import 'package:experiment_planner/features/components/repository/user_component_state_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../models/system_component.dart';
+import '../repository/user_component_state_repository.dart';
+import '../repository/global_component_repository.dart';
 
 class ComponentDashboard extends StatelessWidget {
   const ComponentDashboard({Key? key}) : super(key: key);
@@ -29,7 +31,7 @@ class ComponentDashboard extends StatelessWidget {
           itemCount: components.length,
           itemBuilder: (context, index) {
             final component = components[index];
-            return ComponentCard(component: component);
+            return ComponentCard(component: component, userId: 'userId'); // Provide the userId here
           },
         );
       },
@@ -39,17 +41,20 @@ class ComponentDashboard extends StatelessWidget {
 
 class ComponentCard extends StatelessWidget {
   final SystemComponent component;
+  final String userId;
 
   const ComponentCard({
     Key? key,
     required this.component,
+    required this.userId,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ComponentBloc(
-        context.read<ComponentRepository>(),
+        context.read<UserComponentStateRepository>(),
+        userId: userId,
       )..add(ComponentInitialized(component.name)),
       child: BlocBuilder<ComponentBloc, ComponentState>(
         builder: (context, state) {

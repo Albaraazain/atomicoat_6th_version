@@ -1,6 +1,7 @@
 // lib/blocs/system_state/bloc/system_state_state.dart
 
 import '../../../shared/base/base_bloc_state.dart';
+import '../../components/models/system_component.dart';
 
 enum SystemOperationalStatus {
   uninitialized,
@@ -19,6 +20,7 @@ class SystemStateState extends BaseBlocState {
   final Map<String, dynamic> currentSystemState;
   final DateTime? lastStateUpdate;
   final bool isReadinessCheckPassed;
+  final List<SystemComponent> components;  // Added components field
 
   SystemStateState({
     this.status = SystemOperationalStatus.uninitialized,
@@ -30,6 +32,7 @@ class SystemStateState extends BaseBlocState {
     bool isLoading = false,
     String? error,
     DateTime? lastUpdated,
+    this.components = const [],  // Added components initialization
   }) : super(
           isLoading: isLoading,
           error: error,
@@ -45,6 +48,7 @@ class SystemStateState extends BaseBlocState {
     bool? isReadinessCheckPassed,
     bool? isLoading,
     String? error,
+    List<SystemComponent>? components,  // Added components to copyWith
   }) {
     return SystemStateState(
       status: status ?? this.status,
@@ -55,6 +59,7 @@ class SystemStateState extends BaseBlocState {
       isReadinessCheckPassed: isReadinessCheckPassed ?? this.isReadinessCheckPassed,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
+      components: components ?? this.components,  // Added components
     );
   }
 
@@ -67,6 +72,7 @@ class SystemStateState extends BaseBlocState {
     currentSystemState,
     lastStateUpdate,
     isReadinessCheckPassed,
+    components,  // Added components to props
   ];
 
   bool get isReady => status == SystemOperationalStatus.ready;

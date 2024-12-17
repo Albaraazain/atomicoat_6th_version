@@ -1,8 +1,8 @@
 // lib/blocs/simulation/bloc/simulation_state.dart
 
-import 'package:experiment_planner/blocs/base/base_bloc_state.dart';
-import 'package:experiment_planner/blocs/simulation/models/component_simulation_behavior.dart';
-import 'package:experiment_planner/blocs/simulation/models/simulation_config.dart';
+import 'package:experiment_planner/features/simulation/models/component_simulation_behavior.dart';
+import 'package:experiment_planner/features/simulation/models/simulation_config.dart';
+import 'package:experiment_planner/shared/base/base_bloc_state.dart';
 
 enum SimulationStatus { idle, running, paused, error }
 

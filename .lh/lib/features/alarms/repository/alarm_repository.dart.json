@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 1,
+            "activePatchIndex": 2,
             "patches": [
                 {
                     "date": 1734375168870,
@@ -12,6 +12,10 @@
                 {
                     "date": 1734376760365,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,9 +1,9 @@\n-// path: lib/repositories/alarm_repository.dart\r\n \r\n+\r\n import 'package:cloud_firestore/cloud_firestore.dart';\r\n-import '../features/alarms/models/alarm.dart';\r\n-import 'base_repository.dart';\r\n+import '../../features/alarms/models/alarm.dart';\r\n+import '../base_repository.dart';\r\n \r\n class AlarmRepository extends BaseRepository<Alarm> {\r\n   AlarmRepository() : super('alarms');\r\n \r\n"
+                },
+                {
+                    "date": 1734433422337,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,10 +1,8 @@\n \r\n \r\n import 'package:cloud_firestore/cloud_firestore.dart';\r\n-import '../../features/alarms/models/alarm.dart';\r\n-import '../base_repository.dart';\r\n-\r\n+import 'package:experiment_planner/features/alarms/models/alarm.dart';\r\n class AlarmRepository extends BaseRepository<Alarm> {\r\n   AlarmRepository() : super('alarms');\r\n \r\n   Future<void> remove(String alarmId, {String? userId}) async {\r\n"
                 }
             ],
             "date": 1734375168870,

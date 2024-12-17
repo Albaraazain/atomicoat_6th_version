@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/presentation/widgets/profile_menu_item.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734427073182,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734427073182,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/presentation/widgets/profile_menu_item.dart\r\nimport 'package:flutter/material.dart';\r\n\r\nclass ProfileMenuItem extends StatelessWidget {\r\n  final IconData icon;\r\n  final String title;\r\n  final String subtitle;\r\n  final VoidCallback? onTap;\r\n\r\n  const ProfileMenuItem({\r\n    super.key,\r\n    required this.icon,\r\n    required this.title,\r\n    required this.subtitle,\r\n    this.onTap,\r\n  });\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return ListTile(\r\n      leading: Icon(icon),\r\n      title: Text(title),\r\n      subtitle: Text(subtitle),\r\n      trailing: onTap != null ? const Icon(Icons.chevron_right) : null,\r\n      onTap: onTap,\r\n    );\r\n  }\r\n}\r\n"
+        }
+    ]
+}

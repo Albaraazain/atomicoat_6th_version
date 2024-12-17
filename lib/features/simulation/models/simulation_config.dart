@@ -1,5 +1,5 @@
 // lib/blocs/simulation/models/simulation_config.dart
-import 'package:experiment_planner/blocs/simulation/models/component_simulation_behavior.dart';
+import 'package:experiment_planner/features/simulation/models/component_simulation_behavior.dart';
 
 class SimulationConfig {
   static final Map<String, ComponentBehavior> componentBehaviors = {

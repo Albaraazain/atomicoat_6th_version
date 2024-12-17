@@ -3,11 +3,19 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 2,
             "patches": [
                 {
                     "date": 1734376761179,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734455018681,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,8 @@\n \r\n \r\n+import 'package:experiment_planner/features/system/bloc/system_state_bloc.dart';\r\n+import 'package:experiment_planner/features/system/bloc/system_state_state.dart';\r\n import 'package:flutter/material.dart';\r\n import 'package:flutter/services.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n import '../../../blocs/system_state/bloc/system_state_bloc.dart';\r\n"
+                },
+                {
+                    "date": 1734455026039,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,10 +4,8 @@\n import 'package:experiment_planner/features/system/bloc/system_state_state.dart';\r\n import 'package:flutter/material.dart';\r\n import 'package:flutter/services.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n-import '../../../blocs/system_state/bloc/system_state_bloc.dart';\r\n-import '../../../blocs/system_state/bloc/system_state_state.dart';\r\n import '../widgets/system_diagram_view.dart';\r\n import '../../components/widgets/component_control_overlay.dart';\r\n import '../../monitoring/widgets/graph_overlay.dart';\r\n import '../../monitoring/widgets/troubleshooting_overlay.dart';\r\n"
                 }
             ],
             "date": 1734376761179,

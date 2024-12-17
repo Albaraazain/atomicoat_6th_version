@@ -1,0 +1,26 @@
+{
+    "sourceFile": "lib/features/auth/presentation/screens/auth/root_screen.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1734430069792,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734430223070,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,11 @@\n+import 'package:auto_route/auto_route.dart';\r\n import 'package:flutter/material.dart';\r\n-import 'package:auto_route/auto_route.dart';\r\n \r\n+@RoutePage()\r\n class RootScreen extends StatelessWidget {\r\n+  const RootScreen({Key? key}) : super(key: key);\r\n+\r\n   @override\r\n   Widget build(BuildContext context) {\r\n     return const AutoRouter();\r\n   }\r\n"
+                },
+                {
+                    "date": 1734430536339,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,12 +1,13 @@\n+// lib/core/presentation/screens/root_screen.dart\r\n import 'package:auto_route/auto_route.dart';\r\n import 'package:flutter/material.dart';\r\n \r\n @RoutePage()\r\n class RootScreen extends StatelessWidget {\r\n-  const RootScreen({Key? key}) : super(key: key);\r\n+  const RootScreen({super.key});\r\n \r\n   @override\r\n   Widget build(BuildContext context) {\r\n-    return const AutoRouter();\r\n+    return AutoRouter();\r\n   }\r\n-}\r\n+}\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1734430069792,
+            "name": "Commit-0",
+            "content": "import 'package:flutter/material.dart';\r\nimport 'package:auto_route/auto_route.dart';\r\n\r\nclass RootScreen extends StatelessWidget {\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return const AutoRouter();\r\n  }\r\n}\r\n"
+        }
+    ]
+}

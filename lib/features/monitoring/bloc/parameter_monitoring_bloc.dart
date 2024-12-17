@@ -1,20 +1,26 @@
-
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:experiment_planner/blocs/safety/bloc/safety_bloc.dart';
-import 'package:experiment_planner/blocs/safety/bloc/safety_event.dart';
 import 'package:experiment_planner/core/utils/bloc_utils.dart';
+import 'package:experiment_planner/features/components/models/system_component.dart';
+import 'package:experiment_planner/features/components/repository/user_component_state_repository.dart';
+import 'package:experiment_planner/features/safety/bloc/safety_bloc.dart';
+import 'package:experiment_planner/features/safety/bloc/safety_event.dart';
 import 'package:experiment_planner/features/safety/models/safety_error.dart';
 import 'parameter_monitoring_event.dart';
 import 'parameter_monitoring_state.dart';
 
 class ParameterMonitoringBloc extends Bloc<ParameterMonitoringEvent, ParameterMonitoringState> {
+  final UserComponentStateRepository _userRepository;
   final SafetyBloc _safetyBloc;
-  final Map<String, StreamSubscription> _monitoringSubscriptions = {};
+  final String userId;
+  final Map<String, StreamSubscription> _monitors = {};
 
   ParameterMonitoringBloc({
     required SafetyBloc safetyBloc,
+    required UserComponentStateRepository userRepository,
+    required this.userId,
   }) : _safetyBloc = safetyBloc,
+       _userRepository = userRepository,
        super(ParameterMonitoringState.initial()) {
     on<StartParameterMonitoring>(_onStartMonitoring);
     on<StopParameterMonitoring>(_onStopMonitoring);
@@ -26,20 +32,24 @@ class ParameterMonitoringBloc extends Bloc<ParameterMonitoringEvent, ParameterMo
     StartParameterMonitoring event,
     Emitter<ParameterMonitoringState> emit,
   ) async {
-    try {
-      final updatedStatus = Map<String, bool>.from(state.monitoringStatus)
-        ..[event.componentId] = true;
+    // Cancel existing monitor if any
+    await _monitors[event.componentId]?.cancel();
 
-      final updatedThresholds = Map<String, Map<String, Map<String, double>>>.from(state.thresholds)
-        ..[event.componentId] = event.thresholds;
+    // Start new monitor
+    _monitors[event.componentId] = _userRepository
+        .watch(event.componentId, userId: userId)
+        .listen((component) {
+          if (component != null) {
+            _checkParameters(component);
+          }
+        });
 
-      emit(state.copyWith(
-        monitoringStatus: updatedStatus,
-        thresholds: updatedThresholds,
-      ));
-    } catch (error) {
-      emit(state.copyWith(error: BlocUtils.handleError(error)));
-    }
+    emit(state.copyWith(
+      monitoringStatus: {
+        ...state.monitoringStatus,
+        event.componentId: true
+      }
+    ));
   }
 
   Future<void> _onStopMonitoring(
@@ -47,8 +57,8 @@ class ParameterMonitoringBloc extends Bloc<ParameterMonitoringEvent, ParameterMo
     Emitter<ParameterMonitoringState> emit,
   ) async {
     try {
-      await _monitoringSubscriptions[event.componentId]?.cancel();
-      _monitoringSubscriptions.remove(event.componentId);
+      await _monitors[event.componentId]?.cancel();
+      _monitors.remove(event.componentId);
 
       final updatedStatus = Map<String, bool>.from(state.monitoringStatus)
         ..remove(event.componentId);
@@ -134,22 +144,46 @@ class ParameterMonitoringBloc extends Bloc<ParameterMonitoringEvent, ParameterMo
     }
   }
 
-  void _checkThresholdViolation(String componentId, String parameterName, double value) {
+  void _checkThresholdViolation(
+    String componentId,
+    String parameterName,
+    double value,
+  ) {
     _safetyBloc.add(SafetyErrorDetected(
       SafetyError(
-        id: '$componentId-$parameterName-${DateTime.now().millisecondsSinceEpoch}',
-        description: 'Parameter $parameterName exceeded threshold: $value',
+        id: '${componentId}_${parameterName}_${DateTime.now().millisecondsSinceEpoch}',
+        description: '$parameterName out of range in $componentId',
         severity: SafetyErrorSeverity.warning,
       ),
     ));
   }
 
+  void _checkParameters(SystemComponent component) {
+    for (final entry in component.currentValues.entries) {
+      final parameter = entry.key;
+      final value = entry.value;
+      final min = component.minValues[parameter];
+      final max = component.maxValues[parameter];
+
+      if (min != null && value < min ||
+          max != null && value > max) {
+        _safetyBloc.add(SafetyErrorDetected(
+          SafetyError(
+            id: '${component.id}_${parameter}_${DateTime.now().millisecondsSinceEpoch}',
+            description: '$parameter out of range in ${component.name}',
+            severity: SafetyErrorSeverity.warning,
+          ),
+        ));
+      }
+    }
+  }
+
   @override
   Future<void> close() {
-    for (var subscription in _monitoringSubscriptions.values) {
+    for (var subscription in _monitors.values) {
       subscription.cancel();
     }
-    _monitoringSubscriptions.clear();
+    _monitors.clear();
     return super.close();
   }
 }

@@ -1,0 +1,26 @@
+{
+    "sourceFile": "lib/features/auth/domain/repositories/i_settings_repository.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1734429277071,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734429286668,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,1 +1,7 @@\n-// TODO Implement this library.\n\\ No newline at end of file\n+// Create ISettingsRepository\r\n+abstract class ISettingsRepository {\r\n+  Future<Either<Failure, AppSettings>> getSettings();\r\n+  Future<Either<Failure, Unit>> updateTheme(bool isDarkMode);\r\n+  Future<Either<Failure, Unit>> updateLanguage(String languageCode);\r\n+  Future<Either<Failure, Unit>> updateNotificationSettings(NotificationSettings settings);\r\n+}\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1734429302436,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,10 @@\n // Create ISettingsRepository\r\n+import 'package:dartz/dartz.dart';\r\n+import 'package:experiment_planner/core/errors/failures.dart';\r\n+import 'package:experiment_planner/features/auth/domain/entities/app_settings.dart';\r\n+import 'package:experiment_planner/features/auth/domain/entities/notification_settings.dart';\r\n+\r\n abstract class ISettingsRepository {\r\n   Future<Either<Failure, AppSettings>> getSettings();\r\n   Future<Either<Failure, Unit>> updateTheme(bool isDarkMode);\r\n   Future<Either<Failure, Unit>> updateLanguage(String languageCode);\r\n"
+                }
+            ],
+            "date": 1734429277071,
+            "name": "Commit-0",
+            "content": "// TODO Implement this library."
+        }
+    ]
+}

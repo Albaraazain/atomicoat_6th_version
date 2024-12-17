@@ -1,12 +1,11 @@
 
 
+import 'package:experiment_planner/features/components/bloc/component_list_bloc.dart';
+import 'package:experiment_planner/features/components/bloc/component_list_state.dart';
+import 'package:experiment_planner/features/system/bloc/system_state_bloc.dart';
+import 'package:experiment_planner/features/system/bloc/system_state_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../blocs/system_state/bloc/system_state_bloc.dart';
-import '../../../blocs/system_state/bloc/system_state_state.dart';
-import '../../../blocs/component/bloc/component_list_bloc.dart';
-import '../../../blocs/component/bloc/component_list_state.dart';
-
 class SystemDiagramView extends StatelessWidget {
   final List<Widget> overlays;
   final double zoomFactor;

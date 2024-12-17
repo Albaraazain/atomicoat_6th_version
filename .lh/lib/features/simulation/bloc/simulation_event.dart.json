@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/features/simulation/bloc/simulation_event.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734434860955,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734454814115,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,27 @@\n+// lib/blocs/simulation/bloc/simulation_event.dart\r\n+\r\n+\r\n+import 'package:experiment_planner/shared/base/base_bloc_event.dart';\r\n+\r\n+sealed class SimulationEvent extends BaseBlocEvent {\r\n+  SimulationEvent() : super();\r\n+}\r\n+\r\n+class StartSimulation extends SimulationEvent {}\r\n+\r\n+class StopSimulation extends SimulationEvent {}\r\n+\r\n+class SimulationTick extends SimulationEvent {\r\n+  final DateTime timestamp;\r\n+  SimulationTick() : timestamp = DateTime.now();\r\n+}\r\n+\r\n+class UpdateComponentValues extends SimulationEvent {\r\n+  final Map<String, Map<String, double>> updates;\r\n+\r\n+  UpdateComponentValues(this.updates);\r\n+}\r\n+\r\n+class CheckSafetyConditions extends SimulationEvent {}\r\n+\r\n+class GenerateRandomError extends SimulationEvent {}\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1734434860955,
+            "name": "Commit-0",
+            "content": "// lib/blocs/simulation/bloc/simulation_event.dart\r\n\r\n\r\nsealed class SimulationEvent extends BaseBlocEvent {\r\n  SimulationEvent() : super();\r\n}\r\n\r\nclass StartSimulation extends SimulationEvent {}\r\n\r\nclass StopSimulation extends SimulationEvent {}\r\n\r\nclass SimulationTick extends SimulationEvent {\r\n  final DateTime timestamp;\r\n  SimulationTick() : timestamp = DateTime.now();\r\n}\r\n\r\nclass UpdateComponentValues extends SimulationEvent {\r\n  final Map<String, Map<String, double>> updates;\r\n\r\n  UpdateComponentValues(this.updates);\r\n}\r\n\r\nclass CheckSafetyConditions extends SimulationEvent {}\r\n\r\nclass GenerateRandomError extends SimulationEvent {}"
+        }
+    ]
+}

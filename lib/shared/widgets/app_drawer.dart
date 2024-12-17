@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/enums/navigation_item.dart';
 import '../../core/enums/user_role.dart';
-import '../../features/auth/providers/auth_provider.dart';
-import 'package:provider/provider.dart';
+import '../../features/auth/bloc/auth_bloc.dart';
+import '../../features/auth/bloc/auth_state.dart';
 
 class AppDrawer extends StatelessWidget {
   final Function(NavigationItem) onSelectItem;
@@ -15,67 +16,70 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-    final isAdmin = authProvider.userRole == UserRole.admin;
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        final isAdmin = state.user?.role == UserRole.admin;
 
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.precision_manufacturing,
-                  color: Theme.of(context).iconTheme.color,
-                  size: 48,
+        return Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
                 ),
-                SizedBox(height: 8),
-                Text(
-                  'ALD System Operations',
-                  style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.precision_manufacturing,
+                      color: Theme.of(context).iconTheme.color,
+                      size: 48,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'ALD System Operations',
+                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              _buildDrawerItem(
+                context: context,
+                icon: Icons.dashboard,
+                text: 'Main Dashboard',
+                isSelected: selectedItem == NavigationItem.mainDashboard,
+                onTap: () => onSelectItem(NavigationItem.mainDashboard),
+              ),
+              _buildDrawerItem(
+                context: context,
+                icon: Icons.monitor,
+                text: 'System Overview',
+                isSelected: selectedItem == NavigationItem.systemOverview,
+                onTap: () => onSelectItem(NavigationItem.systemOverview),
+              ),
+              _buildDrawerItem(
+                context: context,
+                icon: Icons.book,
+                text: 'Recipe Management',
+                isSelected: selectedItem == NavigationItem.recipeManagement,
+                onTap: () => onSelectItem(NavigationItem.recipeManagement),
+              ),
+              if (isAdmin)
+                _buildDrawerItem(
+                  context: context,
+                  icon: Icons.admin_panel_settings,
+                  text: 'Admin Dashboard',
+                  isSelected: selectedItem == NavigationItem.adminDashboard,
+                  onTap: () => onSelectItem(NavigationItem.adminDashboard),
+                ),
+            ],
           ),
-          _buildDrawerItem(
-            context: context,
-            icon: Icons.dashboard,
-            text: 'Main Dashboard',
-            isSelected: selectedItem == NavigationItem.mainDashboard,
-            onTap: () => onSelectItem(NavigationItem.mainDashboard),
-          ),
-          _buildDrawerItem(
-            context: context,
-            icon: Icons.monitor,
-            text: 'System Overview',
-            isSelected: selectedItem == NavigationItem.systemOverview,
-            onTap: () => onSelectItem(NavigationItem.systemOverview),
-          ),
-          _buildDrawerItem(
-            context: context,
-            icon: Icons.book,
-            text: 'Recipe Management',
-            isSelected: selectedItem == NavigationItem.recipeManagement,
-            onTap: () => onSelectItem(NavigationItem.recipeManagement),
-          ),
-          if (isAdmin)
-            _buildDrawerItem(
-              context: context,
-              icon: Icons.admin_panel_settings,
-              text: 'Admin Dashboard',
-              isSelected: selectedItem == NavigationItem.adminDashboard,
-              onTap: () => onSelectItem(NavigationItem.adminDashboard),
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
 

@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../components/models/data_point.dart';
-import '../../components/models/system_component.dart';
 
 class ParameterVisualizationWidget extends StatelessWidget {
   final String componentId;

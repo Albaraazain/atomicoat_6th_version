@@ -1,0 +1,30 @@
+{
+    "sourceFile": "lib/features/auth/bloc/auth_state.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 3,
+            "patches": [
+                {
+                    "date": 1734431063011,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734431239997,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,28 @@\n+// lib/features/auth/bloc/auth_state.dart\r\n+import 'package:experiment_planner/features/auth/models/user.dart';\r\n+\r\n+enum AuthStatus { initial, loading, authenticated, unauthenticated, error }\r\n+\r\n+class AuthState {\r\n+  final AuthStatus status;\r\n+  final User? user;\r\n+  final String? errorMessage;\r\n+\r\n+  AuthState({\r\n+    this.status = AuthStatus.initial,\r\n+    this.user,\r\n+    this.errorMessage,\r\n+  });\r\n+\r\n+  AuthState copyWith({\r\n+    AuthStatus? status,\r\n+    User? user,\r\n+    String? errorMessage,\r\n+  }) {\r\n+    return AuthState(\r\n+      status: status ?? this.status,\r\n+      user: user ?? this.user,\r\n+      errorMessage: errorMessage ?? this.errorMessage,\r\n+    );\r\n+  }\r\n+}\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1734431361608,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -23,5 +23,13 @@\n   }) {\r\n     return AuthState(\r\n       status: status ?? this.status,\r\n       user: user ?? this.user,\r\n-      errorMessage: errorMessage ?? this.errorM\n\\ No newline at end of file\n+      errorMessage: errorMessage ?? this.errorMessage,\r\n+    );\r\n+  }\r\n+\r\n+  bool get isAuthenticated => status == AuthStatus.authenticated && user != null;\r\n+  bool get isLoading => status == AuthStatus.loading;\r\n+  bool get hasError => status == AuthStatus.error && errorMessage != null;\r\n+}\r\n+\r\n"
+                },
+                {
+                    "date": 1734432819538,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,15 @@\n // lib/features/auth/bloc/auth_state.dart\r\n import '../models/user.dart';\r\n \r\n-enum AuthStatus { initial, loading, authenticated, unauthenticated, error }\r\n+enum AuthStatus {\r\n+  initial,\r\n+  loading,\r\n+  authenticated,\r\n+  unauthenticated,\r\n+  registrationSuccess,  // Add this\r\n+  error\r\n+}\r\n \r\n class AuthState {\r\n   final AuthStatus status;\r\n   final User? user;\r\n@@ -30,6 +37,7 @@\n \r\n   bool get isAuthenticated => status == AuthStatus.authenticated && user != null;\r\n   bool get isLoading => status == AuthStatus.loading;\r\n   bool get hasError => status == AuthStatus.error && errorMessage != null;\r\n+  bool get isRegistrationSuccessful => status == AuthStatus.registrationSuccess;  // Add this\r\n }\r\n \r\n"
+                }
+            ],
+            "date": 1734431063011,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/bloc/auth_state.dart\r\nenum AuthStatus { initial, loading, authenticated, unauthenticated, error }\r\n\r\nclass AuthState {\r\n  final AuthStatus status;\r\n  final User? user;\r\n  final String? errorMessage;\r\n\r\n  AuthState({\r\n    this.status = AuthStatus.initial,\r\n    this.user,\r\n    this.errorMessage,\r\n  });\r\n\r\n  AuthState copyWith({\r\n    AuthStatus? status,\r\n    User? user,\r\n    String? errorMessage,\r\n  }) {\r\n    return AuthState(\r\n      status: status ?? this.status,\r\n      user: user ?? this.user,\r\n      errorMessage: errorMessage ?? this.errorMessage,\r\n    );\r\n  }\r\n}"
+        }
+    ]
+}

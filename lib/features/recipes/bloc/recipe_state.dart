@@ -1,5 +1,4 @@
-
-import 'package:experiment_planner/blocs/base/base_bloc_state.dart';
+import 'package:experiment_planner/shared/base/base_bloc_state.dart';
 
 import '../models/recipe.dart';
 

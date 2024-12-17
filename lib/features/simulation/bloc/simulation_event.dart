@@ -1,6 +1,7 @@
 // lib/blocs/simulation/bloc/simulation_event.dart
 
-import 'package:experiment_planner/blocs/base/base_bloc_event.dart';
+
+import 'package:experiment_planner/shared/base/base_bloc_event.dart';
 
 sealed class SimulationEvent extends BaseBlocEvent {
   SimulationEvent() : super();

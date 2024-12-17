@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/features/auth/data/services/local_notification_service.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1734427856084,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1734427856084,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/data/services/local_notification_service.dart\r\nimport 'package:flutter_local_notifications/flutter_local_notifications.dart';\r\nimport 'package:injectable/injectable.dart';\r\nimport 'package:timezone/timezone.dart' as tz;\r\n\r\n@lazySingleton\r\nclass LocalNotificationService {\r\n  final FlutterLocalNotificationsPlugin _notifications;\r\n\r\n  LocalNotificationService(this._notifications);\r\n\r\n  Future<void> initialize() async {\r\n    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');\r\n    const iosSettings = DarwinInitializationSettings(\r\n      requestSoundPermission: true,\r\n      requestBadgePermission: true,\r\n      requestAlertPermission: true,\r\n    );\r\n\r\n    const settings = InitializationSettings(\r\n      android: androidSettings,\r\n      iOS: iosSettings,\r\n    );\r\n\r\n    await _notifications.initialize(\r\n      settings,\r\n      onDidReceiveNotificationResponse: _onNotificationTapped,\r\n    );\r\n  }\r\n\r\n  void _onNotificationTapped(NotificationResponse response) {\r\n    // Handle notification tap\r\n  }\r\n\r\n  Future<void> showNotification({\r\n    required String title,\r\n    required String body,\r\n    String? payload,\r\n  }) async {\r\n    const androidDetails = AndroidNotificationDetails(\r\n      'default_channel',\r\n      'Default',\r\n      channelDescription: 'Default notification channel',\r\n      importance: Importance.high,\r\n      priority: Priority.high,\r\n    );\r\n\r\n    const iosDetails = DarwinNotificationDetails(\r\n      presentAlert: true,\r\n      presentBadge: true,\r\n      presentSound: true,\r\n    );\r\n\r\n    const details = NotificationDetails(\r\n      android: androidDetails,\r\n      iOS: iosDetails,\r\n    );\r\n\r\n    await _notifications.show(\r\n      0,\r\n      title,\r\n      body,\r\n      details,\r\n      payload: payload,\r\n    );\r\n  }\r\n\r\n  Future<void> scheduleNotification({\r\n    required String title,\r\n    required String body,\r\n    required DateTime scheduledDate,\r\n    String? payload,\r\n  }) async {\r\n    const androidDetails = AndroidNotificationDetails(\r\n      'scheduled_channel',\r\n      'Scheduled',\r\n      channelDescription: 'Scheduled notification channel',\r\n      importance: Importance.high,\r\n      priority: Priority.high,\r\n    );\r\n\r\n    const iosDetails = DarwinNotificationDetails(\r\n      presentAlert: true,\r\n      presentBadge: true,\r\n      presentSound: true,\r\n    );\r\n\r\n    const details = NotificationDetails(\r\n      android: androidDetails,\r\n      iOS: iosDetails,\r\n    );\r\n\r\n    await _notifications.zonedSchedule(\r\n      1,\r\n      title,\r\n      body,\r\n      tz.TZDateTime.from(scheduledDate, tz.local),\r\n      details,\r\n      androidAllowWhileIdle: true,\r\n      uiLocalNotificationDateInterpretation:\r\n          UILocalNotificationDateInterpretation.absoluteTime,\r\n      payload: payload,\r\n    );\r\n  }\r\n\r\n  Future<void> cancelAllNotifications() async {\r\n    await _notifications.cancelAll();\r\n  }\r\n}\r\n\r\n"
+        }
+    ]
+}

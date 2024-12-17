@@ -16,14 +16,20 @@ class NavigationService {
   /// Optionally, you can pass [arguments] to the route.
   ///
   /// Returns a [Future] that completes to the result of the navigation action.
-  Future<dynamic>? navigateTo(
+  Future<dynamic> navigateTo(
       String routeName, {
         Object? arguments,
-      }) {
-    return navigatorKey.currentState?.pushNamed(
-      routeName,
-      arguments: arguments,
-    );
+      }) async {
+    try {
+      return await navigatorKey.currentState?.pushNamed(
+        routeName,
+        arguments: arguments,
+      );
+    } catch (e) {
+      print('Navigation error: $e');
+      // Handle navigation errors
+      return false;
+    }
   }
 
   /// Replaces the current route with the route specified by [routeName].

@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:experiment_planner/core/utils/bloc_utils.dart';
+import 'package:experiment_planner/features/auth/bloc/auth_bloc.dart';
 import '../../../features/alarms/models/alarm.dart';
 import '../repository/alarm_repository.dart';
 import 'alarm_event.dart';
@@ -10,9 +11,10 @@ import 'alarm_state.dart';
 
 class AlarmBloc extends Bloc<AlarmEvent, AlarmState> {
   final AlarmRepository _repository;
+  final AuthBloc _authBloc; // Add this
   StreamSubscription? _alarmSubscription;
 
-  AlarmBloc(this._repository) : super( AlarmState()) {
+  AlarmBloc(this._repository, this._authBloc) : super(AlarmState()) {
     on<LoadAlarms>(_onLoadAlarms);
     on<AddAlarm>(_onAddAlarm);
     on<AcknowledgeAlarm>(_onAcknowledgeAlarm);
@@ -22,6 +24,8 @@ class AlarmBloc extends Bloc<AlarmEvent, AlarmState> {
     on<UnsubscribeFromAlarms>(_onUnsubscribeFromAlarms);
   }
 
+  String? get _currentUserId => _authBloc.state.user?.id; // Add helper method
+
   Future<void> _onLoadAlarms(
     LoadAlarms event,
     Emitter<AlarmState> emit,
@@ -29,8 +33,19 @@ class AlarmBloc extends Bloc<AlarmEvent, AlarmState> {
     try {
       emit(state.copyWith(isLoading: true));
 
-      final activeAlarms = await _repository.getActiveAlarms();
-      final acknowledgedAlarms = await _repository.getAcknowledgedAlarms();
+      final userId = _currentUserId;
+      if (userId == null) {
+        emit(state.copyWith(
+          error: 'User not authenticated',
+          isLoading: false,
+        ));
+        return;
+      }
+
+      final activeAlarms = await _repository.getActiveAlarms(userId);
+      final acknowledgedAlarms = await _repository
+          .getAll(userId: userId)
+          .then((alarms) => alarms.where((a) => a.acknowledged).toList());
 
       emit(state.copyWith(
         activeAlarms: activeAlarms,
@@ -51,25 +66,23 @@ class AlarmBloc extends Bloc<AlarmEvent, AlarmState> {
     Emitter<AlarmState> emit,
   ) async {
     try {
-      final newAlarm = Alarm(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+      final userId = _currentUserId;
+      if (userId == null) return;
+
+      final id = DateTime.now().millisecondsSinceEpoch.toString();
+      await _repository.createNewAlarm(
+        id: id,
         message: event.message,
         severity: event.severity,
-        timestamp: DateTime.now(),
         isSafetyAlert: event.isSafetyAlert,
+        userId: userId,
       );
 
-      await _repository.addAlarm(newAlarm);
-
-      final updatedAlarms = [...state.activeAlarms, newAlarm];
-      emit(state.copyWith(
-        activeAlarms: updatedAlarms,
-        lastUpdate: DateTime.now(),
-      ));
+      if (!emit.isDone) {
+        await _onLoadAlarms(LoadAlarms(), emit);
+      }
     } catch (error) {
-      emit(state.copyWith(
-        error: BlocUtils.handleError(error),
-      ));
+      emit(state.copyWith(error: BlocUtils.handleError(error)));
     }
   }
 
@@ -78,29 +91,13 @@ class AlarmBloc extends Bloc<AlarmEvent, AlarmState> {
     Emitter<AlarmState> emit,
   ) async {
     try {
-      await _repository.acknowledgeAlarm(event.alarmId);
+      final userId = _currentUserId;
+      if (userId == null) return;
 
-      final alarm = state.activeAlarms.firstWhere((a) => a.id == event.alarmId);
-      final acknowledgedAlarm = alarm.copyWith(acknowledged: true);
-
-      final updatedActive = state.activeAlarms
-          .where((a) => a.id != event.alarmId)
-          .toList();
-
-      final updatedAcknowledged = [
-        ...state.acknowledgedAlarms,
-        acknowledgedAlarm,
-      ];
-
-      emit(state.copyWith(
-        activeAlarms: updatedActive,
-        acknowledgedAlarms: updatedAcknowledged,
-        lastUpdate: DateTime.now(),
-      ));
+      await _repository.acknowledgeAlarm(event.alarmId, userId);
+      await _onLoadAlarms(LoadAlarms(), emit);
     } catch (error) {
-      emit(state.copyWith(
-        error: BlocUtils.handleError(error),
-      ));
+      emit(state.copyWith(error: BlocUtils.handleError(error)));
     }
   }
 
@@ -109,25 +106,13 @@ class AlarmBloc extends Bloc<AlarmEvent, AlarmState> {
     Emitter<AlarmState> emit,
   ) async {
     try {
-      await _repository.clearAlarm(event.alarmId);
+      final userId = _currentUserId;
+      if (userId == null) return;
 
-      final updatedActive = state.activeAlarms
-          .where((a) => a.id != event.alarmId)
-          .toList();
-
-      final updatedAcknowledged = state.acknowledgedAlarms
-          .where((a) => a.id != event.alarmId)
-          .toList();
-
-      emit(state.copyWith(
-        activeAlarms: updatedActive,
-        acknowledgedAlarms: updatedAcknowledged,
-        lastUpdate: DateTime.now(),
-      ));
+      await _repository.remove(event.alarmId, userId: userId);
+      await _onLoadAlarms(LoadAlarms(), emit);
     } catch (error) {
-      emit(state.copyWith(
-        error: BlocUtils.handleError(error),
-      ));
+      emit(state.copyWith(error: BlocUtils.handleError(error)));
     }
   }
 
@@ -136,16 +121,13 @@ class AlarmBloc extends Bloc<AlarmEvent, AlarmState> {
     Emitter<AlarmState> emit,
   ) async {
     try {
-      await _repository.clearAllAcknowledgedAlarms();
+      final userId = _currentUserId;
+      if (userId == null) return;
 
-      emit(state.copyWith(
-        acknowledgedAlarms: [],
-        lastUpdate: DateTime.now(),
-      ));
+      await _repository.clearAcknowledged(userId);
+      await _onLoadAlarms(LoadAlarms(), emit);
     } catch (error) {
-      emit(state.copyWith(
-        error: BlocUtils.handleError(error),
-      ));
+      emit(state.copyWith(error: BlocUtils.handleError(error)));
     }
   }
 
@@ -153,16 +135,14 @@ class AlarmBloc extends Bloc<AlarmEvent, AlarmState> {
     SubscribeToAlarms event,
     Emitter<AlarmState> emit,
   ) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
     await _alarmSubscription?.cancel();
-
-    _alarmSubscription = _repository.watchAlarms().listen(
-      (alarms) {
-        final activeAlarms = alarms.where((a) => !a.acknowledged).toList();
-        final acknowledgedAlarms = alarms.where((a) => a.acknowledged).toList();
-
+    _alarmSubscription = _repository.watchActiveAlarms(userId).listen(
+      (activeAlarms) {
         emit(state.copyWith(
           activeAlarms: activeAlarms,
-          acknowledgedAlarms: acknowledgedAlarms,
           isSubscribed: true,
           lastUpdate: DateTime.now(),
         ));

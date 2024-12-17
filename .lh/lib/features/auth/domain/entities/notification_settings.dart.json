@@ -1,0 +1,22 @@
+{
+    "sourceFile": "lib/features/auth/domain/entities/notification_settings.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1734427276047,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1734427944335,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,19 @@\n+// lib/features/auth/domain/entities/notification_settings.dart\r\n+import 'package:freezed_annotation/freezed_annotation.dart';\r\n+import 'package:json_annotation/json_annotation.dart';\r\n+\r\n+part 'notification_settings.freezed.dart';\r\n+part 'notification_settings.g.dart';\r\n+\r\n+@freezed\r\n+class NotificationSettings with _$NotificationSettings {\r\n+  const factory NotificationSettings({\r\n+    required bool emailNotifications,\r\n+    required bool pushNotifications,\r\n+    required bool systemAlerts,\r\n+    required bool maintenanceUpdates,\r\n+  }) = _NotificationSettings;\r\n+\r\n+  factory NotificationSettings.fromJson(Map<String, dynamic> json) =>\r\n+      _$NotificationSettingsFromJson(json);\r\n+}\r\n"
+                }
+            ],
+            "date": 1734427276047,
+            "name": "Commit-0",
+            "content": "// lib/features/auth/domain/entities/notification_settings.dart\r\nimport 'package:freezed_annotation/freezed_annotation.dart';\r\n\r\npart 'notification_settings.freezed.dart';\r\n\r\n@freezed\r\nclass NotificationSettings with _$NotificationSettings {\r\n  const factory NotificationSettings({\r\n    required bool emailNotifications,\r\n    required bool pushNotifications,\r\n    required bool systemAlerts,\r\n    required bool maintenanceUpdates,\r\n  }) = _NotificationSettings;\r\n}\r\n\r\n"
+        }
+    ]
+}

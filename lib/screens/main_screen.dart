@@ -1,6 +1,6 @@
+import 'package:experiment_planner/features/auth/bloc/auth_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../features/auth/providers/auth_provider.dart';
 import '../core/enums/navigation_item.dart';
 import '../shared/widgets/app_drawer.dart';
 import '../features/system/screens/main_dashboard.dart';
@@ -55,13 +55,21 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _getSelectedScreen() {
+    // Get the userId from AuthBloc
+    final userId = context.read<AuthBloc>().state.user?.id;
+
+    // If userId is null, you might want to handle this case
+    if (userId == null) {
+      return Center(child: Text('User not authenticated'));
+    }
+
     switch (_selectedItem) {
       case NavigationItem.mainDashboard:
         return MainDashboard();
       case NavigationItem.systemOverview:
         return SystemOverviewScreen();
       case NavigationItem.recipeManagement:
-        return RecipeManagementScreen();
+        return RecipeManagementScreen(userId: userId);
       case NavigationItem.adminDashboard:
         return AdminDashboardScreen();
       default:
