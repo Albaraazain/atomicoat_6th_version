@@ -1,10 +1,10 @@
 
 
+import 'package:experiment_planner/features/alarms/bloc/alarm_bloc.dart';
+import 'package:experiment_planner/features/alarms/bloc/alarm_event.dart';
+import 'package:experiment_planner/features/alarms/bloc/alarm_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../blocs/alarm/bloc/alarm_bloc.dart';
-import '../../../blocs/alarm/bloc/alarm_event.dart';
-import '../../../blocs/alarm/bloc/alarm_state.dart';
 import '../models/alarm.dart';
 
 class AlarmDisplay extends StatefulWidget {

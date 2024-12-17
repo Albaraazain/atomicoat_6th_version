@@ -1,10 +1,10 @@
 
+import 'package:experiment_planner/features/log/bloc/system_log_bloc.dart';
+import 'package:experiment_planner/features/log/bloc/system_log_event.dart';
+import 'package:experiment_planner/features/log/bloc/system_log_state.dart';
 import 'package:experiment_planner/features/log/models/system_log_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../blocs/log/bloc/system_log_bloc.dart';
-import '../../../blocs/log/bloc/system_log_event.dart';
-import '../../../blocs/log/bloc/system_log_state.dart';
 import '../../components/models/system_component.dart';
 
 class SystemLogViewer extends StatefulWidget {

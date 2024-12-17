@@ -1,37 +1,47 @@
-
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:experiment_planner/blocs/alarm/bloc/alarm_bloc.dart';
-import 'package:experiment_planner/blocs/alarm/bloc/alarm_event.dart';
+import 'package:experiment_planner/core/utils/bloc_utils.dart';
+import 'package:experiment_planner/features/alarms/bloc/alarm_bloc.dart';
+import 'package:experiment_planner/features/alarms/bloc/alarm_event.dart';
 import 'package:experiment_planner/features/alarms/models/alarm.dart';
+import 'package:experiment_planner/features/auth/bloc/auth_bloc.dart';
+import 'package:experiment_planner/features/auth/bloc/auth_state.dart';
 import '../models/safety_error.dart';
-import '../../components/models/system_component.dart';
-import '../../auth/services/auth_service.dart';
-import '../../utils/bloc_utils.dart';
 import '../repository/safety_repository.dart';
 import 'safety_event.dart';
 import 'safety_state.dart';
 
 class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
   final SafetyRepository _repository;
-  final AuthService _authService;
   final AlarmBloc _alarmBloc;
+  final AuthBloc _authBloc;
   StreamSubscription? _errorSubscription;
+  StreamSubscription? _authSubscription;
 
   SafetyBloc({
     required SafetyRepository repository,
-    required AuthService authService,
     required AlarmBloc alarmBloc,
+    required AuthBloc authBloc,
   })  : _repository = repository,
-        _authService = authService,
         _alarmBloc = alarmBloc,
+        _authBloc = authBloc,
         super(SafetyState.initial()) {
     on<SafetyMonitoringStarted>(_onMonitoringStarted);
     on<SafetyMonitoringPaused>(_onMonitoringPaused);
     on<SafetyErrorDetected>(_onErrorDetected);
     on<SafetyErrorCleared>(_onErrorCleared);
     on<SafetyThresholdAdjusted>(_onThresholdAdjusted);
+
+    _authSubscription = _authBloc.stream.listen((authState) {
+      if (authState.status == AuthStatus.authenticated) {
+        add(SafetyMonitoringStarted());
+      } else if (authState.status == AuthStatus.unauthenticated) {
+        add(SafetyMonitoringPaused());
+      }
+    });
   }
+
+  String? get _currentUserId => _authBloc.state.user?.id;
 
   Future<void> _onMonitoringStarted(
     SafetyMonitoringStarted event,
@@ -39,6 +49,15 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
   ) async {
     try {
       await _errorSubscription?.cancel();
+
+      final userId = _currentUserId;
+      if (userId == null) {
+        emit(state.copyWith(
+          error: 'User not authenticated',
+          isMonitoringActive: false,
+        ));
+        return;
+      }
 
       _errorSubscription = _repository.watchActiveErrors().listen(
         (errors) {
@@ -130,8 +149,9 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
   }
 
   @override
-  Future<void> close() {
-    _errorSubscription?.cancel();
+  Future<void> close() async {
+    await _errorSubscription?.cancel();
+    await _authSubscription?.cancel();
     return super.close();
   }
 }

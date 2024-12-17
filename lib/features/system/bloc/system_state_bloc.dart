@@ -2,8 +2,8 @@
 
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:experiment_planner/core/utils/bloc_utils.dart';
 import 'package:experiment_planner/features/system/repositories/system_state_repository.dart';
-import '../../utils/bloc_utils.dart';
 import '../models/system_state_data.dart';
 import 'system_state_event.dart';
 import 'system_state_state.dart';

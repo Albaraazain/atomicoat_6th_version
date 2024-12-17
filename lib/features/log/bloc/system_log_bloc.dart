@@ -1,31 +1,45 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:experiment_planner/features/auth/services/auth_service.dart';
 import 'package:experiment_planner/features/log/repositories/system_log_entry_repository.dart';
 import 'package:experiment_planner/features/log/models/system_log_entry.dart';
 import 'package:experiment_planner/features/components/models/system_component.dart';
+import 'package:experiment_planner/features/auth/bloc/auth_bloc.dart';
+import 'package:experiment_planner/features/auth/bloc/auth_state.dart';
 import 'system_log_event.dart';
 import 'system_log_state.dart';
 
 class SystemLogBloc extends Bloc<SystemLogEvent, SystemLogState> {
   final SystemLogEntryRepository _repository;
-  final AuthService _authService;
+  final AuthBloc _authBloc;
+  StreamSubscription? _authSubscription;
 
   SystemLogBloc({
     required SystemLogEntryRepository repository,
-    required AuthService authService,
+    required AuthBloc authBloc,
   })  : _repository = repository,
-        _authService = authService,
+        _authBloc = authBloc,
         super(SystemLogState.initial()) {
     on<LogEntryAdded>(_onLogEntryAdded);
     on<LogEntriesLoaded>(_onLogEntriesLoaded);
     on<LogEntriesFiltered>(_onLogEntriesFiltered);
+
+    // Subscribe to auth state changes
+    _authSubscription = _authBloc.stream.listen((authState) {
+      if (authState.status == AuthStatus.authenticated) {
+        add(LogEntriesLoaded(limit: 50)); // Load initial entries
+      } else if (authState.status == AuthStatus.unauthenticated) {
+        emit(SystemLogState.initial());
+      }
+    });
   }
+
+  String? get _currentUserId => _authBloc.state.user?.id;
 
   Future<void> _onLogEntryAdded(
     LogEntryAdded event,
     Emitter<SystemLogState> emit,
   ) async {
-    final userId = _authService.currentUserId;
+    final userId = _currentUserId;
     if (userId == null) {
       emit(state.copyWith(error: 'User not authenticated'));
       return;
@@ -53,9 +67,19 @@ class SystemLogBloc extends Bloc<SystemLogEvent, SystemLogState> {
     Emitter<SystemLogState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
+
+    final userId = _currentUserId;
+    if (userId == null) {
+      emit(state.copyWith(
+        error: 'User not authenticated',
+        isLoading: false,
+      ));
+      return;
+    }
+
     try {
       final entries = await _repository.getRecentEntries(
-        _authService.currentUserId!,
+        userId,
         limit: event.limit,
       );
       emit(state.copyWith(
@@ -76,9 +100,19 @@ class SystemLogBloc extends Bloc<SystemLogEvent, SystemLogState> {
     Emitter<SystemLogState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
+
+    final userId = _currentUserId;
+    if (userId == null) {
+      emit(state.copyWith(
+        error: 'User not authenticated',
+        isLoading: false,
+      ));
+      return;
+    }
+
     try {
       final entries = await _repository.getEntriesByDateRange(
-        _authService.currentUserId!,
+        userId,
         event.startDate,
         event.endDate,
       );
@@ -94,5 +128,11 @@ class SystemLogBloc extends Bloc<SystemLogEvent, SystemLogState> {
         isLoading: false,
       ));
     }
+  }
+
+  @override
+  Future<void> close() {
+    _authSubscription?.cancel();
+    return super.close();
   }
 }

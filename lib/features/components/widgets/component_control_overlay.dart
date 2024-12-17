@@ -2,13 +2,13 @@
 
 import 'dart:convert';
 import 'dart:math';
+import 'package:experiment_planner/features/components/bloc/component_list_bloc.dart';
+import 'package:experiment_planner/features/components/bloc/component_list_state.dart';
+import 'package:experiment_planner/features/recipes/bloc/recipe_bloc.dart';
+import 'package:experiment_planner/features/recipes/bloc/recipe_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../blocs/component/bloc/component_list_bloc.dart';
-import '../../../blocs/component/bloc/component_list_state.dart';
-import '../../../blocs/recipe/bloc/recipe_bloc.dart';
-import '../../../blocs/recipe/bloc/recipe_state.dart';
 import '../../recipes/models/recipe.dart';
 import '../models/system_component.dart';
 import 'component_control_dialog.dart';

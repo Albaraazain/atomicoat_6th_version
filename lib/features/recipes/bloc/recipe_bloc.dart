@@ -4,10 +4,11 @@ import 'package:experiment_planner/core/utils/bloc_utils.dart';
 import 'package:experiment_planner/features/alarms/bloc/alarm_bloc.dart';
 import 'package:experiment_planner/features/alarms/bloc/alarm_event.dart';
 import 'package:experiment_planner/features/alarms/models/alarm.dart';
+import 'package:experiment_planner/features/auth/bloc/auth_bloc.dart';
+import 'package:experiment_planner/features/auth/bloc/auth_state.dart';
 import 'package:experiment_planner/features/recipes/models/recipe.dart';
 import 'package:experiment_planner/features/recipes/repository/recipe_repository.dart';
 import 'package:experiment_planner/features/system/bloc/system_state_event.dart';
-import '../../auth/services/auth_service.dart';
 import '../../system/bloc/system_state_bloc.dart';
 import 'recipe_event.dart';
 import 'recipe_state.dart';
@@ -15,19 +16,19 @@ import '../models/recipe_validation_result.dart';
 
 class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
   final RecipeRepository _repository;
-  final AuthService _authService;
+  final AuthBloc _authBloc;
   final SystemStateBloc _systemStateBloc;
   final AlarmBloc _alarmBloc;
   Timer? _executionTimer;
-  StreamSubscription? _userSubscription;
+  StreamSubscription? _authSubscription;
 
   RecipeBloc({
     required RecipeRepository repository,
-    required AuthService authService,
+    required AuthBloc authBloc,
     required SystemStateBloc systemStateBloc,
     required AlarmBloc alarmBloc,
   })  : _repository = repository,
-        _authService = authService,
+        _authBloc = authBloc,
         _systemStateBloc = systemStateBloc,
         _alarmBloc = alarmBloc,
         super(RecipeState.initial()) {
@@ -43,15 +44,16 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     on<LoadRecipeVersions>(_onLoadRecipeVersions);
     on<CompareRecipeVersions>(_onCompareRecipeVersions);
 
-    // Add user subscription
-    _userSubscription = _authService.onUserChanged.listen((userId) {
-      if (userId != null) {
+    _authSubscription = _authBloc.stream.listen((authState) {
+      if (authState.status == AuthStatus.authenticated) {
         add(LoadRecipes());
-      } else {
+      } else if (authState.status == AuthStatus.unauthenticated) {
         emit(RecipeState.initial());
       }
     });
   }
+
+  String? get _currentUserId => _authBloc.state.user?.id;
 
   RecipeValidationResult _validateRecipe(Recipe recipe) {
     final errors = <String>[];
@@ -216,7 +218,7 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     try {
       emit(state.copyWith(isLoading: true));
 
-      final userId = _authService.currentUserId;
+      final userId = _currentUserId;
       if (userId == null) {
         emit(state.copyWith(
           error: 'User not authenticated',
@@ -532,7 +534,7 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
 
   @override
   Future<void> close() async {
-    await _userSubscription?.cancel();
+    await _authSubscription?.cancel();
     _executionTimer?.cancel();
     return super.close();
   }
@@ -543,7 +545,7 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     try {
       emit(state.copyWith(isLoading: true));
 
-      final userId = _authService.currentUserId;
+      final userId = _currentUserId;
       if (userId == null) {
         emit(state.copyWith(
           error: 'User not authenticated',
@@ -574,7 +576,7 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     try {
       emit(state.copyWith(isLoading: true));
 
-      final userId = _authService.currentUserId;
+      final userId = _currentUserId;
       if (userId == null) {
         emit(state.copyWith(
           error: 'User not authenticated',
@@ -608,7 +610,7 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     try {
       emit(state.copyWith(isLoading: true));
 
-      final userId = _authService.currentUserId;
+      final userId = _currentUserId;
       if (userId == null) {
         emit(state.copyWith(
           error: 'User not authenticated',
@@ -721,7 +723,7 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     try {
       emit(state.copyWith(isLoading: true));
 
-      final userId = _authService.currentUserId;
+      final userId = _currentUserId;
       if (userId == null) {
         emit(state.copyWith(
           error: 'User not authenticated',

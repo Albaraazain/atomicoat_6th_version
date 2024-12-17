@@ -1,13 +1,12 @@
 
 
+import 'package:experiment_planner/features/recipes/bloc/recipe_bloc.dart';
+import 'package:experiment_planner/features/recipes/bloc/recipe_event.dart';
+import 'package:experiment_planner/features/recipes/bloc/recipe_state.dart';
+import 'package:experiment_planner/features/system/bloc/system_state_bloc.dart';
+import 'package:experiment_planner/features/system/bloc/system_state_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../blocs/recipe/bloc/recipe_bloc.dart';
-import '../../../blocs/recipe/bloc/recipe_event.dart';
-import '../../../blocs/recipe/bloc/recipe_state.dart';
-import '../../../blocs/system_state/bloc/system_state_bloc.dart';
-import '../../../blocs/system_state/bloc/system_state_event.dart';
-import '../../../blocs/system_state/bloc/system_state_state.dart';
 import '../models/recipe.dart';
 
 class RecipeControl extends StatelessWidget {

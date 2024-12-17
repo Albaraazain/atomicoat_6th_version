@@ -3,7 +3,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:experiment_planner/core/exceptions/bloc_exception.dart';
 import '../models/system_component.dart';
-import '../../auth/services/auth_service.dart';
 import '../../../core/utils/data_point_cache.dart';
 
 class ComponentRepository {

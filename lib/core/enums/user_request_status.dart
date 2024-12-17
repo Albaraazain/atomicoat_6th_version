@@ -1,1 +1,7 @@
-enum UserRequestStatus { pending, approved, denied }
+enum UserRequestStatus {
+  pending,
+  approved,
+  denied;
+
+  String toJson() => toString().split('.').last;
+}

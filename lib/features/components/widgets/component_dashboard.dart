@@ -1,13 +1,11 @@
-
-
-import 'package:experiment_planner/blocs/component/bloc/component_list_state.dart';
-import 'package:experiment_planner/blocs/component/repository/component_repository.dart';
+import 'package:experiment_planner/features/components/bloc/component_bloc.dart';
+import 'package:experiment_planner/features/components/bloc/component_event.dart';
+import 'package:experiment_planner/features/components/bloc/component_list_bloc.dart';
+import 'package:experiment_planner/features/components/bloc/component_list_state.dart';
+import 'package:experiment_planner/features/components/bloc/component_state.dart';
+import 'package:experiment_planner/features/components/repository/component_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../blocs/component/bloc/component_bloc.dart';
-import '../../../blocs/component/bloc/component_list_bloc.dart';
-import '../../../blocs/component/bloc/component_event.dart';
-import '../../../blocs/component/bloc/component_state.dart';
 import '../models/system_component.dart';
 
 class ComponentDashboard extends StatelessWidget {

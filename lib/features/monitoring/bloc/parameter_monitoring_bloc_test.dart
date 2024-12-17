@@ -1,9 +1,8 @@
 
 import 'package:bloc_test/bloc_test.dart';
+import 'package:experiment_planner/features/safety/bloc/safety_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:experiment_planner/blocs/safety/bloc/safety_bloc.dart';
-import 'package:experiment_planner/blocs/safety/bloc/safety_event.dart';
 import 'package:experiment_planner/features/safety/models/safety_error.dart';
 import 'parameter_monitoring_bloc.dart';
 import 'parameter_monitoring_event.dart';

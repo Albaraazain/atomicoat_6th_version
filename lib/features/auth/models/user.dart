@@ -1,4 +1,5 @@
-import 'package:experiment_planner/core/enums/user_role.dart';
+// lib/features/auth/models/user.dart
+import '../../../core/enums/user_role.dart';
 
 class User {
   final String id;
@@ -21,7 +22,7 @@ class User {
     'id': id,
     'email': email,
     'name': name,
-    'role': role.toString().split('.').last,
+    'role': role.toJson(),
     'status': status,
     'machineSerial': machineSerial,
   };
@@ -36,10 +37,10 @@ class User {
   );
 
   static UserRole _parseUserRole(dynamic roleString) {
-    if (roleString == null) return UserRole.user; // Default role
+    if (roleString == null) return UserRole.user;
     try {
       return UserRole.values.firstWhere(
-            (role) => role.toString().split('.').last == roleString,
+        (role) => role.toString().split('.').last == roleString,
         orElse: () => UserRole.user,
       );
     } catch (e) {
@@ -48,4 +49,3 @@ class User {
     }
   }
 }
-

@@ -2,9 +2,9 @@
 
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:experiment_planner/core/utils/bloc_utils.dart';
 import '../../../features/alarms/models/alarm.dart';
 import '../repository/alarm_repository.dart';
-import '../../utils/bloc_utils.dart';
 import 'alarm_event.dart';
 import 'alarm_state.dart';
 

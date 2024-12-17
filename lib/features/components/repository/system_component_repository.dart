@@ -1,8 +1,8 @@
 
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:experiment_planner/shared/base/base_repository.dart';
 import '../models/system_component.dart';
-import '../../../repositories/base_repository.dart';
 
 class SystemComponentRepository extends BaseRepository<SystemComponent> {
   SystemComponentRepository() : super('system_components');
